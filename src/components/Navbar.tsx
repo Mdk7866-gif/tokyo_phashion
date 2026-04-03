@@ -9,7 +9,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 60);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -18,42 +18,40 @@ const Navbar = () => {
   return (
     <>
       <header
-        className={`w-full flex flex-col sticky top-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-black/90 backdrop-blur-md shadow-lg"
-            : "bg-white"
+        className={`w-full flex flex-col sticky top-0 z-50 transition-all duration-300 ${
+          scrolled ? "bg-black shadow-xl" : "bg-white"
         }`}
       >
         {/* Top Announcement Bar */}
         <div
-          className={`w-full py-2 px-4 text-center transition-colors duration-500 ${
-            scrolled ? "bg-white/10" : "bg-black"
+          className={`w-full bg-black text-white px-4 text-center transition-all duration-300 overflow-hidden ${
+            scrolled ? "max-h-0 py-0" : "max-h-10 py-2 border-b border-white/10"
           }`}
         >
-          <p
-            className={`text-[10px] font-bold tracking-widest uppercase transition-colors duration-500 ${
-              scrolled ? "text-white/80" : "text-white"
-            }`}
-          >
+          <p className="text-[10px] font-bold tracking-widest uppercase">
             USE TP FOR EXTRA OFF.
           </p>
         </div>
 
         {/* Main Navbar */}
-        <div className="w-full border-b border-transparent py-4 px-6 md:px-12 flex items-center justify-between">
+        <div
+          className={`w-full transition-all duration-300 px-4 md:px-12 flex items-center justify-between ${
+            scrolled ? "py-1.5 md:py-2" : "py-3 md:py-4"
+          }`}
+        >
           {/* Left: Hamburger Menu */}
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 shadow-lg ${
+            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
               scrolled
-                ? "bg-white text-black hover:bg-zinc-100"
+                ? "bg-zinc-900 text-white hover:bg-zinc-800"
                 : "bg-black text-white hover:bg-zinc-800"
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -70,58 +68,60 @@ const Navbar = () => {
           {/* Center: Logo */}
           <div className="flex flex-col items-center cursor-pointer group">
             <div
-              className={`w-8 h-8 border-2 flex items-center justify-center font-serif text-sm font-bold tracking-tight mb-1 transition-all duration-500 group-hover:scale-110 ${
-                scrolled
-                  ? "border-white text-white"
-                  : "border-black text-black"
-              }`}
-            >
-              TP
-            </div>
-            <span
-              className={`font-serif text-[10px] tracking-widest uppercase font-bold text-center leading-tight transition-colors duration-500 ${
+              className={`flex flex-col items-center justify-center font-serif transition-colors duration-300 ${
                 scrolled ? "text-white" : "text-black"
               }`}
             >
-              TOKYO
-              <br />
-              PHASHION
-            </span>
+              <div className={`w-6 h-6 border-2 flex items-center justify-center text-[11px] font-bold transition-all duration-300 ${scrolled ? 'border-white' : 'border-black'}`}>
+                TP
+              </div>
+              <span className="text-[9px] tracking-[0.25em] font-black uppercase mt-1 transition-all duration-300">
+                PHASHION
+              </span>
+            </div>
           </div>
 
-          {/* Right: Cart Icon */}
-          <button
-            className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 shadow-lg ${
-              scrolled
-                ? "bg-white text-black hover:bg-zinc-100"
-                : "bg-black text-white hover:bg-zinc-800"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-              <line x1="3" x2="21" y1="6" y2="6" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-            <span
-              className={`absolute -top-1 -right-1 text-[9px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 transition-colors duration-500 ${
-                scrolled
-                  ? "bg-black text-white border-white"
-                  : "bg-white text-black border-black"
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Search Icon */}
+            <button
+              className={`hidden md:flex w-9 h-9 items-center justify-center rounded-full transition-all duration-300 ${
+                scrolled ? "bg-zinc-900 text-white" : "bg-zinc-50 text-black border border-zinc-100"
               }`}
             >
-              0
-            </span>
-          </button>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </button>
+
+            {/* Cart Icon */}
+            <button
+              className={`relative w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm ${
+                scrolled
+                  ? "bg-zinc-900 text-white"
+                  : "bg-black text-white"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <line x1="3" x2="21" y1="6" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span className={`absolute -top-1 -right-1 text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full border transition-colors duration-300 ${scrolled ? 'bg-white text-black border-transparent' : 'bg-white text-black border-black'}`}>
+                0
+              </span>
+            </button>
+          </div>
         </div>
       </header>
 
