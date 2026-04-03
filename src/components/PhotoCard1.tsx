@@ -8,20 +8,26 @@ interface PhotoCard1Props {
 
 const PhotoCard1: React.FC<PhotoCard1Props> = ({ imageSrc, category, price }) => {
   return (
-    <div className="flex flex-col w-[160px] md:w-[210px] flex-shrink-0 cursor-pointer group bg-zinc-50 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-black/5">
-      <div className="w-full aspect-[3.5/5] overflow-hidden bg-zinc-200">
-        <img 
-          src={imageSrc} 
-          alt={category} 
-          className="w-full h-full object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
+    <div className="flex flex-col w-full cursor-pointer group bg-white overflow-hidden transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+      {/* Image */}
+      <div className="w-full aspect-[3/4] overflow-hidden bg-zinc-100 rounded-lg">
+        <img
+          src={imageSrc}
+          alt={category}
+          className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
         />
       </div>
-      <div className="w-full p-4 bg-white flex flex-col justify-between">
-        <h3 className={`text-[11px] md:text-sm font-black text-black group-hover:text-zinc-600 transition-colors line-clamp-2 ${!price ? 'tracking-[0.1em] uppercase text-xs md:text-xs' : 'mt-1 mb-2 font-bold'}`}>
+      {/* Label */}
+      <div className="pt-2 pb-1 px-0.5">
+        <h3
+          className={`text-[11px] md:text-sm font-bold text-black group-hover:text-zinc-500 transition-colors leading-tight ${
+            !price ? 'tracking-wide uppercase' : ''
+          }`}
+        >
           {category}
         </h3>
         {price && (
-          <p className="text-sm md:text-base font-black text-black">{price}</p>
+          <p className="text-xs md:text-sm font-black text-black mt-0.5">{price}</p>
         )}
       </div>
     </div>

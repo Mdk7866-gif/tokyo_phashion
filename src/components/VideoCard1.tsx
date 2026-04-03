@@ -7,7 +7,7 @@ interface VideoCard1Props {
 
 const VideoCard1: React.FC<VideoCard1Props> = ({ videoSrc, title }) => {
   return (
-    <div className="relative w-[180px] md:w-[240px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden cursor-pointer group shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-all duration-500 border border-white/5">
+    <div className="relative w-[140px] md:w-[240px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden cursor-pointer group shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-all duration-500 border border-white/5">
       {/* Video Content */}
       {videoSrc.endsWith('.mp4') || videoSrc.includes('video') ? (
         <video

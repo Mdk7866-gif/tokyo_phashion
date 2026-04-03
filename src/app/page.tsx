@@ -52,7 +52,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col w-full min-h-screen">
+    <div className="flex flex-col w-full min-h-screen overflow-x-hidden">
       {/* Hero Section Container */}
       <section className="relative w-full h-[85vh] md:h-[calc(100vh-120px)] overflow-hidden">
         <div className="absolute inset-0">
@@ -87,44 +87,52 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="w-full py-20 md:py-32 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1500px] px-6 md:px-12">
-          <h2 className="text-left md:text-center text-xl md:text-3xl font-bold tracking-[0.2em] uppercase mb-12 md:mb-16 text-black border-l-4 md:border-l-0 border-black pl-4 md:pl-0">
-            Shop By <span className="text-zinc-400">Category</span>
+      <section className="w-full py-12 md:py-32 bg-white flex flex-col items-center">
+        <div className="w-full max-w-[1500px] px-4 md:px-12">
+          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.2em] uppercase mb-6 md:mb-16 text-black">
+            SHOP BY <span className="text-zinc-400">CATEGORY</span>
           </h2>
-          
-          <div className="flex overflow-x-auto pb-10 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory hide-scrollbar gap-5 md:gap-8 justify-start xl:justify-center overflow-y-hidden">
+
+          {/* Mobile: 3-column grid */}
+          <div className="grid grid-cols-3 gap-3 md:hidden">
             {categories.map((cat, idx) => (
-              <div key={idx} className="snap-start shrink-0 first:ml-0 last:mr-6 md:last:mr-0">
+              <div key={idx}>
                 <PhotoCard1 imageSrc={cat.image} category={cat.title} />
               </div>
             ))}
           </div>
-          
-          <div className="flex justify-start md:justify-center gap-3 mt-4 items-center">
-            <div className="w-12 h-1 bg-black rounded-full transition-all"></div>
-            <div className="w-2 h-1 bg-zinc-200 rounded-full"></div>
-            <div className="w-2 h-1 bg-zinc-200 rounded-full"></div>
+
+          {/* Desktop: horizontal scroll */}
+          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+            {categories.map((cat, idx) => (
+              <div key={idx} className="snap-start shrink-0 w-[210px]">
+                <PhotoCard1 imageSrc={cat.image} category={cat.title} />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center gap-3 mt-5 items-center">
+            <div className="w-8 h-1.5 bg-black rounded-full"></div>
+            <div className="w-2 h-1.5 bg-zinc-200 rounded-full"></div>
           </div>
         </div>
       </section>
 
       {/* SHOP VIA REEL Section */}
-      <section className="w-full py-20 md:py-32 bg-black text-white flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-[1500px] px-6 md:px-12">
-          <h2 className="text-center text-xl md:text-3xl font-black tracking-[0.3em] uppercase mb-16 md:mb-24">
+      <section className="w-full py-12 md:py-32 bg-black text-white flex flex-col items-center overflow-hidden">
+        <div className="w-full max-w-[1500px] px-4 md:px-12">
+          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.3em] uppercase mb-8 md:mb-24">
             SHOP VIA <span className="text-zinc-500">REEL</span>
           </h2>
+          <div className="w-10 h-0.5 bg-white/30 mx-auto mb-8 md:hidden" />
           
-          <div className="flex overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0 hide-scrollbar gap-6 md:gap-10 justify-start xl:justify-center snap-x snap-mandatory pb-10">
+          <div className="flex overflow-x-auto hide-scrollbar gap-4 md:gap-10 snap-x snap-mandatory pb-6 md:pb-10 -mx-4 px-4 md:mx-0 md:px-0 md:justify-center">
             {reels.map((reel, idx) => (
-              <div key={idx} className="snap-start">
+              <div key={idx} className="snap-start shrink-0">
                 <VideoCard1 videoSrc={reel.src} title={reel.title} />
               </div>
             ))}
           </div>
-
-          <div className="w-24 h-[1px] bg-white/20 mx-auto mt-4"></div>
         </div>
       </section>
 
@@ -166,23 +174,33 @@ export default function Home() {
       </section>
 
       {/* UNDER 999 Section */}
-      <section className="w-full py-16 md:py-24 bg-white flex flex-col items-center border-t border-gray-100">
-        <div className="w-full max-w-[1500px] px-6 md:px-12">
-          <h2 className="text-center text-2xl md:text-4xl font-black tracking-[0.2em] uppercase mb-12 md:mb-16 text-black">
-            UNDER <span className="text-zinc-500">999</span>
+      <section className="w-full py-12 md:py-24 bg-white flex flex-col items-center border-t border-gray-100">
+        <div className="w-full max-w-[1500px] px-4 md:px-12">
+          <h2 className="text-center text-xl md:text-4xl font-black tracking-[0.2em] uppercase mb-6 md:mb-16 text-black">
+            UNDER <span className="text-zinc-400">999</span>
           </h2>
-          
-          <div className="flex overflow-x-auto pb-10 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory hide-scrollbar gap-5 md:gap-8 justify-start xl:justify-center overflow-y-hidden">
+
+          {/* Mobile: 2-column grid */}
+          <div className="grid grid-cols-2 gap-3 md:hidden">
             {under999.map((item, idx) => (
-              <div key={idx} className="snap-start shrink-0 first:ml-0 last:mr-6 md:last:mr-0">
+              <div key={idx}>
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
           </div>
 
-          <div className="flex justify-center mt-2">
+          {/* Desktop: horizontal scroll */}
+          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+            {under999.map((item, idx) => (
+              <div key={idx} className="snap-start shrink-0 w-[210px]">
+                <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
             <button className="bg-black text-white px-8 py-3 rounded-full font-bold text-[10px] md:text-xs tracking-widest uppercase hover:bg-zinc-800 transition-colors flex items-center gap-2 group shadow-xl">
-              MORE 40 
+              MORE 40
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
                 <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
               </svg>
@@ -240,15 +258,25 @@ export default function Home() {
       </section>
 
       {/* TP DENIMS Section */}
-      <section className="w-full py-16 md:py-24 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1500px] px-6 md:px-12">
-          <h2 className="text-center text-2xl md:text-4xl font-black tracking-[0.2em] uppercase mb-12 md:mb-16 text-black">
-            TP <span className="text-zinc-500">DENIMS</span>
+      <section className="w-full py-12 md:py-24 bg-white flex flex-col items-center">
+        <div className="w-full max-w-[1500px] px-4 md:px-12">
+          <h2 className="text-center text-xl md:text-4xl font-black tracking-[0.2em] uppercase mb-6 md:mb-16 text-black">
+            TP <span className="text-zinc-400">DENIMS</span>
           </h2>
-          
-          <div className="flex overflow-x-auto pb-10 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory hide-scrollbar gap-5 md:gap-8 justify-start xl:justify-center overflow-y-hidden">
+
+          {/* Mobile: 2-column grid */}
+          <div className="grid grid-cols-2 gap-3 md:hidden">
             {denims.map((item, idx) => (
-              <div key={idx} className="snap-start shrink-0 first:ml-0 last:mr-6 md:last:mr-0">
+              <div key={idx}>
+                <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: horizontal scroll */}
+          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+            {denims.map((item, idx) => (
+              <div key={idx} className="snap-start shrink-0 w-[210px]">
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
@@ -257,40 +285,38 @@ export default function Home() {
       </section>
 
       {/* OUR STORY Section */}
-      <section className="w-full py-20 md:py-32 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1400px] px-6 md:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-center">
-          {/* Left: Image Container */}
-          <div className="relative group overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
-            <img 
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop" 
-              alt="Our Story" 
-              className="w-full aspect-[4/5] object-cover transition-transform duration-1000 group-hover:scale-105"
+      <section className="w-full py-12 md:py-32 bg-white flex flex-col items-center">
+        <div className="w-full max-w-[1400px] px-4 md:px-12 flex flex-col lg:flex-row gap-8 md:gap-20 items-center">
+          {/* Image */}
+          <div className="relative group overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full lg:w-1/2">
+            <img
+              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
+              alt="Our Story"
+              className="w-full aspect-[4/3] md:aspect-[4/5] object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/5" />
           </div>
 
-          {/* Right: Content Container */}
-          <div className="flex flex-col text-left">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-black mb-6 font-serif">
+          {/* Content */}
+          <div className="flex flex-col w-full lg:w-1/2 text-left">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-black mb-4 md:mb-6 font-serif">
               OUR STORY
             </h2>
-            <div className="w-16 h-1 bg-black mb-10" />
-            
-            <div className="flex flex-col gap-8 text-zinc-600 leading-relaxed max-w-xl">
-              <p className="text-sm md:text-base font-medium">
+            <div className="w-12 h-1 bg-black mb-6 md:mb-10" />
+
+            <div className="flex flex-col gap-5 md:gap-8 text-zinc-600 leading-relaxed">
+              <p className="text-xs md:text-base font-medium">
                 Welcome to the brand that started on a cycle and is now driving men's fashion forward. It all started with humble beginnings and a few clothes—no showroom, just passion on the streets. Selling suits door-to-door, we built trust one customer at a time.
               </p>
-              
-              <p className="text-sm md:text-base font-medium">
+              <p className="text-xs md:text-base font-medium">
                 From that hustle, we opened our first showroom, creating a space where men found more than style. But we didn't stop there. We moved into manufacturing, crafting every fabric, stitch, and silhouette in-house to deliver fashion with purpose.
               </p>
-              
-              <p className="text-sm md:text-base font-medium">
+              <p className="text-xs md:text-base font-medium">
                 Today, we're not just a clothing brand. We're a movement from streets to showrooms to full-scale creation. Driven by belief, built with hustle, worn with pride. And we're just getting started.
               </p>
             </div>
 
-            <button className="mt-12 bg-black text-white px-10 py-4 w-max rounded-sm font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-1">
+            <button className="mt-8 md:mt-12 bg-black text-white px-8 py-3.5 w-max rounded-sm font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-1">
               EXPLORE PRODUCTS
             </button>
           </div>
