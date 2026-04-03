@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface PhotoCard1Props {
   imageSrc: string;
@@ -10,10 +11,11 @@ const PhotoCard1: React.FC<PhotoCard1Props> = ({ imageSrc, category, price }) =>
   return (
     <div className="flex flex-col w-full cursor-pointer group bg-white overflow-hidden transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
       {/* Image */}
-      <div className="w-full aspect-[3/4] overflow-hidden bg-zinc-100 rounded-lg">
-        <img
+      <div className="w-full aspect-[3/4] overflow-hidden bg-zinc-100 rounded-lg relative">
+        <Image
           src={imageSrc}
           alt={category}
+          fill
           className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
         />
       </div>

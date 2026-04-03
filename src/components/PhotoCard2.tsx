@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export interface CarouselItem {
   title: string;
@@ -28,9 +28,10 @@ export const PhotoCard2Card: React.FC<PhotoCard2Props> = ({ imageSrc, title, ori
       
       {/* Image */}
       <div className="w-full aspect-[4/5] bg-gray-100 overflow-hidden relative">
-        <img 
+        <Image 
           src={imageSrc} 
           alt={title} 
+          fill
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
       </div>

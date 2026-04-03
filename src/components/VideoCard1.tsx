@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface VideoCard1Props {
   videoSrc: string;
@@ -19,9 +20,10 @@ const VideoCard1: React.FC<VideoCard1Props> = ({ videoSrc, title }) => {
           playsInline
         />
       ) : (
-        <img
+        <Image
           src={videoSrc}
           alt={title}
+          fill
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
       )}

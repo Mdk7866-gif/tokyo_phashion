@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import PhotoCard1 from "@/components/PhotoCard1";
 import VideoCard1 from "@/components/VideoCard1";
 import PhotoCard2Carousel from "@/components/PhotoCard2";
@@ -127,10 +128,12 @@ export default function Home() {
               opacity: Math.abs(idx - currentHero) <= 1 ? 1 : 0
             }}
           >
-            <img 
+            <Image 
               src={hero.img} 
               alt={hero.text2} 
+              fill
               className="w-full h-full object-cover object-[center_20%] md:object-center"
+              priority={idx === 0}
             />
             <div className="absolute inset-0 bg-black/30 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/20 md:to-transparent z-10 flex flex-col justify-end md:justify-center pb-24 md:pb-0 px-8 md:px-24">
               <div className="max-w-2xl text-left">
@@ -373,11 +376,12 @@ export default function Home() {
       <section className="w-full py-12 md:py-32 bg-white flex flex-col items-center">
         <div className="w-full max-w-[1400px] px-4 md:px-12 flex flex-col lg:flex-row gap-8 md:gap-20 items-center">
           {/* Image */}
-          <div className="relative group overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full lg:w-1/2">
-            <img
+          <div className="relative group overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full lg:w-1/2 aspect-[4/3] md:aspect-[4/5]">
+            <Image
               src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
               alt="Our Story"
-              className="w-full aspect-[4/3] md:aspect-[4/5] object-cover transition-transform duration-1000 group-hover:scale-105"
+              fill
+              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/5" />
           </div>
@@ -391,13 +395,13 @@ export default function Home() {
 
             <div className="flex flex-col gap-5 md:gap-8 text-zinc-600 leading-relaxed">
               <p className="text-xs md:text-base font-medium">
-                Welcome to the brand that started on a cycle and is now driving men's fashion forward. It all started with humble beginnings and a few clothes—no showroom, just passion on the streets. Selling suits door-to-door, we built trust one customer at a time.
+                Welcome to the brand that started on a cycle and is now driving men&apos;s fashion forward. It all started with humble beginnings and a few clothes—no showroom, just passion on the streets. Selling suits door-to-door, we built trust one customer at a time.
               </p>
               <p className="text-xs md:text-base font-medium">
-                From that hustle, we opened our first showroom, creating a space where men found more than style. But we didn't stop there. We moved into manufacturing, crafting every fabric, stitch, and silhouette in-house to deliver fashion with purpose.
+                From that hustle, we opened our first showroom, creating a space where men found more than style. But we didn&apos;t stop there. We moved into manufacturing, crafting every fabric, stitch, and silhouette in-house to deliver fashion with purpose.
               </p>
               <p className="text-xs md:text-base font-medium">
-                Today, we're not just a clothing brand. We're a movement from streets to showrooms to full-scale creation. Driven by belief, built with hustle, worn with pride. And we're just getting started.
+                Today, we&apos;re not just a clothing brand. We&apos;re a movement from streets to showrooms to full-scale creation. Driven by belief, built with hustle, worn with pride. And we&apos;re just getting started.
               </p>
             </div>
 
