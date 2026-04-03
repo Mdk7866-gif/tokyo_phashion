@@ -1,24 +1,87 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import PhotoCard1 from "@/components/PhotoCard1";
 import VideoCard1 from "@/components/VideoCard1";
 import PhotoCard2Carousel from "@/components/PhotoCard2";
 
 export default function Home() {
+  const [currentHero, setCurrentHero] = useState(0);
+  const [catPage, setCatPage] = useState(0);
+
+  const heroImages = [
+    {
+      img: "https://www.gcclothing.in/admin/uploads/category_images/catimg_69ce7b4f04c243.25238678.webp",
+      text1: "Summer",
+      text2: "Essential Linens",
+    },
+    {
+      img: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1920&auto=format&fit=crop",
+      text1: "Autumn",
+      text2: "Warm Textures",
+    },
+    {
+      img: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?q=80&w=1920&auto=format&fit=crop",
+      text1: "Winter",
+      text2: "Premium Wool",
+    }
+  ];
+
+  // Auto-slide hero images
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHero((prev) => (prev + 1) % heroImages.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
+
   const categories = [
     { title: "Full Pair", image: "https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=800&auto=format&fit=crop" },
     { title: "Trends", image: "https://images.unsplash.com/photo-1516826957135-700dedea698c?q=80&w=800&auto=format&fit=crop" },
     { title: "Shirts", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop" },
-    { title: "Ethnic", image: "https://images.unsplash.com/photo-1629813210214-d023b7160759?q=80&w=800&auto=format&fit=crop" },
+    { title: "Ethnic", image: "https://www.gcclothing.in/admin/uploads/variants/var_69b02fc61044e7.64888252.webp" },
     { title: "Jeans", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=800&auto=format&fit=crop" },
     { title: "Co-Ords", image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=800&auto=format&fit=crop" },
+    { title: "Jackets", image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=800&auto=format&fit=crop" },
+    { title: "T-Shirts", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop" },
+    { title: "Blazers", image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop" },
+    { title: "Trousers", image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=800&auto=format&fit=crop" },
+    { title: "Sneakers", image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=800&auto=format&fit=crop" },
+    { title: "Accessories", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop" },
+    { title: "Winter Wear", image: "https://images.unsplash.com/photo-1551028719-0c1daca9d2bf?q=80&w=800&auto=format&fit=crop" },
+    { title: "Summer Style", image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=800&auto=format&fit=crop" },
+    { title: "Formal", image: "https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=800&auto=format&fit=crop" },
+    { title: "Activewear", image: "https://images.unsplash.com/photo-1483721310020-03333e577078?q=80&w=800&auto=format&fit=crop" },
+    { title: "Streetwear", image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800&auto=format&fit=crop" },
+    { title: "Lounge", image: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=800&auto=format&fit=crop" },
   ];
+
+  const totalCatPages = Math.ceil(categories.length / 6);
+
+  // Auto-slide categories
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCatPage((p) => (p + 1) % totalCatPages);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [totalCatPages]);
+
+  const nextCatPage = () => {
+    setCatPage((p) => (p + 1) % totalCatPages);
+  };
+  const prevCatPage = () => {
+    setCatPage((p) => (p - 1 + totalCatPages) % totalCatPages);
+  };
 
   const reels = [
     { title: "MAFIA", src: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=800&auto=format&fit=crop" },
     { title: "OLD MONEY", src: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop" },
     { title: "RETRO SHIRTS", src: "https://images.unsplash.com/photo-1516826957135-700dedea698c?q=80&w=800&auto=format&fit=crop" },
-    { title: "EID FIT", src: "https://images.unsplash.com/photo-1629813210214-d023b7160759?q=80&w=800&auto=format&fit=crop" },
+    { title: "EID FIT", src: "https://www.gcclothing.in/admin/uploads/variants/var_69b02fc61044e7.64888252.webp" },
     { title: "RETRO PAIR", src: "https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=800&auto=format&fit=crop" },
+    { title: "LINEN BREEZE", src: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?q=80&w=800&auto=format&fit=crop" },
+    { title: "STREET CULTURE", src: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800&auto=format&fit=crop" },
+    { title: "WINTER ESSENTIALS", src: "https://images.unsplash.com/photo-1551028719-0c1daca9d2bf?q=80&w=800&auto=format&fit=crop" }
   ];
 
   const newDrops = [
@@ -31,8 +94,8 @@ export default function Home() {
 
   const under999 = [
     { title: "Mocha Brownie Neo Lachka Retro Pair", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=800&auto=format&fit=crop", price: "₹999" },
-    { title: "Golden Inferno Neo Lachka Retro Pair", image: "https://images.unsplash.com/photo-1629813210214-d023b7160759?q=80&w=800&auto=format&fit=crop", price: "₹999" },
-    { title: "Midnight Petals Neo Lachka Retro Pair", image: "https://images.unsplash.com/photo-1596755094514-f87e32f6b717?q=80&w=800&auto=format&fit=crop", price: "₹999" },
+    { title: "Golden Inferno Neo Lachka Retro Pair", image: "https://www.gcclothing.in/admin/uploads/variants/var_69777039c75f57.41517251.webp", price: "₹999" },
+    { title: "Midnight Petals Neo Lachka Retro Pair", image: "https://www.gcclothing.in/admin/uploads/variants/var_69777039c75f57.41517251.webp", price: "₹999" },
     { title: "Champagne Flora Neo Lachka Retro Pair", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop", price: "₹999" },
   ];
 
@@ -46,92 +109,138 @@ export default function Home() {
 
   const denims = [
     { title: "Classic Blue Denim", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=800&auto=format&fit=crop", price: "₹1,299" },
-    { title: "Midnight Black Jeans", image: "https://images.unsplash.com/photo-1583391733958-b6ffb3c58908?q=80&w=800&auto=format&fit=crop", price: "₹1,199" },
-    { title: "Distressed Retro Denim", image: "https://images.unsplash.com/photo-1596755094514-f87e32f6b717?q=80&w=800&auto=format&fit=crop", price: "₹1,499" },
+    { title: "Midnight Black Jeans", image: "https://www.gcclothing.in/uploads/Our-Story-0gnZcn3m.webp", price: "₹1,199" },
+    { title: "Distressed Retro Denim", image: "https://www.gcclothing.in/uploads/Our-Story-0gnZcn3m.webp", price: "₹1,499" },
     { title: "Vintage Washed Jeans", image: "https://images.unsplash.com/photo-1516257984-b1b4d707412e?q=80&w=800&auto=format&fit=crop", price: "₹1,299" },
   ];
 
   return (
     <div className="flex flex-col w-full min-h-screen overflow-x-hidden">
-      {/* Hero Section Container */}
-      <section className="relative w-full h-[85vh] md:h-[calc(100vh-120px)] overflow-hidden">
-        <div className="absolute inset-0">
-          <img 
-            src="https://www.gcclothing.in/admin/uploads/category_images/catimg_69ce7b4f04c243.25238678.webp" 
-            alt="Tokyo Phashion Collection" 
-            className="w-full h-full object-cover object-[center_20%] md:object-center"
-          />
-        </div>
-        
-        <div className="absolute inset-0 bg-black/30 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/20 md:to-transparent z-10 flex flex-col justify-end md:justify-center pb-24 md:pb-0 px-8 md:px-24">
-          <div className="max-w-2xl text-left">
-            <h2 className="text-white/95 text-7xl md:text-[9rem] font-serif leading-none italic mb-2 select-none">
-              Summer
-            </h2>
-            <h1 className="text-white text-[1.5rem] md:text-3xl font-light tracking-[0.25em] md:tracking-[0.4em] uppercase mb-10 md:mb-12">
-              Essential <span className="font-bold">Linens</span>
-            </h1>
-            <button className="bg-white text-black px-8 md:px-10 py-4 w-max rounded-full font-bold text-xs tracking-widest uppercase hover:bg-zinc-100 hover:scale-105 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center gap-3 group">
-              Shop COLLECTION 
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1.5">
-                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-              </svg>
-            </button>
+      {/* ─── Hero Section with Swipe Carousel ─── */}
+      <section className="relative w-full h-[75vh] md:h-[calc(100vh-120px)] overflow-hidden bg-black">
+        {heroImages.map((hero, idx) => (
+          <div
+            key={idx}
+            className="absolute inset-0 transition-transform duration-1000 ease-in-out"
+            style={{
+              transform: `translateX(${(idx - currentHero) * 100}%)`,
+              opacity: Math.abs(idx - currentHero) <= 1 ? 1 : 0
+            }}
+          >
+            <img 
+              src={hero.img} 
+              alt={hero.text2} 
+              className="w-full h-full object-cover object-[center_20%] md:object-center"
+            />
+            <div className="absolute inset-0 bg-black/30 bg-gradient-to-t from-black/80 via-transparent to-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/20 md:to-transparent z-10 flex flex-col justify-end md:justify-center pb-24 md:pb-0 px-8 md:px-24">
+              <div className="max-w-2xl text-left">
+                <h2 className="text-white/95 text-7xl md:text-[9rem] font-serif leading-none italic mb-2 select-none">
+                  {hero.text1}
+                </h2>
+                <h1 className="text-white text-[1.5rem] md:text-3xl font-light tracking-[0.25em] md:tracking-[0.4em] uppercase mb-10 md:mb-12">
+                  <span className="font-bold">{hero.text2}</span>
+                </h1>
+                <button className="bg-white text-black px-8 md:px-10 py-4 w-max rounded-full font-bold text-xs tracking-widest uppercase hover:bg-zinc-100 hover:scale-105 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center gap-3 group">
+                  Shop COLLECTION 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1.5">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        ))}
 
-        <div className="absolute right-8 bottom-12 hidden md:flex flex-col gap-6 items-center z-20">
-          <div className="w-px h-12 bg-white/30"></div>
-          <span className="text-white/60 text-[10px] tracking-[0.5em] uppercase [writing-mode:vertical-lr] mb-2">Follow Us</span>
+        {/* Hero Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+          {heroImages.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentHero(idx)}
+              className={`h-1.5 rounded-full transition-all duration-500 ${
+                currentHero === idx ? "w-8 bg-white" : "w-2 bg-white/40"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="w-full py-12 md:py-32 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1500px] px-4 md:px-12">
-          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.2em] uppercase mb-6 md:mb-16 text-black">
+      {/* ─── Categories Section with 6-item Grid Paging ─── */}
+      <section className="w-full py-8 md:py-28 bg-white flex flex-col items-center overflow-hidden">
+        <div className="w-full max-w-[1500px] px-4 md:px-12 relative flex flex-col items-center">
+          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.2em] uppercase mb-6 md:mb-16 text-black heading-underline visible">
             SHOP BY <span className="text-zinc-400">CATEGORY</span>
           </h2>
 
-          {/* Mobile: 3-column grid */}
-          <div className="grid grid-cols-3 gap-3 md:hidden">
-            {categories.map((cat, idx) => (
-              <div key={idx}>
-                <PhotoCard1 imageSrc={cat.image} category={cat.title} />
-              </div>
-            ))}
+          {/* Wrapper for sliding pages */}
+          <div className="relative w-full overflow-hidden">
+            <div 
+              className="flex transition-transform duration-700 ease-in-out"
+              style={{ transform: `translateX(-${catPage * 100}%)` }}
+            >
+              {/* Render pages of 6 items each */}
+              {Array.from({ length: totalCatPages }).map((_, pageIdx) => (
+                <div key={pageIdx} className="w-full shrink-0 flex-none px-2">
+                  <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6 justify-items-center">
+                    {categories.slice(pageIdx * 6, pageIdx * 6 + 6).map((cat, idx) => (
+                      <div key={idx} className="w-full lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
+                        <PhotoCard1 imageSrc={cat.image} category={cat.title} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Desktop: 6-column grid */}
-          <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-6 justify-items-center w-full">
-            {categories.map((cat, idx) => (
-              <div key={idx} className="w-[180px] lg:w-[210px]">
-                <PhotoCard1 imageSrc={cat.image} category={cat.title} />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center gap-3 mt-5 items-center">
-            <div className="w-8 h-1.5 bg-black rounded-full"></div>
-            <div className="w-2 h-1.5 bg-zinc-200 rounded-full"></div>
+          {/* Navigation Controls */}
+          <div className="flex gap-4 mt-8 md:mt-12 items-center">
+            <button 
+              onClick={prevCatPage}
+              className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div className="flex gap-2">
+              {Array.from({ length: totalCatPages }).map((_, idx) => (
+                <div 
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    catPage === idx ? "w-6 bg-black" : "w-1.5 bg-zinc-200"
+                  }`}
+                />
+              ))}
+            </div>
+            <button 
+              onClick={nextCatPage}
+              className="w-10 h-10 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* SHOP VIA REEL Section */}
-      <section className="w-full py-12 md:py-32 bg-black text-white flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-[1500px] px-4 md:px-12">
-          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.3em] uppercase mb-8 md:mb-24">
+      {/* ─── SHOP VIA REEL Section (Infinite Marquee) ─── */}
+      <section className="w-full py-8 md:py-28 bg-black text-white flex flex-col items-center overflow-hidden">
+        <div className="w-full max-w-[1500px]">
+          <h2 className="text-center text-lg md:text-3xl font-black tracking-[0.3em] uppercase mb-8 md:mb-16">
             SHOP VIA <span className="text-zinc-500">REEL</span>
           </h2>
-          <div className="w-10 h-0.5 bg-white/30 mx-auto mb-8 md:hidden" />
+          <div className="w-10 h-0.5 bg-white/30 mx-auto mb-10 md:hidden" />
           
-          <div className="flex overflow-x-auto hide-scrollbar gap-4 md:gap-10 snap-x snap-mandatory pb-6 md:pb-10 -mx-4 px-4 md:mx-0 md:px-0 md:justify-center">
-            {reels.map((reel, idx) => (
-              <div key={idx} className="snap-start shrink-0">
-                <VideoCard1 videoSrc={reel.src} title={reel.title} />
-              </div>
-            ))}
+          <div className="relative w-full flex overflow-hidden group cursor-pointer">
+            {/* The animated flex container that shifts slowly leftwards */}
+            <div className="flex w-max animate-[swipeLeft_35s_linear_infinite] group-hover:[animation-play-state:paused] gap-4 md:gap-8 px-4">
+              {/* Duplicate reels to create endless seamless loop */}
+              {[...reels, ...reels, ...reels].map((reel, idx) => (
+                <div key={idx} className="shrink-0 group/card">
+                  <div className="transform transition-transform duration-500 group-hover/card:scale-[1.02]">
+                    <VideoCard1 videoSrc={reel.src} title={reel.title} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -155,7 +264,7 @@ export default function Home() {
       </section>
 
       {/* NEW DROPS Section (CoverflowCarousel) */}
-      <section className="w-full py-20 md:py-28 bg-white flex flex-col items-center overflow-hidden">
+      <section className="w-full py-8 md:py-24 bg-white flex flex-col items-center overflow-hidden">
         <div className="w-full flex justify-center items-center flex-col relative w-full">
           <h2 className="text-center text-2xl md:text-4xl font-black tracking-[0.2em] uppercase mb-6 md:mb-10 text-black px-6">
             NEW <span className="text-zinc-500">DROPS</span>
@@ -181,25 +290,15 @@ export default function Home() {
             UNDER <span className="text-zinc-400">999</span>
           </h2>
 
-          {/* Mobile: 2-column grid */}
-          <div className="grid grid-cols-2 gap-3 md:hidden">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-8 w-full justify-items-center">
             {under999.map((item, idx) => (
-              <div key={idx}>
+              <div key={idx} className="w-full lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
           </div>
 
-          {/* Desktop: 4-column grid */}
-          <div className="hidden md:grid md:grid-cols-4 gap-8 w-full justify-items-center">
-            {under999.map((item, idx) => (
-              <div key={idx} className="w-[180px] lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
-                <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-6 md:mt-10">
             <button className="bg-black text-white px-8 py-3 rounded-full font-bold text-[10px] md:text-xs tracking-widest uppercase hover:bg-zinc-800 transition-colors flex items-center gap-2 group shadow-xl">
               MORE 40
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
@@ -260,19 +359,9 @@ export default function Home() {
             TP <span className="text-zinc-400">DENIMS</span>
           </h2>
 
-          {/* Mobile: 2-column grid */}
-          <div className="grid grid-cols-2 gap-3 md:hidden">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-8 w-full justify-items-center">
             {denims.map((item, idx) => (
-              <div key={idx}>
-                <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop: 4-column grid */}
-          <div className="hidden md:grid md:grid-cols-4 gap-8 w-full justify-items-center">
-            {denims.map((item, idx) => (
-              <div key={idx} className="w-[180px] lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
+              <div key={idx} className="w-full lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
