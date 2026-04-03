@@ -8,7 +8,7 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="w-full flex flex-col sticky top-0 z-40 bg-white">
+      <header className="w-full flex flex-col sticky top-0 z-50 bg-white">
         {/* Top Announcement Bar */}
         <div className="w-full bg-black text-white py-2 px-4 text-center">
           <p className="text-[10px] font-bold tracking-widest uppercase">
