@@ -11,15 +11,15 @@ const Footer = () => {
           <div className="flex items-center gap-2">
             {/* GC Logo Placeholder */}
             <div className="w-10 h-10 border-2 border-white flex items-center justify-center font-serif text-xl font-bold tracking-tight">
-              GC
+              TP
             </div>
-            <span className="font-serif text-lg tracking-widest uppercase">GC CLOTHING</span>
+            <span className="font-serif text-lg tracking-widest uppercase">TOKYO PHASHION</span>
           </div>
           
           <div className="space-y-4">
             <h3 className="text-sm font-bold tracking-widest uppercase text-gray-400">About Us</h3>
             <p className="text-sm text-gray-400 leading-relaxed max-w-md">
-              GC Clothing represents a legacy built on a century of style, craftsmanship and innovation. 
+              Tokyo Phashion represents a legacy built on a century of style, craftsmanship and innovation. 
               We take pride in shaping the future of modern menswear, offering timeless elegance and 
               contemporary fashion, crafted with precision and delivered at unbeatable value.
             </p>
@@ -79,7 +79,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <p className="text-sm text-gray-400 uppercase tracking-wider">info.gcclothing.in@gmail.com</p>
+              <p className="text-sm text-gray-400 uppercase tracking-wider">info.tokyophashion@gmail.com</p>
             </div>
 
             <div className="pt-2">
@@ -102,7 +102,7 @@ const Footer = () => {
       {/* Bottom Copyright Section */}
       <div className="mt-16 pt-8 border-t border-white/10 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-[10px] text-gray-500 tracking-widest uppercase">
-          &copy; {new Date().getFullYear()} GC CLOTHING. All Rights Reserved.
+          &copy; {new Date().getFullYear()} TOKYO PHASHION. All Rights Reserved.
         </p>
         <div className="flex items-center gap-4">
            {/* Tiny arrow to top if wanted */}

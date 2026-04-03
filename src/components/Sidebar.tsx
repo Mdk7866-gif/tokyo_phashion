@@ -24,9 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex flex-col items-start gap-1">
              <div className="w-8 h-8 border border-white flex items-center justify-center font-serif text-sm font-bold tracking-tight">
-              GC
+              TP
             </div>
-            <span className="font-serif text-[10px] tracking-widest uppercase">CLOTHING</span>
+            <span className="font-serif text-[10px] tracking-widest uppercase text-center leading-tight">TOKYO<br/>PHASHION</span>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </a>
           </div>
           <p className="text-center text-[10px] text-gray-500 tracking-widest uppercase mt-4">
-            &copy; 2026 GC CLOTHING
+            &copy; 2026 TOKYO PHASHION
           </p>
         </div>
       </div>

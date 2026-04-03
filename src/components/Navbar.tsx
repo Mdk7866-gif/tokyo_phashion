@@ -12,7 +12,7 @@ const Navbar = () => {
         {/* Top Announcement Bar */}
         <div className="w-full bg-black text-white py-2 px-4 text-center">
           <p className="text-[10px] font-bold tracking-widest uppercase">
-            USE GC FOR EXTRA OFF.
+            USE TP FOR EXTRA OFF.
           </p>
         </div>
 
@@ -30,10 +30,10 @@ const Navbar = () => {
 
           {/* Center: Logo */}
           <div className="flex flex-col items-center cursor-pointer group">
-            <div className="w-8 h-8 border-2 border-black flex items-center justify-center font-serif text-sm font-bold tracking-tight mb-1 transition-transform group-hover:scale-110">
-              GC
+            <div className="w-8 h-8 border-2 text-black border-black flex items-center justify-center font-serif text-sm font-bold tracking-tight mb-1 transition-transform group-hover:scale-110">
+              TP
             </div>
-            <span className="font-serif text-[10px] tracking-widest uppercase font-bold">CLOTHING</span>
+            <span className="font-serif text-[10px] tracking-widest uppercase font-bold text-center leading-tight text-black">TOKYO<br/>PHASHION</span>
           </div>
 
           {/* Right: Cart Icon */}
