@@ -102,10 +102,10 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Desktop: horizontal scroll */}
-          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+          {/* Desktop: 6-column grid */}
+          <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-6 justify-items-center w-full">
             {categories.map((cat, idx) => (
-              <div key={idx} className="snap-start shrink-0 w-[210px]">
+              <div key={idx} className="w-[180px] lg:w-[210px]">
                 <PhotoCard1 imageSrc={cat.image} category={cat.title} />
               </div>
             ))}
@@ -136,17 +136,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hero Image Break 1 */}
-      <section className="relative w-full h-[75vh] md:h-screen">
-        <img 
-          src="https://www.gcclothing.in/admin/uploads/variants/var_69c7c0df4b3645.17546873.webp" 
-          alt="Style Divider"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
-          <button className="bg-black text-white px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-colors flex items-center gap-2 pointer-events-auto shadow-xl">
+      {/* Hero Image Break 1 - Parallax */}
+      <section 
+        className="relative w-full h-[60vh] md:h-[80vh] bg-fixed bg-center bg-cover"
+        style={{ backgroundImage: 'url("https://www.gcclothing.in/admin/uploads/variants/var_69c7c0df4b3645.17546873.webp")' }}
+      >
+        <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center pointer-events-none">
+          <p className="text-white text-sm md:text-xl font-light tracking-[0.5em] uppercase mb-6 drop-shadow-lg">
+            Elegance Defined
+          </p>
+          <button className="bg-white/90 backdrop-blur-sm text-black px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs tracking-widest uppercase hover:bg-white transition-colors flex items-center gap-3 pointer-events-auto shadow-2xl group hover:scale-105">
             VIEW CAMPAIGN 
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
               <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
             </svg>
           </button>
@@ -189,10 +190,10 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Desktop: horizontal scroll */}
-          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+          {/* Desktop: 4-column grid */}
+          <div className="hidden md:grid md:grid-cols-4 gap-8 w-full justify-items-center">
             {under999.map((item, idx) => (
-              <div key={idx} className="snap-start shrink-0 w-[210px]">
+              <div key={idx} className="w-[180px] lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
@@ -209,15 +210,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hero Image Break 2 */}
-      <section className="relative w-full h-[75vh] md:h-screen">
-        <img 
-          src="https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=1920&auto=format&fit=crop" 
-          alt="Style Divider 2"
-          className="w-full h-full object-cover"
-        />
-        {/* Simple black overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+      {/* Hero Image Break 2 - Parallax */}
+      <section 
+        className="relative w-full h-[50vh] md:h-[60vh] bg-fixed bg-center bg-cover"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=1920&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-50 via-transparent to-transparent pointer-events-none" />
       </section>
 
       {/* UNDER 499 Section (CoverflowCarousel) */}
@@ -240,17 +238,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hero Image Break 3 */}
-      <section className="relative w-full h-[75vh] md:h-screen">
-        <img 
-          src="https://www.gcclothing.in/admin/uploads/banners/banner_1774730968_69c83ed82952e.png" 
-          alt="Style Divider 3"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
-          <button className="bg-white text-black px-8 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs tracking-widest uppercase hover:bg-gray-100 transition-colors flex items-center gap-2 pointer-events-auto shadow-xl">
-            EXPLORE 
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      {/* Hero Image Break 3 - Parallax */}
+      <section 
+        className="relative w-full h-[60vh] md:h-[80vh] bg-fixed bg-[center_top] bg-cover"
+        style={{ backgroundImage: 'url("https://www.gcclothing.in/admin/uploads/banners/banner_1774730968_69c83ed82952e.png")' }}
+      >
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+          <button className="bg-white/90 backdrop-blur-sm text-black px-8 md:px-12 py-3 md:py-5 rounded-full font-black text-xs tracking-widest uppercase hover:bg-white hover:scale-105 transition-all flex items-center gap-3 pointer-events-auto shadow-2xl group">
+            EXPLORE NOSTALGIA
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
               <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
             </svg>
           </button>
@@ -273,10 +269,10 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Desktop: horizontal scroll */}
-          <div className="hidden md:flex overflow-x-auto pb-10 snap-x snap-mandatory hide-scrollbar gap-8 justify-start xl:justify-center">
+          {/* Desktop: 4-column grid */}
+          <div className="hidden md:grid md:grid-cols-4 gap-8 w-full justify-items-center">
             {denims.map((item, idx) => (
-              <div key={idx} className="snap-start shrink-0 w-[210px]">
+              <div key={idx} className="w-[180px] lg:w-[210px] transform hover:-translate-y-2 transition-transform duration-500">
                 <PhotoCard1 imageSrc={item.image} category={item.title} price={item.price} />
               </div>
             ))}
