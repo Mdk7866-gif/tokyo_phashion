@@ -74,3 +74,52 @@ html, body {
 .heading-underline.visible::after {
   animation-play-state: running;
 }
+
+/* ─── Premium Splash Animations ─── */
+@keyframes letterReveal {
+  0% { transform: translateY(100%); clip-path: inset(0 0 100% 0); }
+  100% { transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+
+@keyframes logoReveal {
+  0% { scale: 0.8; opacity: 0; filter: blur(4px); }
+  100% { scale: 1; opacity: 1; filter: blur(0); }
+}
+
+@keyframes lineReveal {
+  0% { width: 0; opacity: 0; }
+  100% { width: 100%; opacity: 1; }
+}
+
+@keyframes splashFadeOut {
+  0% { opacity: 1; pointer-events: auto; }
+  90% { opacity: 1; pointer-events: auto; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+@keyframes containerMove {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+@keyframes strokeGrow {
+  0% { stroke-dashoffset: 100%; }
+  100% { stroke-dashoffset: 0%; }
+}
+
+.animate-letter {
+  animation: letterReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-logo {
+  animation: logoReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-line {
+  animation: lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-splash-overlay {
+  animation: splashFadeOut 0.8s ease-in-out forwards;
+}
+

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import Sidebar from "./Sidebar";
 
 const Navbar = () => {
@@ -59,7 +60,7 @@ const Navbar = () => {
           </button>
 
           {/* ── Logo ── */}
-          <button className="flex flex-col items-center cursor-pointer group select-none">
+          <Link href="/" className="flex flex-col items-center cursor-pointer group select-none">
             <div
               style={{
                 borderColor: scrolled ? "#fff" : "#0a0a0a",
@@ -75,7 +76,7 @@ const Navbar = () => {
             >
               PHASHION
             </span>
-          </button>
+          </Link>
 
           {/* ── Right Actions ── */}
           <div className="flex items-center gap-2">
