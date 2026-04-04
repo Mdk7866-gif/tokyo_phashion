@@ -16,6 +16,7 @@ const PhotoCard1: React.FC<PhotoCard1Props> = ({ imageSrc, category, price }) =>
           src={imageSrc}
           alt={category}
           fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 17vw"
           className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
         />
       </div>

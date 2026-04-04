@@ -24,6 +24,7 @@ const VideoCard1: React.FC<VideoCard1Props> = ({ videoSrc, title }) => {
           src={videoSrc}
           alt={title}
           fill
+          sizes="(max-width: 768px) 140px, 240px"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
       )}

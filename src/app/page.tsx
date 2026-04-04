@@ -49,7 +49,7 @@ export default function Home() {
     { title: "Trousers", image: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?q=80&w=800&auto=format&fit=crop" },
     { title: "Sneakers", image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=800&auto=format&fit=crop" },
     { title: "Accessories", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?q=80&w=800&auto=format&fit=crop" },
-    { title: "Winter Wear", image: "https://images.unsplash.com/photo-1551028719-0c1daca9d2bf?q=80&w=800&auto=format&fit=crop" },
+    { title: "Winter Wear", image: "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=800&auto=format&fit=crop" },
     { title: "Summer Style", image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=800&auto=format&fit=crop" },
     { title: "Formal", image: "https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=800&auto=format&fit=crop" },
     { title: "Activewear", image: "https://images.unsplash.com/photo-1483721310020-03333e577078?q=80&w=800&auto=format&fit=crop" },
@@ -82,7 +82,7 @@ export default function Home() {
     { title: "RETRO PAIR", src: "https://images.unsplash.com/photo-1550246140-5119ae4790b8?q=80&w=800&auto=format&fit=crop" },
     { title: "LINEN BREEZE", src: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?q=80&w=800&auto=format&fit=crop" },
     { title: "STREET CULTURE", src: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800&auto=format&fit=crop" },
-    { title: "WINTER ESSENTIALS", src: "https://images.unsplash.com/photo-1551028719-0c1daca9d2bf?q=80&w=800&auto=format&fit=crop" }
+    { title: "WINTER ESSENTIALS", src: "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=800&auto=format&fit=crop" }
   ];
 
   const newDrops = [
@@ -132,6 +132,7 @@ export default function Home() {
               src={hero.img} 
               alt={hero.text2} 
               fill
+              sizes="100vw"
               className="w-full h-full object-cover object-[center_20%] md:object-center"
               priority={idx === 0}
             />
@@ -381,6 +382,7 @@ export default function Home() {
               src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
               alt="Our Story"
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/5" />

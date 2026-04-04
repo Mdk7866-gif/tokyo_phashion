@@ -32,6 +32,7 @@ export const PhotoCard2Card: React.FC<PhotoCard2Props> = ({ imageSrc, title, ori
           src={imageSrc} 
           alt={title} 
           fill
+          sizes="(max-width: 768px) 200px, 260px"
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
       </div>
