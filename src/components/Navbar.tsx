@@ -40,7 +40,7 @@ const Navbar = () => {
       >
         <div
           className="w-full flex items-center justify-between px-4 md:px-12 transition-[padding] duration-300"
-          style={{ paddingTop: scrolled ? "8px" : "14px", paddingBottom: scrolled ? "8px" : "14px" }}
+          style={{ paddingTop: scrolled ? "6px" : "10px", paddingBottom: scrolled ? "4px" : "8px" }}
         >
           {/* ── Hamburger ── */}
           <button
