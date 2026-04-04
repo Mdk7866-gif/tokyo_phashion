@@ -13,7 +13,7 @@ export default function ContactPage() {
             GET IN TOUCH
           </h1>
           <p className="text-gray-400 text-sm md:text-base tracking-wide">
-            Have a question or a comment? We'd love to hear from you.
+            Have a question or a comment? We&apos;d love to hear from you.
           </p>
           <div className="w-12 h-1 bg-white/20 mx-auto mt-8 rounded-full" />
         </div>

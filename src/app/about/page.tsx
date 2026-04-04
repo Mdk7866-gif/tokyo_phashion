@@ -25,10 +25,10 @@ export default function AboutPage() {
           At Tokyo Phashion, we design and deliver premium-quality clothing for men and women, including casual wear, streetwear, trendy outfits, and everyday essentials. Every piece is crafted from high-quality fabrics with a perfect balance of comfort and modern style, ensuring you look good and feel great all day.
         </p>
         <p>
-          Whether you're searching for stylish t-shirts, classic shirts, trendy dresses, chic tops, or everyday essentials, Tokyo Phashion brings you affordable fashion without compromising on quality.
+          Whether you&apos;re searching for stylish t-shirts, classic shirts, trendy dresses, chic tops, or everyday essentials, Tokyo Phashion brings you affordable fashion without compromising on quality.
         </p>
         <p>
-          Our mission is simple – to make fashion accessible, stylish, and reliable for everyone. With Tokyo Phashion, you don't just wear clothes; <span className="font-black text-black">you wear confidence</span>.
+          Our mission is simple – to make fashion accessible, stylish, and reliable for everyone. With Tokyo Phashion, you don&apos;t just wear clothes; <span className="font-black text-black">you wear confidence</span>.
         </p>
       </section>
 
@@ -58,7 +58,7 @@ export default function AboutPage() {
             <div className="w-16 h-1.5 bg-black mx-auto mt-6 rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-8">
             {[
               {
                 icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>,
@@ -73,7 +73,7 @@ export default function AboutPage() {
               {
                 icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>,
                 title: "Fast Shipping & Easy Returns",
-                desc: "We deliver happiness quickly and take it back if you're not 100% satisfied."
+                desc: "We deliver happiness quickly and take it back if you&apos;re not 100% satisfied."
               },
               {
                 icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
@@ -81,7 +81,7 @@ export default function AboutPage() {
                 desc: "Locally designed with a global fashion outlook and sustainable practices."
               }
             ].map((feature, idx) => (
-              <div key={idx} className="bg-white p-6 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-5">
+              <div key={idx} className="bg-white p-4 md:p-10 rounded-2xl md:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-xl transition-shadow flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 md:gap-5">
                 <div className="w-14 h-14 shrink-0 bg-black text-white rounded-[1rem] flex items-center justify-center">
                   {feature.icon}
                 </div>
@@ -108,14 +108,14 @@ export default function AboutPage() {
                 <div className="text-5xl mb-8 transform transition-transform group-hover:scale-110">🎯</div>
                 <h3 className="text-2xl md:text-3xl font-black text-black mb-5">Our Mission</h3>
                 <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
-                  To make fashion simple, stylish, and sustainable — for every individual regardless of size, gender, or background. We're committed to delivering quality that doesn't cost the earth.
+                  To make fashion simple, stylish, and sustainable — for every individual regardless of size, gender, or background. We&apos;re committed to delivering quality that doesn&apos;t cost the earth.
                 </p>
              </div>
              <div className="bg-[#f4f4f5] p-10 md:p-14 rounded-[2rem] border border-gray-200 shadow-sm relative overflow-hidden group">
                 <div className="text-5xl mb-8 transform transition-transform group-hover:scale-110">🌟</div>
                 <h3 className="text-2xl md:text-3xl font-black text-black mb-5">Our Vision</h3>
                 <p className="text-zinc-600 text-sm md:text-base leading-relaxed">
-                  To become India's most trusted fashion brand known for innovation, quality, and community support. We envision a future where everyone has access to confidence through fashion.
+                  To become India&apos;s most trusted fashion brand known for innovation, quality, and community support. We envision a future where everyone has access to confidence through fashion.
                 </p>
              </div>
           </div>
