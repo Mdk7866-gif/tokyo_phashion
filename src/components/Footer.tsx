@@ -5,7 +5,7 @@ import React from "react";
 const Footer = () => {
   return (
     <footer className="bg-black text-white py-12 px-6 md:px-16 mt-auto">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
         {/* About Section */}
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3 group">
@@ -102,7 +102,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Copyright Section */}
-      <div className="mt-16 pt-8 border-t border-white/10 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="mt-16 pt-8 border-t border-white/10 max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-[10px] text-gray-500 tracking-widest uppercase">
           &copy; {new Date().getFullYear()} TOKYO PHASHION. All Rights Reserved.
         </p>

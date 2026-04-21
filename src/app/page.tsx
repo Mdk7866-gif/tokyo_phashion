@@ -90,10 +90,11 @@ export default function Home() {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%", minHeight: "100vh", overflowX: "hidden" }}>
+    <div className="flex flex-col w-full min-h-screen items-center overflow-x-hidden bg-white">
+      <main className="w-full flex flex-col items-center">
 
       {/* ─── HERO ─── */}
-      <section style={{ position: "relative", width: "100%", height: "75vh", overflow: "hidden", background: "#000" }} className="md:h-[calc(100vh-120px)] group">
+      <section style={{ position: "relative", width: "100%", height: "80vh", overflow: "hidden", background: "#000" }} className="md:h-[calc(100vh-100px)] group">
         {heroImages.map((hero, idx) => (
           <div key={idx} style={{ position: "absolute", inset: 0, transform: `translateX(${(idx - currentHero) * 100}%)`, transition: "transform 1.2s cubic-bezier(0.4,0,0.2,1)", zIndex: currentHero === idx ? 10 : 0 }}>
             <div style={{ position: "absolute", inset: 0, transition: "transform 6s ease-out", transform: currentHero === idx ? "scale(1.05)" : "scale(1)" }}>
@@ -127,7 +128,7 @@ export default function Home() {
 
       {/* ─── SHOP BY CATEGORY ─── */}
       <section className="w-full py-14 md:py-24 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1400px] px-4 md:px-12 fade-up">
+        <div className="w-full max-w-[1440px] px-4 md:px-12 fade-up">
           <h2 className="sec-heading heading-underline">SHOP BY <span className="text-zinc-400">CATEGORY</span></h2>
           <div className="cat-grid">
             {categories.map((cat, idx) => (
@@ -141,8 +142,8 @@ export default function Home() {
 
       {/* ─── SHOP VIA REEL ─── */}
       <section className="w-full py-14 md:py-24 bg-black text-white flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-[1400px]">
-          <h2 className="sec-heading fade-up" style={{ color: "#fff" }}>SHOP VIA <span style={{ color: "#555" }}>REEL</span></h2>
+        <div className="w-full">
+          <h2 className="sec-heading fade-up px-4 md:px-12 mb-10" style={{ color: "#fff", textAlign: "left", width: "100%", maxWidth: "1440px", margin: "0 auto" }}>SHOP VIA <span style={{ color: "#555" }}>REEL</span></h2>
           <div style={{ position: "relative", width: "100%", overflow: "hidden", cursor: "pointer" }}>
             <div className="reel-belt">
               {[...reels, ...reels, ...reels].map((reel, idx) => (
@@ -165,7 +166,7 @@ export default function Home() {
 
       {/* ─── NEW DROPS ─── */}
       <section className="w-full py-14 md:py-24 bg-white flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-[1400px] flex flex-col items-center">
+        <div className="w-full max-w-[1440px] flex flex-col items-center">
           <h2 className="sec-heading heading-underline fade-up">NEW <span className="text-zinc-400">DROPS</span></h2>
           <div className="w-full">
             <PhotoCard2Carousel items={newDrops} />
@@ -178,7 +179,7 @@ export default function Home() {
 
       {/* ─── UNDER 999 ─── */}
       <section className="w-full py-14 md:py-24 bg-zinc-50 flex flex-col items-center border-t border-zinc-100">
-        <div className="w-full max-w-[1400px] px-4 md:px-12 fade-up">
+        <div className="w-full max-w-[1440px] px-4 md:px-12 fade-up">
           <h2 className="sec-heading">UNDER <span className="text-zinc-400">₹999</span></h2>
           <div className="prod-grid">
             {under999.map((item, idx) => (
@@ -195,7 +196,7 @@ export default function Home() {
 
       {/* ─── UNDER 499 ─── */}
       <section className="w-full py-14 md:py-24 bg-white flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-[1400px] flex flex-col items-center">
+        <div className="w-full max-w-[1440px] flex flex-col items-center">
           <h2 className="sec-heading heading-underline fade-up">UNDER <span className="text-zinc-500">₹499</span></h2>
           <div className="w-full">
             <PhotoCard2Carousel items={under499} />
@@ -214,7 +215,7 @@ export default function Home() {
 
       {/* ─── TP DENIMS ─── */}
       <section className="w-full py-14 md:py-24 bg-zinc-50 flex flex-col items-center">
-        <div className="w-full max-w-[1400px] px-4 md:px-12 fade-up">
+        <div className="w-full max-w-[1440px] px-4 md:px-12 fade-up">
           <h2 className="sec-heading">TP <span className="text-zinc-400">DENIMS</span></h2>
           <div className="prod-grid">
             {denims.map((item, idx) => (
@@ -226,7 +227,7 @@ export default function Home() {
 
       {/* ─── OUR STORY ─── */}
       <section className="w-full py-16 md:py-32 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1300px] px-4 md:px-12 flex flex-col lg:flex-row gap-12 md:gap-20 items-center">
+        <div className="w-full max-w-[1440px] px-4 md:px-12 flex flex-col lg:flex-row gap-12 md:gap-20 items-center">
           <div className="relative group overflow-hidden rounded-[2rem] shadow-2xl w-full lg:w-1/2 aspect-[4/3] md:aspect-[4/5] fade-up">
             <Image src="https://www.gcclothing.in/uploads/Our-Story-0gnZcn3m.webp" alt="Our Story" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-110" />
             <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-700" />
@@ -246,6 +247,7 @@ export default function Home() {
         </div>
       </section>
 
+      </main>
     </div>
   );
 }

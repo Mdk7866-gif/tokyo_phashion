@@ -67,7 +67,7 @@ const Navbar = () => {
         className="w-full sticky top-0 z-50 transition-[background-color,box-shadow] duration-300"
       >
         <div
-          className="w-full max-w-[1400px] mx-auto flex items-center justify-between px-4 md:px-12 transition-[padding] duration-300"
+          className="w-full max-w-[1440px] mx-auto flex items-center justify-between px-4 md:px-12 transition-[padding] duration-300"
           style={{ paddingTop: scrolled ? "6px" : "10px", paddingBottom: scrolled ? "4px" : "8px" }}
         >
           {/* ── Hamburger ── */}
@@ -107,7 +107,7 @@ const Navbar = () => {
             {/* Search – desktop only */}
             <button
               style={iconBtn(false)}
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full transition-all duration-300 hover:opacity-80"
+              className="flex w-9 h-9 items-center justify-center rounded-full transition-all duration-300 hover:opacity-80"
               aria-label="Search"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -146,8 +146,9 @@ const Navbar = () => {
                     href="/login"
                     className="navbar-login-btn"
                     style={{
-                      backgroundColor: scrolled ? "#fff" : "#000",
-                      color: scrolled ? "#000" : "#fff",
+                      backgroundColor: "#000",
+                      color: "#fff",
+                      border: scrolled ? "1px solid rgba(255,255,255,0.3)" : "none",
                     }}
                   >
                     Login
