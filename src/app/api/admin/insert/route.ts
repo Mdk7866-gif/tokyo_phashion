@@ -31,7 +31,9 @@ export async function POST(request: Request) {
           
           if (img.url && img.url.startsWith('data:image')) {
             // Upload the base64 image data to Cloudinary
-            finalUrl = await uploadImage(img.url);
+            finalUrl = await uploadImage(img.url, {
+              folder: 'tokyofashion/admin_insert',
+            });
           }
 
           return {

@@ -1,59 +1,162 @@
-import React from 'react';
+/* eslint-disable @next/next/no-img-element */
+'use client';
 
-export default function ContactPage() {
+import { useMemo, useState } from 'react';
+
+type ApiResult =
+  | { success: true; message: string; insertedId?: unknown; photo_url?: string | null }
+  | { error: string };
+
+export default function TempContactFormPage() {
+  const [name, setName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [detailes, setDetailes] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<ApiResult | null>(null);
+
+  const previewUrl = useMemo(() => {
+    if (!photo) return null;
+    return URL.createObjectURL(photo);
+  }, [photo]);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setResult(null);
+
+    try {
+      const form = new FormData();
+      form.set('name', name);
+      form.set('mobile_number', mobileNumber);
+      form.set('detailes', detailes);
+      if (photo) form.set('photo', photo);
+
+      const res = await fetch('/api/user/contactformsend', {
+        method: 'POST',
+        body: form,
+      });
+
+      const data = (await res.json()) as ApiResult;
+      setResult(data);
+    } catch (err: any) {
+      setResult({ error: err?.message || 'Request failed' });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <div className="min-h-[85vh] w-full bg-[#050505] flex flex-col items-center py-20 md:py-32 px-6 relative overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <main style={{ maxWidth: 720, margin: '40px auto', padding: 16 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>
+        Temp Contact Form (API Test)
+      </h1>
 
-      <div className="relative z-10 w-full max-w-lg flex flex-col items-center">
-        {/* Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-widest uppercase mb-5 font-serif">
-            GET IN TOUCH
-          </h1>
-          <p className="text-gray-400 text-sm md:text-base tracking-wide">
-            Have a question or a comment? We&apos;d love to hear from you.
+      <form
+        onSubmit={onSubmit}
+        style={{
+          display: 'grid',
+          gap: 12,
+          padding: 16,
+          border: '1px solid #e5e7eb',
+          borderRadius: 12,
+        }}
+      >
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span>Name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{ padding: 10, borderRadius: 10, border: '1px solid #d1d5db' }}
+            placeholder="Your name"
+          />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span>Mobile number</span>
+          <input
+            value={mobileNumber}
+            onChange={(e) => setMobileNumber(e.target.value)}
+            required
+            style={{ padding: 10, borderRadius: 10, border: '1px solid #d1d5db' }}
+            placeholder="e.g. 9876543210"
+          />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span>Detailes</span>
+          <textarea
+            value={detailes}
+            onChange={(e) => setDetailes(e.target.value)}
+            required
+            rows={5}
+            style={{ padding: 10, borderRadius: 10, border: '1px solid #d1d5db' }}
+            placeholder="Write details…"
+          />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span>Photo (optional)</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+          />
+        </label>
+
+        {previewUrl ? (
+          <div style={{ display: 'grid', gap: 6 }}>
+            <span>Preview</span>
+            <img
+              src={previewUrl}
+              alt="Selected preview"
+              style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e5e7eb' }}
+            />
+          </div>
+        ) : null}
+
+        <button
+          type="submit"
+          disabled={submitting}
+          style={{
+            padding: '10px 14px',
+            borderRadius: 10,
+            border: '1px solid #111827',
+            background: submitting ? '#6b7280' : '#111827',
+            color: 'white',
+            cursor: submitting ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {submitting ? 'Submitting…' : 'Submit'}
+        </button>
+      </form>
+
+      <section style={{ marginTop: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Result</h2>
+        <pre
+          style={{
+            padding: 12,
+            background: '#0b1020',
+            color: '#e5e7eb',
+            borderRadius: 12,
+            overflowX: 'auto',
+          }}
+        >
+          {result ? JSON.stringify(result, null, 2) : 'No request yet.'}
+        </pre>
+
+        {'success' in (result || {}) && (result as any).photo_url ? (
+          <p style={{ marginTop: 10 }}>
+            Uploaded image URL:{' '}
+            <a href={(result as any).photo_url} target="_blank" rel="noreferrer">
+              {(result as any).photo_url}
+            </a>
           </p>
-          <div className="w-12 h-1 bg-white/20 mx-auto mt-8 rounded-full" />
-        </div>
-
-        {/* Contact Form Card */}
-        <form className="w-full bg-[#0d0d0f] border border-white/10 p-6 md:p-10 rounded-2xl md:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-5">
-           <div>
-             <input 
-               type="text" 
-               placeholder="Your Name" 
-               className="w-full bg-[#151518] border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 focus:bg-[#1a1a1f] transition-all"
-               required
-             />
-           </div>
-           <div>
-             <input 
-               type="email" 
-               placeholder="Your Email" 
-               className="w-full bg-[#151518] border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 focus:bg-[#1a1a1f] transition-all"
-               required
-             />
-           </div>
-           <div>
-             <textarea 
-               placeholder="Your Message" 
-               rows={6}
-               className="w-full bg-[#151518] border border-white/5 rounded-xl px-5 py-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 focus:bg-[#1a1a1f] transition-all resize-none"
-               required
-             ></textarea>
-           </div>
-           
-           <button 
-             type="submit" 
-             className="w-full bg-white text-black font-black text-[11px] md:text-xs tracking-[0.2em] uppercase py-4 md:py-5 rounded-xl mt-4 hover:bg-gray-200 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
-           >
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-             SEND MESSAGE
-           </button>
-        </form>
-      </div>
-    </div>
+        ) : null}
+      </section>
+    </main>
   );
 }
+
