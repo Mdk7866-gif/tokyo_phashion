@@ -21,4 +21,31 @@ export const uploadImage = async (
   }
 };
 
+export const uploadImageBuffer = async (
+  fileBuffer: Buffer,
+  options?: { folder?: string }
+): Promise<string> => {
+  const folder = options?.folder ?? 'tokyofashion/misc';
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: 'image',
+      },
+      (error, result) => {
+        if (error || !result?.secure_url) {
+          console.error('Cloudinary Stream Upload Error:', error);
+          reject(new Error('Image upload failed'));
+          return;
+        }
+
+        resolve(result.secure_url);
+      }
+    );
+
+    stream.end(fileBuffer);
+  });
+};
+
 export default cloudinary;

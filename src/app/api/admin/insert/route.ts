@@ -2,6 +2,28 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { uploadImage } from '@/lib/cloudinary';
 
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  worker: (item: T, index: number) => Promise<R>,
+  limit = 3
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let currentIndex = 0;
+
+  async function runWorker() {
+    while (true) {
+      const index = currentIndex++;
+      if (index >= items.length) break;
+      results[index] = await worker(items[index], index);
+    }
+  }
+
+  const workerCount = Math.min(limit, items.length);
+  await Promise.all(Array.from({ length: workerCount }, () => runWorker()));
+
+  return results;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -25,8 +47,9 @@ export async function POST(request: Request) {
     // Process images concurrently to improve speed
     let processedImages: { url: string; colurname: string }[] = [];
     if (images && Array.isArray(images)) {
-      processedImages = await Promise.all(
-        images.map(async (img) => {
+      processedImages = await mapWithConcurrency(
+        images,
+        async (img) => {
           let finalUrl = img.url;
           
           if (img.url && img.url.startsWith('data:image')) {
@@ -40,7 +63,8 @@ export async function POST(request: Request) {
             url: finalUrl,
             colurname: img.colurname || img.colorname // support both spellings
           };
-        })
+        },
+        3
       );
     }
 

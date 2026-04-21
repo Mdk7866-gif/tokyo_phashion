@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { uploadImage } from '@/lib/cloudinary';
+import { uploadImage, uploadImageBuffer } from '@/lib/cloudinary';
 
 export const runtime = 'nodejs';
 
@@ -17,12 +17,6 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed.length ? trimmed : null;
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
-  const buf = Buffer.from(await file.arrayBuffer());
-  const mime = file.type || 'application/octet-stream';
-  return `data:${mime};base64,${buf.toString('base64')}`;
-}
-
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get('content-type') ?? '';
@@ -31,6 +25,7 @@ export async function POST(request: Request) {
     let mobile_number: string | null = null;
     let detailes: string | null = null;
     let photoDataUrl: string | null = null;
+    let photoBuffer: Buffer | null = null;
 
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
@@ -40,7 +35,7 @@ export async function POST(request: Request) {
 
       const photo = form.get('photo');
       if (photo instanceof File && photo.size > 0) {
-        photoDataUrl = await fileToDataUrl(photo);
+        photoBuffer = Buffer.from(await photo.arrayBuffer());
       }
     } else {
       const body = (await request.json()) as ContactFormBody;
@@ -62,7 +57,11 @@ export async function POST(request: Request) {
     }
 
     let photo_url: string | null = null;
-    if (photoDataUrl) {
+    if (photoBuffer) {
+      photo_url = await uploadImageBuffer(photoBuffer, {
+        folder: 'tokyofashion/contact_form',
+      });
+    } else if (photoDataUrl) {
       photo_url = await uploadImage(photoDataUrl, {
         folder: 'tokyofashion/contact_form',
       });
