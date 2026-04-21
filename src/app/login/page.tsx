@@ -144,15 +144,11 @@ export default function LoginPage() {
   /* ─── Render ───────────────────────────────────────────────── */
   return (
     <div className="login-root">
-      {/* Animated background blobs */}
-      <div className="login-blob login-blob-1" />
-      <div className="login-blob login-blob-2" />
-      <div className="login-blob login-blob-3" />
 
       <div className="login-card">
         {/* Brand */}
         <div className="login-brand">
-          <span className="login-brand-logo">東</span>
+          <span className="text-3xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none tracking-tighter">東京</span>
           <span className="login-brand-name">TOKYO PHASHION</span>
         </div>
 
@@ -272,66 +268,36 @@ export default function LoginPage() {
       </div>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
         /* ── Root ─────────────────────────────────────── */
         .login-root {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #0a0a0f;
+          background: #fafafa;
           position: relative;
           overflow: hidden;
           padding: 2rem 1rem;
-        }
-
-        /* ── Animated blobs ───────────────────────────── */
-        .login-blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.35;
-          animation: blobFloat 8s ease-in-out infinite;
-        }
-        .login-blob-1 {
-          width: 420px; height: 420px;
-          background: radial-gradient(circle, #c084fc, #7c3aed);
-          top: -120px; left: -100px;
-          animation-delay: 0s;
-        }
-        .login-blob-2 {
-          width: 320px; height: 320px;
-          background: radial-gradient(circle, #f472b6, #db2777);
-          bottom: -80px; right: -80px;
-          animation-delay: 3s;
-        }
-        .login-blob-3 {
-          width: 240px; height: 240px;
-          background: radial-gradient(circle, #818cf8, #4f46e5);
-          top: 50%; left: 60%;
-          animation-delay: 5s;
-        }
-        @keyframes blobFloat {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-30px) scale(1.05); }
+          font-family: 'Inter', sans-serif;
         }
 
         /* ── Card ─────────────────────────────────────── */
         .login-card {
           position: relative;
           z-index: 10;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 24px;
-          padding: 2.5rem 2rem;
+          background: #ffffff;
+          border: 1px solid #e5e5e5;
+          border-radius: 28px;
+          padding: 2.75rem 2.25rem;
           width: 100%;
-          max-width: 420px;
-          box-shadow: 0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
-          animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+          max-width: 440px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+          animation: cardIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
         }
         @keyframes cardIn {
-          from { opacity: 0; transform: translateY(32px) scale(0.96); }
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -343,19 +309,11 @@ export default function LoginPage() {
           margin-bottom: 1.8rem;
           justify-content: center;
         }
-        .login-brand-logo {
-          font-size: 1.8rem;
-          line-height: 1;
-          background: linear-gradient(135deg, #c084fc, #f472b6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
         .login-brand-name {
           font-size: 0.75rem;
           font-weight: 700;
           letter-spacing: 0.18em;
-          color: rgba(255,255,255,0.85);
+          color: #000;
         }
 
         /* ── Steps ────────────────────────────────────── */
@@ -375,38 +333,40 @@ export default function LoginPage() {
         .login-step span:last-child {
           font-size: 0.7rem;
           letter-spacing: 0.08em;
-          color: rgba(255,255,255,0.4);
+          color: #a1a1aa;
           text-transform: uppercase;
         }
         .login-step.active span:last-child,
         .login-step.done span:last-child {
-          color: rgba(255,255,255,0.75);
+          color: #000;
         }
         .login-step-dot {
           width: 32px; height: 32px;
           border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           font-size: 0.8rem; font-weight: 700;
-          border: 2px solid rgba(255,255,255,0.12);
-          color: rgba(255,255,255,0.3);
+          border: 2px solid #e5e5e5;
+          color: #a1a1aa;
           transition: all 0.3s;
         }
         .login-step.active .login-step-dot {
-          border-color: #c084fc;
-          color: #c084fc;
-          box-shadow: 0 0 16px rgba(192,132,252,0.4);
+          border-color: #000;
+          color: #000;
         }
         .login-step.done .login-step-dot {
-          background: linear-gradient(135deg, #c084fc, #f472b6);
-          border-color: transparent;
+          background: #000;
+          border-color: #000;
           color: #fff;
         }
         .login-step-line {
           flex: 1;
           height: 2px;
-          background: linear-gradient(90deg, rgba(192,132,252,0.5), rgba(244,114,182,0.15));
+          background: #f0f0f0;
           margin: 0 0.5rem;
           margin-bottom: 1.2rem;
+        }
+        .login-step.done + .login-step-line {
+          background: #000;
         }
 
         /* ── Form ─────────────────────────────────────── */
@@ -418,34 +378,33 @@ export default function LoginPage() {
         .login-title {
           font-size: 1.6rem;
           font-weight: 700;
-          color: #fff;
+          color: #000;
           margin: 0;
           line-height: 1.2;
         }
         .login-subtitle {
           font-size: 0.875rem;
-          color: rgba(255,255,255,0.5);
+          color: #71717a;
           margin: 0;
           line-height: 1.5;
         }
         .login-subtitle strong {
-          color: rgba(255,255,255,0.8);
+          color: #000;
         }
 
         /* ── Phone field ──────────────────────────────── */
         .login-field { display: flex; flex-direction: column; gap: 0.4rem; }
-        .login-label { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+        .login-label { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: #a1a1aa; }
         .login-phone-wrapper {
           display: flex; align-items: center;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.1);
+          background: #fafafa;
+          border: 1px solid #e5e5e5;
           border-radius: 12px;
           padding: 0 1rem;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
         .login-phone-wrapper:focus-within {
-          border-color: rgba(192,132,252,0.6);
-          box-shadow: 0 0 0 3px rgba(192,132,252,0.12);
+          border-color: #000;
         }
         .login-phone-icon { font-size: 1.1rem; margin-right: 0.6rem; }
         .login-input {
@@ -453,12 +412,12 @@ export default function LoginPage() {
           background: transparent;
           border: none;
           outline: none;
-          color: #fff;
+          color: #000;
           font-size: 1rem;
           padding: 0.85rem 0;
           font-family: inherit;
         }
-        .login-input::placeholder { color: rgba(255,255,255,0.25); }
+        .login-input::placeholder { color: #a1a1aa; }
 
         /* ── OTP boxes ────────────────────────────────── */
         .login-otp-row {
@@ -471,47 +430,47 @@ export default function LoginPage() {
           text-align: center;
           font-size: 1.4rem;
           font-weight: 700;
-          color: #fff;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.12);
+          color: #000;
+          background: #fafafa;
+          border: 1px solid #e5e5e5;
           border-radius: 12px;
           outline: none;
           transition: all 0.2s;
-          caret-color: #c084fc;
+          caret-color: #000;
         }
         .login-otp-box:focus {
-          border-color: rgba(192,132,252,0.7);
-          box-shadow: 0 0 0 3px rgba(192,132,252,0.15);
-          background: rgba(192,132,252,0.08);
+          border-color: #000;
+          background: #fff;
         }
         .login-otp-box.filled {
-          border-color: rgba(244,114,182,0.5);
-          background: rgba(244,114,182,0.06);
+          border-color: #000;
+          background: #fff;
         }
 
         /* ── Button ───────────────────────────────────── */
         .login-btn {
           width: 100%;
-          padding: 0.9rem;
+          padding: 0.95rem;
           border: none;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #7c3aed, #db2777);
+          border-radius: 14px;
+          background: #000;
           color: #fff;
-          font-size: 1rem;
-          font-weight: 600;
-          letter-spacing: 0.04em;
+          font-size: 0.95rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
           cursor: pointer;
-          transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-          box-shadow: 0 8px 24px rgba(124,58,237,0.35);
+          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.1);
           display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+          text-transform: uppercase;
         }
         .login-btn:hover:not(:disabled) {
-          opacity: 0.92;
-          transform: translateY(-1px);
-          box-shadow: 0 12px 32px rgba(124,58,237,0.45);
+          background: #222;
+          transform: translateY(-2px);
+          box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
         .login-btn:active:not(:disabled) { transform: translateY(0); }
-        .login-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         /* ── Spinner ──────────────────────────────────── */
         .login-spinner {
@@ -527,9 +486,9 @@ export default function LoginPage() {
         /* ── Error ────────────────────────────────────── */
         .login-error {
           font-size: 0.82rem;
-          color: #f87171;
-          background: rgba(239,68,68,0.1);
-          border: 1px solid rgba(239,68,68,0.2);
+          color: #dc2626;
+          background: #fef2f2;
+          border: 1px solid #fca5a5;
           border-radius: 8px;
           padding: 0.55rem 0.75rem;
           margin: 0;
@@ -542,21 +501,39 @@ export default function LoginPage() {
           align-items: center;
           gap: 1rem;
         }
-        .login-resend-timer { font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+        .login-resend-timer { font-size: 0.8rem; color: #a1a1aa; }
         .login-resend-btn, .login-change-btn {
           background: none; border: none; cursor: pointer;
           font-size: 0.82rem; padding: 0; font-family: inherit;
           transition: color 0.2s;
         }
-        .login-resend-btn { color: #c084fc; }
-        .login-resend-btn:hover { color: #f472b6; }
-        .login-change-btn { color: rgba(255,255,255,0.4); }
-        .login-change-btn:hover { color: rgba(255,255,255,0.7); }
+        .login-resend-btn { color: #000; font-weight: 600; }
+        .login-resend-btn:hover { color: #555; }
+        .login-change-btn { color: #71717a; }
+        .login-change-btn:hover { color: #000; }
 
         /* ── Mobile ───────────────────────────────────── */
         @media (max-width: 480px) {
-          .login-card { padding: 2rem 1.25rem; }
-          .login-otp-box { width: 42px; height: 50px; font-size: 1.2rem; }
+          .login-card { padding: 1.75rem 1.25rem; border-radius: 22px; }
+          .login-otp-box { width: 40px; height: 48px; font-size: 1.2rem; border-radius: 10px; }
+          .login-otp-row { gap: 6px; }
+          .login-title { font-size: 1.4rem; }
+        }
+
+        /* ── Shimmer on brand logo ── */
+        @keyframes shimmerText {
+          0%   { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        .login-brand-logo {
+          font-size: 1.8rem;
+          line-height: 1;
+          background: linear-gradient(90deg, #c084fc, #f472b6, #818cf8, #c084fc);
+          background-size: 300% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmerText 4s linear infinite;
         }
       `}</style>
     </div>

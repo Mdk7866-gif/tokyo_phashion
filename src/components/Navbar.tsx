@@ -67,7 +67,7 @@ const Navbar = () => {
         className="w-full sticky top-0 z-50 transition-[background-color,box-shadow] duration-300"
       >
         <div
-          className="w-full flex items-center justify-between px-4 md:px-12 transition-[padding] duration-300"
+          className="w-full max-w-[1400px] mx-auto flex items-center justify-between px-4 md:px-12 transition-[padding] duration-300"
           style={{ paddingTop: scrolled ? "6px" : "10px", paddingBottom: scrolled ? "4px" : "8px" }}
         >
           {/* ── Hamburger ── */}
@@ -85,18 +85,20 @@ const Navbar = () => {
           </button>
 
           {/* ── Logo ── */}
-          <Link href="/" className="flex flex-col items-center cursor-pointer group select-none">
-            <div
-              style={{ borderColor: scrolled ? "#fff" : "#0a0a0a", color: scrolled ? "#fff" : "#0a0a0a" }}
-              className="w-7 h-7 border-2 flex items-center justify-center font-serif text-[11px] font-bold transition-all duration-300 group-hover:scale-105"
-            >
-              TP
+          <Link href="/" className="flex flex-col items-center cursor-pointer group select-none transition-all duration-300 active:scale-95">
+            <div className="relative flex items-center justify-center">
+              <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none tracking-tighter">
+                東京
+              </span>
+              <div 
+                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-[2px] rounded-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all duration-500 group-hover:w-full opacity-80"
+              />
             </div>
-            <span
+            <span 
               style={{ color: scrolled ? "#fff" : "#0a0a0a" }}
-              className="text-[8px] tracking-[0.28em] font-black uppercase mt-[3px] transition-colors duration-300"
+              className="text-[7px] md:text-[9px] font-black tracking-[0.4em] uppercase mt-2 transition-colors duration-300"
             >
-              PHASHION
+              TOKYO PHASHION
             </span>
           </Link>
 
@@ -114,23 +116,25 @@ const Navbar = () => {
             </button>
 
             {/* Cart */}
-            <button
-              style={iconBtn(true)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
-              aria-label="Cart"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                <line x1="3" x2="21" y1="6" y2="6"/>
-                <path d="M16 10a4 4 0 0 1-8 0"/>
-              </svg>
-              <span
-                className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
-                style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
+            {!loading && user && (
+              <button
+                style={iconBtn(true)}
+                className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
+                aria-label="Cart"
               >
-                0
-              </span>
-            </button>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                  <line x1="3" x2="21" y1="6" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                <span
+                  className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
+                  style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
+                >
+                  0
+                </span>
+              </button>
+            )}
 
             {/* ── Auth Button ── */}
             {!loading && (
@@ -142,9 +146,8 @@ const Navbar = () => {
                     href="/login"
                     className="navbar-login-btn"
                     style={{
-                      background: scrolled
-                        ? "linear-gradient(135deg,#7c3aed,#db2777)"
-                        : "linear-gradient(135deg,#7c3aed,#db2777)",
+                      backgroundColor: scrolled ? "#fff" : "#000",
+                      color: scrolled ? "#000" : "#fff",
                     }}
                   >
                     Login
@@ -196,35 +199,43 @@ const Navbar = () => {
         .navbar-login-btn {
           display: inline-flex;
           align-items: center;
-          padding: 0.35rem 0.85rem;
+          padding: 0.4rem 1.2rem;
           border-radius: 999px;
           font-size: 0.75rem;
           font-weight: 700;
           letter-spacing: 0.05em;
-          color: #fff;
           text-decoration: none;
-          transition: opacity 0.2s, transform 0.15s;
+          transition: all 0.3s ease;
           white-space: nowrap;
+          border: 1px solid transparent;
         }
-        .navbar-login-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .navbar-login-btn:hover { 
+          opacity: 0.9; 
+          transform: translateY(-1px) scale(1.02);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
         .navbar-avatar-btn {
           width: 36px; height: 36px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #7c3aed, #db2777);
+          background: #000;
           color: #fff;
           font-size: 0.7rem;
           font-weight: 800;
-          border: none;
+          border: 1px solid rgba(255,255,255,0.1);
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           letter-spacing: 0.05em;
-          transition: transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 0 0 2px rgba(192,132,252,0.3);
+          transition: all 0.3s ease;
         }
         .navbar-avatar-btn:hover {
           transform: scale(1.08);
-          box-shadow: 0 0 0 3px rgba(192,132,252,0.5);
+          background: #333;
+        }
+        /* When scrolled, make avatar white for visibility on black navbar */
+        header[style*="rgb(10, 10, 10)"] .navbar-avatar-btn {
+          background: #fff;
+          color: #000;
         }
 
         .navbar-user-dropdown {

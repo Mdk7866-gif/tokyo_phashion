@@ -34,11 +34,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <div className="flex flex-col items-start gap-1">
-             <div className="w-8 h-8 border border-white flex items-center justify-center font-serif text-sm font-bold tracking-tight">
-              TP
+          <div className="flex items-center gap-3 group select-none">
+            <span className="text-2xl font-black bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none">
+              東京
+            </span>
+            <div className="flex flex-col border-l border-white/20 pl-3 leading-none">
+              <span className="text-xs font-black tracking-[0.2em] text-white">TOKYO</span>
+              <span className="text-[9px] font-bold tracking-[0.4em] text-white opacity-50 mt-1 uppercase">PHASHION</span>
             </div>
-            <span className="font-serif text-[10px] tracking-widest uppercase text-center leading-tight">TOKYO<br/>PHASHION</span>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

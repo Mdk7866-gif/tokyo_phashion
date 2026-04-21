@@ -22,33 +22,23 @@ html, body {
   padding: 0;
 }
 
-/* ─── Scrollbar hide ─── */
+/* ── Scrollbar hide ── */
 @layer utilities {
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ─── Fade-in-up on scroll ─── */
   .fade-up {
     opacity: 0;
-    transform: translateY(32px);
+    transform: translateY(28px);
     transition: opacity 0.7s ease, transform 0.7s ease;
   }
-  .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Keyframe animations ─── */
+/* ── Keyframes ── */
 @keyframes swipeLeft {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
-}
-.animate-swipe {
-  animation: swipeLeft 35s linear infinite;
-}
-.animate-swipe:hover {
-  animation-play-state: paused;
 }
 
 @keyframes shimmer {
@@ -56,7 +46,6 @@ html, body {
   100% { background-position: 400px 0; }
 }
 
-/* Underline reveal animation for section headings */
 @keyframes underlineReveal {
   from { width: 0; }
   to   { width: 2.5rem; }
@@ -71,55 +60,83 @@ html, body {
   animation: underlineReveal 0.6s ease forwards;
   animation-play-state: paused;
 }
-.heading-underline.visible::after {
-  animation-play-state: running;
-}
+.heading-underline.visible::after { animation-play-state: running; }
 
-/* ─── Premium Splash Animations ─── */
 @keyframes letterReveal {
   0% { transform: translateY(100%); clip-path: inset(0 0 100% 0); }
   100% { transform: translateY(0); clip-path: inset(0 0 0 0); }
 }
-
 @keyframes logoReveal {
   0% { scale: 0.8; opacity: 0; filter: blur(4px); }
   100% { scale: 1; opacity: 1; filter: blur(0); }
 }
-
 @keyframes lineReveal {
   0% { width: 0; opacity: 0; }
   100% { width: 100%; opacity: 1; }
 }
-
 @keyframes splashFadeOut {
-  0% { opacity: 1; pointer-events: auto; }
-  90% { opacity: 1; pointer-events: auto; }
+  0%   { opacity: 1; pointer-events: auto; }
+  90%  { opacity: 1; pointer-events: auto; }
   100% { opacity: 0; pointer-events: none; }
 }
-
 @keyframes containerMove {
-  0% { transform: scale(1); }
+  0%   { transform: scale(1); }
   100% { transform: scale(1.05); }
 }
 
-@keyframes strokeGrow {
-  0% { stroke-dashoffset: 100%; }
-  100% { stroke-dashoffset: 0%; }
-}
+.animate-letter  { animation: letterReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-logo    { animation: logoReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-line    { animation: lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-splash-overlay { animation: splashFadeOut 0.8s ease-in-out forwards; }
 
-.animate-letter {
-  animation: letterReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* ── Category grid: circle cards ── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 0 4px;
 }
+@media (min-width: 640px) { .cat-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+@media (min-width: 1024px) { .cat-grid { grid-template-columns: repeat(6, 1fr); gap: 24px; padding: 0; } }
 
-.animate-logo {
-  animation: logoReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* ── Section heading ── */
+.sec-heading {
+  font-size: clamp(1rem, 3vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 2rem;
+  color: #111;
 }
+@media (min-width: 768px) { .sec-heading { margin-bottom: 3rem; } }
 
-.animate-line {
-  animation: lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* ── Product grid (2-col mobile, 4-col desktop) ── */
+.prod-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
 }
+@media (min-width: 768px) { .prod-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; } }
 
-.animate-splash-overlay {
-  animation: splashFadeOut 0.8s ease-in-out forwards;
+/* ── Reel belt ── */
+.reel-belt {
+  display: flex;
+  width: max-content;
+  animation: swipeLeft 35s linear infinite;
+  gap: 12px;
+  padding: 0 8px;
 }
+@media (min-width: 768px) { .reel-belt { gap: 20px; padding: 0 16px; } }
+.reel-belt:hover { animation-play-state: paused; }
 
+/* ── Parallax break sections ── */
+.parallax-section {
+  position: relative;
+  width: 100%;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
