@@ -17,11 +17,38 @@ export async function GET() {
       .filter((name) => !EXCLUDED_COLLECTIONS.has(name))
       .sort((a, b) => a.localeCompare(b));
 
+    const result = await Promise.all(
+      names.map(async (name) => {
+        try {
+          const collection = db.collection(name);
+          const count = await collection.countDocuments();
+          
+          // Try fetching distinct subcategories from both common field names
+          let subcategories = await collection.distinct('subcategory');
+          if (subcategories.length === 0) {
+            subcategories = await collection.distinct('sub_category');
+          }
+
+          console.log(`API Debug: Collection "${name}" (docs: ${count}) found subcategories:`, subcategories);
+          
+          return {
+            name,
+            subcategories: subcategories.filter((s): s is string => typeof s === 'string' && s.length > 0),
+          };
+        } catch (err) {
+          console.error(`API Error fetching subcategories for "${name}":`, err);
+          return { name, subcategories: [] };
+        }
+      })
+    );
+
+    console.log('API Debug: Final collections result:', JSON.stringify(result, null, 2));
+
     return NextResponse.json(
       {
         success: true,
-        count: names.length,
-        collections: names,
+        count: result.length,
+        collections: result,
       },
       { status: 200 }
     );

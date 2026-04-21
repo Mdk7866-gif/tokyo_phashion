@@ -1,7 +1,13 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+interface Collection {
+  name: string;
+  subcategories: string[];
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,6 +15,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const router = useRouter();
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -19,6 +31,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  const fetchCollections = async () => {
+    if (collections.length > 0) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/getallcollection');
+      const data = await res.json();
+      if (data.success) {
+        setCollections(data.collections);
+      }
+    } catch (err) {
+      console.error("Failed to fetch collections:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleShop = () => {
+    const newState = !isShopOpen;
+    setIsShopOpen(newState);
+    if (newState) fetchCollections();
+  };
+
+  const toggleCollection = (name: string) => {
+    setExpandedCollections(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
 
   return (
     <>
@@ -82,17 +125,93 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </svg>
               HOME
             </Link>
-            <div className="flex items-center justify-between p-3 rounded-lg font-bold tracking-widest text-sm uppercase hover:bg-white/10 transition-colors cursor-pointer group">
+            <div 
+              onClick={toggleShop}
+              className={`flex items-center justify-between p-3 rounded-lg font-bold tracking-widest text-sm uppercase transition-colors cursor-pointer group ${isShopOpen ? "bg-white/10" : "hover:bg-white/10"}`}
+            >
               <div className="flex items-center gap-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
                 </svg>
                 Shop
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className={`transition-transform duration-300 ${isShopOpen ? "rotate-180" : ""}`}
+              >
                 <path d="m6 9 6 6 6-6"/>
               </svg>
             </div>
+
+            {/* Dynamic Collections */}
+            {isShopOpen && (
+              <div className="pl-4 space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                {loading ? (
+                  <div className="p-3 text-[10px] text-gray-500 tracking-widest uppercase animate-pulse">Loading collections...</div>
+                ) : (
+                  collections.map((col) => {
+                    const hasSubs = col.subcategories && col.subcategories.length > 0;
+                    const isExpanded = expandedCollections.has(col.name);
+                    
+                    return (
+                      <div key={col.name} className="flex flex-col">
+                        <div 
+                          className={`flex items-center justify-between p-2.5 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-colors cursor-pointer ${isExpanded ? "bg-white/5" : "hover:bg-white/5"}`}
+                          onClick={() => {
+                            if (hasSubs) toggleCollection(col.name);
+                            else {
+                              onClose();
+                              router.push(`/shop/${col.name.toLowerCase().replace(/ /g, '_')}`);
+                            }
+                          }}
+                        >
+                          <span className="flex-1">{col.name.replace(/_/g, ' ')}</span>
+                          {hasSubs && (
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              width="14" 
+                              height="14" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="3" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                              className={`transition-transform duration-300 text-gray-400 ${isExpanded ? "rotate-180 text-white" : ""}`}
+                            >
+                              <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                          )}
+                        </div>
+                        
+                        {hasSubs && isExpanded && (
+                          <div className="pl-4 border-l border-white/10 ml-3 mt-1 space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                            {col.subcategories.map((sub) => (
+                              <Link
+                                key={sub}
+                                href={`/shop/${col.name.toLowerCase().replace(/ /g, '_')}/${sub.toLowerCase().replace(/ /g, '_')}`}
+                                onClick={onClose}
+                                className="block p-2 text-[10px] text-gray-400 font-bold tracking-widest uppercase hover:text-white transition-colors"
+                              >
+                                {sub.replace(/_/g, ' ')}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
             <Link href="/about" onClick={onClose} className="flex items-center gap-4 p-3 rounded-lg font-bold tracking-widest text-sm uppercase hover:bg-white/10 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
