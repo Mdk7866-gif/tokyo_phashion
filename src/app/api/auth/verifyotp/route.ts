@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAccessToken, generateRefreshToken } from '@/lib/auth';
-import { verifyOtp } from '@/lib/twilio';
+import { verifyOtp, normalizePhone } from '@/lib/twilio';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = process.env.DATABASE_NAME!;
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const normalized = phone.startsWith('+') ? phone : `+${phone}`;
+    const normalized = normalizePhone(phone);
 
     // 1. Verify OTP with Twilio
     const isValid = await verifyOtp(normalized, code);
@@ -35,7 +35,19 @@ export async function POST(request: NextRequest) {
     const result = await users.findOneAndUpdate(
       { mobile_no: normalized },
       {
-        $setOnInsert: { mobile_no: normalized, created_At: new Date() },
+        $setOnInsert: { 
+          mobile_no: normalized, 
+          created_At: new Date(),
+          username: '',
+          address: {
+            full_address: '',
+            cityname: '',
+            statename: '',
+            pincode: ''
+          },
+          updated_At: new Date(),
+          cartitems: []
+        },
         $set: { last_login: new Date() },
       },
       { upsert: true, returnDocument: 'after' }

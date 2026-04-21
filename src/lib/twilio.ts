@@ -13,11 +13,16 @@ const SERVICE_SID = process.env.TWILIO_SERVICE_SID!;
  * Otherwise ensures it starts with +.
  */
 export function normalizePhone(phone: string): string {
+  // If it already starts with '+', just remove non-digits but keep the '+'
+  if (phone.startsWith('+')) {
+    return '+' + phone.substring(1).replace(/\D/g, '');
+  }
+  
   const cleaned = phone.replace(/\D/g, '');
   if (cleaned.length === 10) {
     return `+91${cleaned}`;
   }
-  return phone.startsWith('+') ? phone : `+${cleaned}`;
+  return `+${cleaned}`;
 }
 
 /**
