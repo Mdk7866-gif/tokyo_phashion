@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString(),
     };
 
-    const result = await db.collection('usercontactform').insertOne(doc);
+    const result = await db.collection('usercontactformdata').insertOne(doc);
 
     return NextResponse.json(
       {
