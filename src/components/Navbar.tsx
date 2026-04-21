@@ -2,21 +2,49 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
+import { useAuth } from "@/context/AuthContext";
 
 const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    // Run once on mount to catch initial position
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!showUserMenu) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("#navbar-user-menu-root")) setShowUserMenu(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showUserMenu]);
+
+  async function handleLogout() {
+    setShowUserMenu(false);
+    await logout();
+    router.push("/");
+  }
+
+  /* ── icon button base styles ── */
+  const iconBtn = (dark: boolean) => ({
+    backgroundColor: dark
+      ? scrolled ? "rgba(255,255,255,0.12)" : "#0a0a0a"
+      : scrolled ? "rgba(255,255,255,0.12)" : "#f4f4f5",
+    color: dark ? "#fff" : scrolled ? "#fff" : "#0a0a0a",
+  });
 
   return (
     <>
@@ -45,10 +73,7 @@ const Navbar = () => {
           {/* ── Hamburger ── */}
           <button
             onClick={() => setIsSidebarOpen(true)}
-            style={{
-              backgroundColor: scrolled ? "rgba(255,255,255,0.12)" : "#0a0a0a",
-              color: "#fff",
-            }}
+            style={iconBtn(true)}
             className="w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
             aria-label="Open menu"
           >
@@ -62,10 +87,7 @@ const Navbar = () => {
           {/* ── Logo ── */}
           <Link href="/" className="flex flex-col items-center cursor-pointer group select-none">
             <div
-              style={{
-                borderColor: scrolled ? "#fff" : "#0a0a0a",
-                color: scrolled ? "#fff" : "#0a0a0a",
-              }}
+              style={{ borderColor: scrolled ? "#fff" : "#0a0a0a", color: scrolled ? "#fff" : "#0a0a0a" }}
               className="w-7 h-7 border-2 flex items-center justify-center font-serif text-[11px] font-bold transition-all duration-300 group-hover:scale-105"
             >
               TP
@@ -82,10 +104,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {/* Search – desktop only */}
             <button
-              style={{
-                backgroundColor: scrolled ? "rgba(255,255,255,0.12)" : "#f4f4f5",
-                color: scrolled ? "#fff" : "#0a0a0a",
-              }}
+              style={iconBtn(false)}
               className="hidden md:flex w-9 h-9 items-center justify-center rounded-full transition-all duration-300 hover:opacity-80"
               aria-label="Search"
             >
@@ -96,10 +115,7 @@ const Navbar = () => {
 
             {/* Cart */}
             <button
-              style={{
-                backgroundColor: scrolled ? "rgba(255,255,255,0.12)" : "#0a0a0a",
-                color: "#fff",
-              }}
+              style={iconBtn(true)}
               className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
               aria-label="Cart"
             >
@@ -109,21 +125,167 @@ const Navbar = () => {
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
               <span
-                style={{
-                  backgroundColor: scrolled ? "#fff" : "#fff",
-                  color: "#0a0a0a",
-                  borderColor: scrolled ? "transparent" : "#0a0a0a",
-                }}
                 className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
+                style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
               >
                 0
               </span>
             </button>
+
+            {/* ── Auth Button ── */}
+            {!loading && (
+              <>
+                {!user ? (
+                  /* Login button */
+                  <Link
+                    id="navbar-login-btn"
+                    href="/login"
+                    className="navbar-login-btn"
+                    style={{
+                      background: scrolled
+                        ? "linear-gradient(135deg,#7c3aed,#db2777)"
+                        : "linear-gradient(135deg,#7c3aed,#db2777)",
+                    }}
+                  >
+                    Login
+                  </Link>
+                ) : (
+                  /* User avatar / menu */
+                  <div id="navbar-user-menu-root" style={{ position: "relative" }}>
+                    <button
+                      id="navbar-user-avatar"
+                      onClick={() => setShowUserMenu((v) => !v)}
+                      className="navbar-avatar-btn"
+                      title={user.mobile_no}
+                      aria-label="Account menu"
+                    >
+                      {/* Avatar letter from last 2 digits of mobile_no */}
+                      <span>{user.mobile_no.slice(-2)}</span>
+                    </button>
+
+                    {/* Dropdown */}
+                    {showUserMenu && (
+                      <div className="navbar-user-dropdown">
+                        <div className="navbar-user-phone">
+                          <span>📱</span>
+                          <span>{user.mobile_no}</span>
+                        </div>
+                        <hr className="navbar-user-divider" />
+                        <Link href="/account" onClick={() => setShowUserMenu(false)} className="navbar-user-item">
+                          My Account
+                        </Link>
+                        <Link href="/orders" onClick={() => setShowUserMenu(false)} className="navbar-user-item">
+                          My Orders
+                        </Link>
+                        <button id="navbar-logout-btn" onClick={handleLogout} className="navbar-user-item logout">
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </header>
 
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      <style>{`
+        .navbar-login-btn {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.35rem 0.85rem;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          color: #fff;
+          text-decoration: none;
+          transition: opacity 0.2s, transform 0.15s;
+          white-space: nowrap;
+        }
+        .navbar-login-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+        .navbar-avatar-btn {
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #7c3aed, #db2777);
+          color: #fff;
+          font-size: 0.7rem;
+          font-weight: 800;
+          border: none;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          letter-spacing: 0.05em;
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 0 0 2px rgba(192,132,252,0.3);
+        }
+        .navbar-avatar-btn:hover {
+          transform: scale(1.08);
+          box-shadow: 0 0 0 3px rgba(192,132,252,0.5);
+        }
+
+        .navbar-user-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          min-width: 200px;
+          background: rgba(15,15,20,0.97);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 0.6rem 0;
+          box-shadow: 0 20px 48px rgba(0,0,0,0.6);
+          animation: dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+          z-index: 100;
+        }
+        @keyframes dropIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .navbar-user-phone {
+          display: flex; align-items: center; gap: 0.5rem;
+          padding: 0.5rem 1rem 0.4rem;
+          font-size: 0.75rem;
+          color: rgba(255,255,255,0.45);
+        }
+
+        .navbar-user-divider {
+          border: none;
+          border-top: 1px solid rgba(255,255,255,0.07);
+          margin: 0.3rem 0;
+        }
+
+        .navbar-user-item {
+          display: block;
+          width: 100%;
+          padding: 0.55rem 1rem;
+          font-size: 0.82rem;
+          color: rgba(255,255,255,0.75);
+          text-decoration: none;
+          background: none;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.15s, color 0.15s;
+        }
+        .navbar-user-item:hover {
+          background: rgba(255,255,255,0.06);
+          color: #fff;
+        }
+        .navbar-user-item.logout {
+          color: #f87171;
+          margin-top: 0.1rem;
+        }
+        .navbar-user-item.logout:hover {
+          background: rgba(239,68,68,0.08);
+          color: #fca5a5;
+        }
+      `}</style>
     </>
   );
 };

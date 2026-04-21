@@ -34,7 +34,7 @@ const articles: BlogPost[] = [
     title: "The Return of the Tailored Silhouette",
     category: "EDITORIAL",
     date: "March 15, 2026",
-    image: "https://images.unsplash.com/photo-1539109132314-34a9c6553876?q=80&w=1470&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1470&auto=format&fit=crop",
     excerpt: "Moving away from oversized fits towards a more refined, structured approach to modern menswear. Structure meets fluidity."
   },
   {
@@ -114,6 +114,7 @@ export default function BlogPage() {
               src={post.image} 
               alt={post.title} 
               fill
+              sizes="100vw"
               className="w-full h-full object-cover brightness-75 scale-105"
               priority={idx === 0}
             />
@@ -174,6 +175,7 @@ export default function BlogPage() {
                                 src={post.image} 
                                 alt={post.title} 
                                 fill 
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                             />
                             <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-500" />
@@ -199,7 +201,7 @@ export default function BlogPage() {
       {/* ─── Parallax Narrative Break (Deep Black background style) ─── */}
       <section 
         className="relative w-full h-[60vh] md:h-[80vh] bg-fixed bg-center bg-cover flex items-center justify-center overflow-hidden"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1539109132314-34a9c6553876?q=80&w=1920&auto=format&fit=crop")' }}
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1920&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 text-center px-6 fade-up">
@@ -246,9 +248,10 @@ export default function BlogPage() {
             </div>
             <div className="order-1 lg:order-2 relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl fade-up">
                 <Image 
-                    src="https://www.gcclothing.in/admin/uploads/variants/var_69c6bbdb0cae37.27627187.webp"
+                    src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=1470&auto=format&fit=crop"
                     alt="Archive"
                     fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover transition-transform duration-1000 hover:scale-105"
                 />
             </div>

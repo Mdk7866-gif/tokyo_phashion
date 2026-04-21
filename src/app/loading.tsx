@@ -2,9 +2,21 @@
 import React, { useEffect, useState } from 'react';
 
 export default function Loading() {
-  const [stage, setStage] = useState<'showing' | 'fading' | 'hidden'>('showing');
+  const [stage, setStage] = useState<'showing' | 'fading' | 'hidden'>('hidden');
 
   useEffect(() => {
+    // Check if user has already seen the splash screen
+    const hasVisited = localStorage.getItem('hasVisited');
+    
+    if (hasVisited) {
+      setStage('hidden');
+      return;
+    }
+
+    // If first visit, show the splash screen and mark as visited
+    setStage('showing');
+    localStorage.setItem('hasVisited', 'true');
+
     const fadeTimer = setTimeout(() => setStage('fading'), 1800); // Start fade out at 1.8s
     const hideTimer = setTimeout(() => setStage('hidden'), 2400); // Fully hide at 2.4s
     return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); }
