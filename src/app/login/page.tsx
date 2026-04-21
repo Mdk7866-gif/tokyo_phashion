@@ -41,9 +41,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    const cleaned = phone.replace(/\s/g, '');
-    if (!/^\+?\d{10,15}$/.test(cleaned)) {
-      setError('Enter a valid mobile number with country code (e.g. +91XXXXXXXXXX).');
+    if (phone.length !== 10) {
+      setError('Please enter exactly 10 digits.');
       return;
     }
 
@@ -52,7 +51,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/sendotp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleaned }),
+        body: JSON.stringify({ phone: `+${phone}` }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send OTP.');
@@ -101,7 +100,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/verifyotp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
+        body: JSON.stringify({ phone: `+${phone}`, code }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Verification failed.');
@@ -128,7 +127,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/sendotp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone: `+${phone}` }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to resend OTP.');
@@ -171,7 +170,7 @@ export default function LoginPage() {
         {step === 'phone' && (
           <form onSubmit={handleSendOtp} className="login-form">
             <h1 className="login-title">Welcome back</h1>
-            <p className="login-subtitle">Enter your mobile number to receive a one-time code.</p>
+            <p className="login-subtitle">Enter your 10-digit mobile number.</p>
 
             <div className="login-field">
               <label htmlFor="phone-input" className="login-label">Mobile Number</label>
@@ -181,8 +180,16 @@ export default function LoginPage() {
                   id="phone-input"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setPhone(val);
+                    if (val.length > 0 && val.length < 10) {
+                      setError('Mobile number must be 10 digits.');
+                    } else {
+                      setError('');
+                    }
+                  }}
+                  placeholder="9876543210"
                   className="login-input"
                   autoComplete="tel"
                   disabled={loading}

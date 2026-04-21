@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+
 import { normalizePhone } from '@/lib/twilio';
 import { verifyAccessToken } from '@/lib/auth';
 
@@ -102,6 +103,7 @@ export async function GET(request: NextRequest) {
         mobile_no: user.mobile_no,
         username: user.username || '',
         address: user.address || { full_address: '', cityname: '', statename: '', pincode: '' },
+        cartitems: user.cartitems || [],
       }
     });
 

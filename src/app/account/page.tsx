@@ -3,11 +3,16 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+import Image from "next/image";
+
+type Tab = "profile" | "cart" | "orders";
 
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -22,6 +27,9 @@ export default function AccountPage() {
     },
   });
 
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
@@ -30,6 +38,7 @@ export default function AccountPage() {
 
     if (user) {
       fetchProfile();
+      fetchOrders();
     }
   }, [user, authLoading, router]);
 
@@ -48,12 +57,27 @@ export default function AccountPage() {
               pincode: data.user.address?.pincode || "",
             },
           });
+          setCartItems(data.user.cartitems || []);
         }
       }
     } catch (error) {
       console.error("Failed to fetch profile", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("/api/user/orders");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setOrders(data.orders || []);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
     }
   };
 
@@ -107,96 +131,227 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-[70vh] bg-zinc-50 py-12 px-4 md:px-12">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-zinc-100">
-        <h1 className="text-3xl font-black tracking-tight mb-8">MY DASHBOARD</h1>
-        
-        <div className="mb-8 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
-          <p className="text-sm text-zinc-500 font-medium uppercase tracking-wider mb-1">Registered Mobile Number</p>
-          <p className="text-lg font-bold">{user?.mobile_no}</p>
+    <div className="min-h-screen bg-white py-12 px-4 md:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-8">
+          
+          {/* Sidebar Navigation */}
+          <div className="w-full md:w-64 space-y-2">
+            <h1 className="text-2xl font-black mb-6 tracking-tight">DASHBOARD</h1>
+            <nav className="flex flex-col space-y-1">
+              <button 
+                onClick={() => setActiveTab("profile")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs tracking-widest uppercase transition-all ${activeTab === "profile" ? "bg-black text-white" : "hover:bg-zinc-100 text-zinc-500"}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+              </button>
+              <button 
+                onClick={() => setActiveTab("cart")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs tracking-widest uppercase transition-all ${activeTab === "cart" ? "bg-black text-white" : "hover:bg-zinc-100 text-zinc-500"}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                My Carts
+                {cartItems.length > 0 && <span className="ml-auto bg-rose-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">{cartItems.length}</span>}
+              </button>
+              <button 
+                onClick={() => setActiveTab("orders")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs tracking-widest uppercase transition-all ${activeTab === "orders" ? "bg-black text-white" : "hover:bg-zinc-100 text-zinc-500"}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h6"/></svg>
+                My Orders
+              </button>
+            </nav>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 bg-zinc-50/50 rounded-3xl p-6 md:p-10 border border-zinc-100">
+            
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="text-xl font-black mb-8">PERSONAL INFORMATION</h2>
+                
+                <div className="mb-8 p-6 bg-white rounded-2xl border border-zinc-100 shadow-sm">
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mb-1">Registered Mobile</p>
+                  <p className="text-lg font-bold">{user?.mobile_no}</p>
+                </div>
+
+                {message && (
+                  <div className={`p-4 mb-6 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {message.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Username</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      placeholder="Your Name"
+                      className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md"
+                    />
+                  </div>
+
+                  <div className="pt-6 border-t border-zinc-100">
+                    <h3 className="text-sm font-black mb-6 uppercase tracking-wider">Default Shipping Address</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Full Address</label>
+                        <textarea
+                          name="full_address"
+                          value={formData.address.full_address}
+                          onChange={handleChange}
+                          placeholder="House No, Building, Street..."
+                          rows={3}
+                          className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md resize-none"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">City</label>
+                          <input
+                            type="text"
+                            name="cityname"
+                            value={formData.address.cityname}
+                            onChange={handleChange}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">State</label>
+                          <input
+                            type="text"
+                            name="statename"
+                            value={formData.address.statename}
+                            onChange={handleChange}
+                            className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Pincode</label>
+                        <input
+                          type="text"
+                          name="pincode"
+                          value={formData.address.pincode}
+                          onChange={handleChange}
+                          className="w-full md:w-1/2 bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full bg-black text-white px-8 py-4 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-all disabled:opacity-50 mt-4 shadow-lg shadow-black/10 active:scale-95"
+                  >
+                    {saving ? "Processing..." : "Update Profile"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Cart Tab */}
+            {activeTab === "cart" && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="text-xl font-black mb-8 uppercase tracking-tight">Shopping Cart</h2>
+                {cartItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-zinc-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-200 mb-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                    <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Your cart is empty</p>
+                    <Link href="/" className="mt-6 text-xs font-black underline underline-offset-4 tracking-widest uppercase">Start Shopping</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {cartItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-6 p-4 bg-white rounded-2xl border border-zinc-100 shadow-sm">
+                        <div className="relative w-20 h-24 bg-zinc-100 rounded-xl overflow-hidden shrink-0">
+                          {item.image ? (
+                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-300">NO IMAGE</div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{item.catagory || "Clothing"}</p>
+                          <h4 className="font-bold text-sm uppercase mb-1">{item.name}</h4>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold">₹{item.discountprice || item.originalprice}</span>
+                            {item.discountprice && item.originalprice > item.discountprice && (
+                              <span className="text-[10px] text-zinc-400 line-through">₹{item.originalprice}</span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-zinc-500 mt-2 uppercase font-medium">Size: {item.size || "M"} • Colour: {item.colour || "Standard"}</p>
+                        </div>
+                        <div className="pr-4">
+                          <button className="p-2 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Orders Tab */}
+            {activeTab === "orders" && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="text-xl font-black mb-8 uppercase tracking-tight">Order History</h2>
+                {orders.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-zinc-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-200 mb-4"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h6"/></svg>
+                    <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No orders found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {orders.map((order, idx) => (
+                      <div key={order._id || idx} className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
+                        <div className="p-4 bg-zinc-50/50 border-b border-zinc-100 flex flex-wrap justify-between gap-4">
+                          <div>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Order Date</p>
+                            <p className="text-xs font-bold">{new Date(order.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Amount</p>
+                            <p className="text-xs font-bold text-emerald-600">₹{order.total_amount || order.price || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Status</p>
+                            <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-[10px] font-black uppercase tracking-tighter">
+                              {order.status || "Processing"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          {/* Order items would go here if available */}
+                          <div className="flex items-center gap-4">
+                             <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0">
+                                {order.image && <Image src={order.image} alt={order.productname || ""} width={48} height={48} className="object-cover" />}
+                             </div>
+                             <div>
+                                <h5 className="text-xs font-bold uppercase">{order.productname || "Fashion Item"}</h5>
+                                <p className="text-[10px] text-zinc-500">Qty: {order.quantity || 1} • Size: {order.size || "M"}</p>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
         </div>
-
-        {message && (
-          <div className={`p-4 mb-6 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-            {message.text}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Enter your name"
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-black transition-colors"
-            />
-          </div>
-
-          <div className="pt-4 border-t border-zinc-100">
-            <h2 className="text-lg font-bold mb-4">Shipping Address</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Full Address</label>
-                <textarea
-                  name="full_address"
-                  value={formData.address.full_address}
-                  onChange={handleChange}
-                  placeholder="Street address, apartment, suite, etc."
-                  rows={3}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-black transition-colors resize-none"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">City</label>
-                  <input
-                    type="text"
-                    name="cityname"
-                    value={formData.address.cityname}
-                    onChange={handleChange}
-                    placeholder="City name"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-black transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">State</label>
-                  <input
-                    type="text"
-                    name="statename"
-                    value={formData.address.statename}
-                    onChange={handleChange}
-                    placeholder="State name"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-black transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Pincode</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={formData.address.pincode}
-                  onChange={handleChange}
-                  placeholder="Postal / Zip code"
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-black transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full md:w-auto bg-black text-white px-8 py-4 rounded-full font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-colors disabled:opacity-50 mt-6"
-          >
-            {saving ? "Saving Changes..." : "Save Profile"}
-          </button>
-        </form>
       </div>
     </div>
   );

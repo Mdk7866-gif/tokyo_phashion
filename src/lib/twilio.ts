@@ -8,20 +8,27 @@ const client = twilio(
 const SERVICE_SID = process.env.TWILIO_SERVICE_SID!;
 
 /**
- * Normalizes a phone number to E.164 format.
- * If it's 10 digits, assumes +91 (India).
- * Otherwise ensures it starts with +.
+ * Helper to ensure Twilio always gets a valid +91 Indian number.
+ */
+function normalizeForTwilio(phone: string): string {
+  const cleaned = phone.replace(/\D/g, '');
+  const last10 = cleaned.slice(-10);
+  return `+91${last10}`;
+}
+
+/**
+ * Normalizes a phone number to the internal database format.
+ * Strips 91 if present and returns + followed by 10 digits.
  */
 export function normalizePhone(phone: string): string {
-  // If it already starts with '+', just remove non-digits but keep the '+'
-  if (phone.startsWith('+')) {
-    return '+' + phone.substring(1).replace(/\D/g, '');
+  let cleaned = phone.replace(/\D/g, '');
+  
+  // If it has 12 digits and starts with 91, strip the country code
+  if (cleaned.length === 12 && cleaned.startsWith('91')) {
+    cleaned = cleaned.substring(2);
   }
   
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 10) {
-    return `+91${cleaned}`;
-  }
+  // Always return with a + prefix as per user requirement (e.g., +8511274216)
   return `+${cleaned}`;
 }
 
@@ -29,9 +36,9 @@ export function normalizePhone(phone: string): string {
  * Send OTP to the given phone number via Twilio Verify.
  */
 export async function sendOtp(phone: string): Promise<void> {
-  const normalized = normalizePhone(phone);
+  const forTwilio = normalizeForTwilio(phone);
   await client.verify.v2.services(SERVICE_SID).verifications.create({
-    to: normalized,
+    to: forTwilio,
     channel: 'sms',
   });
 }
@@ -41,10 +48,10 @@ export async function sendOtp(phone: string): Promise<void> {
  * Returns true if approved, false otherwise.
  */
 export async function verifyOtp(phone: string, code: string): Promise<boolean> {
-  const normalized = normalizePhone(phone);
+  const forTwilio = normalizeForTwilio(phone);
   const result = await client.verify.v2
     .services(SERVICE_SID)
-    .verificationChecks.create({ to: normalized, code });
+    .verificationChecks.create({ to: forTwilio, code });
   return result.status === 'approved';
 }
 
