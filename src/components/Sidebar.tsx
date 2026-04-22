@@ -169,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             if (hasSubs) toggleCollection(col.name);
                             else {
                               onClose();
-                              router.push(`/shop/${col.name.toLowerCase().replace(/ /g, '_')}`);
+                              router.push(`/shop?collection=${encodeURIComponent(col.name)}`);
                             }
                           }}
                         >
@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             {col.subcategories.map((sub) => (
                               <Link
                                 key={sub}
-                                href={`/shop/${col.name.toLowerCase().replace(/ /g, '_')}/${sub.toLowerCase().replace(/ /g, '_')}`}
+                                href={`/shop?collection=${encodeURIComponent(col.name)}&subcatagory=${encodeURIComponent(sub)}`}
                                 onClick={onClose}
                                 className="block p-2 text-[10px] text-gray-400 font-bold tracking-widest uppercase hover:text-white transition-colors"
                               >

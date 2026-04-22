@@ -49,6 +49,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
     discount_price: initialData?.discount_price?.toString() || '',
     stars: initialData?.stars?.toString() || '5.0',
     instoke: initialData?.instoke || 'In Stock',
+    description: initialData?.description || '',
   });
 
   const [sizes, setSizes] = useState<string[]>(initialData?.size || ['S', 'M', 'L', 'XL']);
@@ -145,6 +146,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
       stars: parseFloat(starsValue.toFixed(1)), 
       size: sizes.filter(s => s.trim() !== ''),
       images: images.filter(img => img.url !== ''),
+      description: formData.description,
     };
 
     const url = initialData ? '/api/admin/updateproduct' : '/api/admin/insert';
@@ -257,6 +259,17 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
                   <option value="Out of Stock">Out of Stock</option>
                   <option value="Limited">Limited</option>
                 </select>
+              </div>
+
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Description (Optional)</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={(e: any) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-[100px] resize-none"
+                  placeholder="e.g. Premium cotton t-shirt with oversized fit and vintage wash."
+                />
               </div>
             </div>
 
