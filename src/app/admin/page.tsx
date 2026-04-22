@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductEntryForm from "@/components/admin/ProductEntryForm";
 
@@ -10,71 +10,217 @@ function AdminDashboard() {
   const subcategory = searchParams.get('subcategory');
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
+  useEffect(() => {
+    if (collection) {
+      fetchProducts();
+    } else {
+      setProducts([]);
+    }
+  }, [collection, subcategory]);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch(`/api/admin/getproducts?collection=${collection}${subcategory ? `&subcategory=${subcategory}` : ''}`);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products.filter((p: any) => !p.isPlaceholder));
+      }
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/admin/deleteproduct?collection=${collection}&id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchProducts();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete product");
+      }
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+    }
+  };
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-[60vh] flex flex-col ${showAddForm ? '' : 'items-center justify-center'}`}>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-8 min-h-[75vh] flex flex-col">
       
-      {!showAddForm && (
-        <>
-          <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter uppercase text-center">Admin Dashboard</h1>
-          <p className="text-gray-500 text-center max-w-md mb-8">
-            Welcome to the Tokyo Phashion Admin Panel. Use the sidebar menu to manage your product collections.
-          </p>
-        </>
-      )}
-
-      {(collection || subcategory) && (
-        <div className={`w-full ${showAddForm ? '' : 'max-w-2xl text-center'}`}>
-          {!showAddForm && (
-            <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl mb-6">
-              <h2 className="text-xl font-bold uppercase tracking-widest text-gray-800 mb-4">Current View</h2>
-              <div className="flex items-center justify-center gap-4 text-sm font-medium mb-6 flex-wrap">
-                {collection && (
-                  <span className="bg-black text-white px-4 py-2 rounded-lg tracking-wider">
-                    Collection: {collection.replace(/_/g, ' ')}
-                  </span>
-                )}
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-6 border-b border-gray-50">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">Admin Panel</h1>
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            {collection ? (
+              <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest">
+                <span className="text-gray-400">Collection:</span>
+                <span className="bg-black text-white px-3 py-1 rounded-full">{collection.replace(/_/g, ' ')}</span>
                 {subcategory && (
-                  <span className="bg-gray-200 text-black px-4 py-2 rounded-lg tracking-wider">
-                    Subcategory: {subcategory.replace(/_/g, ' ')}
-                  </span>
+                  <>
+                    <span className="text-gray-300">/</span>
+                    <span className="text-gray-400">Subcategory:</span>
+                    <span className="bg-gray-200 text-black px-3 py-1 rounded-full">{subcategory.replace(/_/g, ' ')}</span>
+                  </>
                 )}
               </div>
-              
-              {collection && subcategory && (
-                <button 
-                  onClick={() => setShowAddForm(true)}
-                  className="bg-black text-white px-6 py-3 rounded-xl font-bold text-sm tracking-widest uppercase hover:bg-gray-800 hover:-translate-y-0.5 transition-all shadow-md inline-flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Add Product
-                </button>
-              )}
-            </div>
-          )}
-
-          {showAddForm && collection && subcategory && (
-            <ProductEntryForm 
-              collectionName={collection} 
-              subcategoryName={subcategory} 
-              onCancel={() => setShowAddForm(false)}
-              onSuccess={() => {
-                // Optionally auto-close the form after success
-                // setShowAddForm(false);
-              }}
-            />
-          )}
-
-          {!showAddForm && (
-            <div className="mt-8">
-               <p className="text-gray-400 text-xs tracking-widest uppercase">
-                 Product list will go here...
-               </p>
-            </div>
-          )}
+            ) : (
+              <span className="text-gray-400 text-xs font-bold uppercase tracking-widest italic">Select a collection from the sidebar to manage products</span>
+            )}
+          </div>
         </div>
+
+        {collection && subcategory && (
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="w-full md:w-auto bg-black text-white px-8 py-4 rounded-2xl font-black text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Product
+          </button>
+        )}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1">
+        {loadingProducts ? (
+          <div className="flex flex-col items-center justify-center py-32 opacity-30">
+            <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-black mb-6"></div>
+            <p className="text-xs font-black uppercase tracking-[0.3em]">Syncing Database...</p>
+          </div>
+        ) : products.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-8">
+            {products.map((product) => (
+              <div key={product._id} className="group bg-white border border-gray-100 rounded-[1rem] md:rounded-[2rem] overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col">
+                <div className="relative aspect-[4/5] bg-gray-50 overflow-hidden">
+                  
+                  {/* Image Display - 2x2 grid if multiple images */}
+                  <div className={`w-full h-full grid ${product.images && product.images.length > 1 ? "grid-cols-2 grid-rows-2" : "grid-cols-1 grid-rows-1"}`}>
+                    {product.images && product.images.length > 0 ? (
+                      product.images.slice(0, 4).map((img: any, idx: number) => (
+                        <img 
+                          key={idx}
+                          src={img.url} 
+                          alt={`${product.productname} ${idx}`} 
+                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out ${product.images.length === 1 ? "" : "border-[0.5px] border-white/20"}`} 
+                        />
+                      ))
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Actions Overlay - Always visible on mobile, hover on desktop */}
+                  <div className="absolute top-2 right-2 md:top-4 md:right-4 flex flex-col gap-1 md:gap-2 transition-transform duration-500">
+                    <button 
+                      onClick={() => handleDeleteProduct(product._id)}
+                      className="w-7 h-7 md:w-10 md:h-10 bg-white/95 backdrop-blur-md text-red-500 rounded-full shadow-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all hover:rotate-12"
+                      title="Delete Product"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => setEditingProduct(product)}
+                      className="w-7 h-7 md:w-10 md:h-10 bg-white/95 backdrop-blur-md text-black rounded-full shadow-2xl flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                      title="Edit Product"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Stock Badge */}
+                  <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4">
+                    <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5 rounded-full backdrop-blur-md shadow-sm ${
+                      product.instoke === 'In Stock' 
+                      ? 'bg-green-500/10 text-green-600 border border-green-500/20' 
+                      : 'bg-red-500/10 text-red-600 border border-red-500/20'
+                    }`}>
+                      {product.instoke}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 md:p-6 flex flex-col flex-1">
+                  <h3 className="font-black text-[10px] md:text-sm tracking-tight uppercase truncate mb-1 md:mb-3 text-gray-900">{product.productname}</h3>
+                  <div className="mt-auto flex items-end justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Price</span>
+                      <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+                        <span className="font-black text-xs md:text-base">₹{product.discount_price}</span>
+                        <span className="text-gray-300 text-[8px] md:text-xs line-through font-bold">₹{product.original_price}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 bg-zinc-100 px-1 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg">
+                      <span className="text-[9px] md:text-[11px] font-black">{parseFloat(product.stars).toFixed(1)}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500 md:w-2.5 md:h-2.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300">
+                <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M12 18h.01"/><path d="M12 14h.01"/>
+              </svg>
+            </div>
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">
+              {collection ? "Inventory is empty" : "No collection active"}
+            </h2>
+            <p className="text-gray-400 font-medium text-sm max-w-xs mx-auto">
+              {collection 
+                ? "Start adding your first product to this category using the button above." 
+                : "Please select a collection and subcategory from the sidebar to view or manage your stock."}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {showAddForm && collection && subcategory && (
+        <ProductEntryForm 
+          collectionName={collection} 
+          subcategoryName={subcategory} 
+          onCancel={() => setShowAddForm(false)}
+          onSuccess={() => {
+            setShowAddForm(false);
+            fetchProducts();
+          }}
+        />
+      )}
+
+      {editingProduct && collection && subcategory && (
+        <ProductEntryForm 
+          collectionName={collection} 
+          subcategoryName={subcategory} 
+          initialData={editingProduct}
+          onCancel={() => setEditingProduct(null)}
+          onSuccess={() => {
+            setEditingProduct(null);
+            fetchProducts();
+          }}
+        />
       )}
     </div>
   );
