@@ -9,7 +9,7 @@ import BackToTop from '@/components/BackToTop';
  * Routes where the global Navbar / Footer / BackToTop should be hidden.
  * The login page gets its own fullscreen standalone UI.
  */
-const NO_SHELL_PATHS = ['/login'];
+const NO_SHELL_PATHS = ['/login', '/admin'];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
