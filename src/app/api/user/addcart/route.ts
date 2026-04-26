@@ -51,6 +51,26 @@ export async function POST(request: NextRequest) {
     const db = mongoClient.db(DB_NAME);
     const users = db.collection('userdata');
 
+    // Check if exactly the same product (name, link, size, colour) already exists in cart
+    const existingItem = await users.findOne({
+      mobile_no: normalized,
+      cartitems: {
+        $elemMatch: {
+          name: name,
+          link: link,
+          size: size,
+          colour: colour
+        }
+      }
+    });
+
+    if (existingItem) {
+      return NextResponse.json(
+        { error: 'Item already in cart' },
+        { status: 400 }
+      );
+    }
+
     const cartItem = {
       name,
       link,
