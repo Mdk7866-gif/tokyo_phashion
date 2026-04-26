@@ -3,6 +3,7 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductEntryForm from "@/components/admin/ProductEntryForm";
+import AdminOverview from "@/components/admin/AdminOverview";
 
 function AdminDashboard() {
   const searchParams = useSearchParams();
@@ -54,38 +55,38 @@ function AdminDashboard() {
     }
   };
 
+  if (!collection) {
+    return <AdminOverview />;
+  }
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-8 min-h-[75vh] flex flex-col">
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 md:p-8 min-h-[75vh] flex flex-col">
       
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-6 border-b border-gray-50">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b border-gray-100">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase leading-none">Admin Panel</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 uppercase tracking-tight">Manage Inventory</h1>
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {collection ? (
-              <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest">
-                <span className="text-gray-400">Collection:</span>
-                <span className="bg-black text-white px-3 py-1 rounded-full">{collection.replace(/_/g, ' ')}</span>
-                {subcategory && (
-                  <>
-                    <span className="text-gray-300">/</span>
-                    <span className="text-gray-400">Subcategory:</span>
-                    <span className="bg-gray-200 text-black px-3 py-1 rounded-full">{subcategory.replace(/_/g, ' ')}</span>
-                  </>
-                )}
-              </div>
-            ) : (
-              <span className="text-gray-400 text-xs font-bold uppercase tracking-widest italic">Select a collection from the sidebar to manage products</span>
-            )}
+            <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-wider">
+              <span className="text-gray-400">Collection:</span>
+              <span className="bg-zinc-100 text-zinc-900 px-3 py-1 rounded-md">{collection.replace(/_/g, ' ')}</span>
+              {subcategory && (
+                <>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-gray-400">Subcategory:</span>
+                  <span className="bg-black text-white px-3 py-1 rounded-md">{subcategory.replace(/_/g, ' ')}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {collection && subcategory && (
+        {subcategory && (
           <button 
             onClick={() => setShowAddForm(true)}
-            className="w-full md:w-auto bg-black text-white px-8 py-4 rounded-2xl font-black text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-all shadow-xl hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
+            className="w-full md:w-auto bg-black text-white px-6 py-3.5 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Add Product
@@ -124,7 +125,7 @@ function AdminDashboard() {
                     )}
                   </div>
                   
-                  {/* Actions Overlay - Always visible on mobile, hover on desktop */}
+                  {/* Actions Overlay */}
                   <div className="absolute top-2 right-2 md:top-4 md:right-4 flex flex-col gap-1 md:gap-2 transition-transform duration-500">
                     <button 
                       onClick={() => handleDeleteProduct(product._id)}
@@ -168,12 +169,6 @@ function AdminDashboard() {
                         <span className="text-gray-300 text-[8px] md:text-xs line-through font-bold">₹{product.original_price}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 bg-zinc-100 px-1 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg">
-                      <span className="text-[9px] md:text-[11px] font-black">{parseFloat(product.stars).toFixed(1)}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500 md:w-2.5 md:h-2.5">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                      </svg>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -187,12 +182,10 @@ function AdminDashboard() {
               </svg>
             </div>
             <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">
-              {collection ? "Inventory is empty" : "No collection active"}
+              Inventory is empty
             </h2>
-            <p className="text-gray-400 font-medium text-sm max-w-xs mx-auto">
-              {collection 
-                ? "Start adding your first product to this category using the button above." 
-                : "Please select a collection and subcategory from the sidebar to view or manage your stock."}
+            <p className="text-gray-400 font-medium text-sm max-w-xs mx-auto uppercase tracking-widest leading-loose">
+              Start adding your first product to this category using the button above.
             </p>
           </div>
         )}
