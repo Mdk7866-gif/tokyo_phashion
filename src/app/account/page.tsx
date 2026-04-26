@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,7 +12,15 @@ export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "cart" || tab === "profile" || tab === "orders") {
+      setActiveTab(tab as Tab);
+    }
+  }, [searchParams]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -119,6 +127,31 @@ export default function AccountPage() {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteCartItem = async (item: any) => {
+    try {
+      const res = await fetch("/api/user/deletecartitem", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mobile_no: user?.mobile_no,
+          name: item.name,
+          link: item.link,
+          size: item.size,
+          colour: item.colour,
+        }),
+      });
+
+      if (res.ok) {
+        setCartItems((prev) => prev.filter((i) => 
+          !(i.name === item.name && i.link === item.link && i.size === item.size && i.colour === item.colour)
+        ));
+        window.dispatchEvent(new Event('cart-updated'));
+      }
+    } catch (error) {
+      console.error("Failed to delete item", error);
     }
   };
 
@@ -279,9 +312,12 @@ export default function AccountPage() {
                             <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-300">NO IMAGE</div>
                           )}
                         </div>
-                        <div className="flex-1">
+                        <div 
+                          className="flex-1 cursor-pointer group/item"
+                          onClick={() => router.push(`/${item.link}`)}
+                        >
                           <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{item.catagory || "Clothing"}</p>
-                          <h4 className="font-bold text-sm uppercase mb-1">{item.name}</h4>
+                          <h4 className="font-bold text-sm uppercase mb-1 group-hover/item:underline">{item.name}</h4>
                           <div className="flex items-center gap-3">
                             <span className="text-xs font-bold">₹{item.discountprice || item.originalprice}</span>
                             {item.discountprice && item.originalprice > item.discountprice && (
@@ -291,12 +327,25 @@ export default function AccountPage() {
                           <p className="text-[10px] text-zinc-500 mt-2 uppercase font-medium">Size: {item.size || "M"} • Colour: {item.colour || "Standard"}</p>
                         </div>
                         <div className="pr-4">
-                          <button className="p-2 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => handleDeleteCartItem(item)}
+                            className="p-2 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors"
+                          >
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                           </button>
                         </div>
                       </div>
                     ))}
+                    
+                    <div className="mt-10 p-8 bg-black text-white rounded-3xl space-y-6 shadow-2xl">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Bag Total</span>
+                        <span className="text-2xl font-black tracking-tighter">₹{cartItems.reduce((acc, item) => acc + (item.discountprice || item.originalprice), 0)}</span>
+                      </div>
+                      <button className="w-full bg-white text-black h-16 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase hover:bg-zinc-100 transition-all active:scale-95">
+                        Proceed to Checkout
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

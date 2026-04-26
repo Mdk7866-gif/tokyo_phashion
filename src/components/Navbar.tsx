@@ -67,7 +67,7 @@ const Navbar = () => {
     if (!user) {
       router.push("/login");
     } else {
-      router.push("/cart");
+      router.push("/account?tab=cart");
     }
   };
 
