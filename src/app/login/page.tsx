@@ -25,6 +25,7 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isGoogleBlocked, setIsGoogleBlocked] = useState(false);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -97,8 +98,14 @@ export default function LoginPage() {
       }
     }, 100);
 
-    // Timeout after 5 seconds
-    const timeout = setTimeout(() => clearInterval(interval), 5000);
+    // Timeout after 6 seconds to detect blocking
+    const timeout = setTimeout(() => {
+      if (!window.google) {
+        console.warn("Google script seems to be blocked or taking too long.");
+        setIsGoogleBlocked(true);
+      }
+      clearInterval(interval);
+    }, 6000);
 
     return () => {
       clearInterval(interval);
@@ -129,6 +136,19 @@ export default function LoginPage() {
               <div className="login-loading-state">
                 <div className="login-spinner" />
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-4">Authenticating...</span>
+              </div>
+            ) : isGoogleBlocked ? (
+              <div className="google-blocked-state">
+                <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-4 text-center px-4">
+                  Google Sign-In is blocked. <br/> 
+                  <span className="text-[10px] text-gray-400 normal-case font-medium mt-1 block">Try disabling ad-blockers or tracking protection (especially in Edge/Safari).</span>
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="login-retry-btn"
+                >
+                  Retry Login
+                </button>
               </div>
             ) : (
               <div ref={googleBtnRef} className="google-btn-wrapper" />
@@ -260,6 +280,37 @@ export default function LoginPage() {
           font-weight: 600;
           margin-top: 1rem;
           border: 1px solid #fee2e2;
+        }
+
+        .google-blocked-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          animation: fadeIn 0.5s ease;
+        }
+
+        .login-retry-btn {
+          padding: 0.75rem 2rem;
+          background: #000;
+          color: #fff;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          transition: all 0.2s ease;
+        }
+
+        .login-retry-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         .login-footer {

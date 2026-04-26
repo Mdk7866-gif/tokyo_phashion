@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        router.push("/admin");
+        window.location.href = "/admin";
       } else {
         setError("Incorrect password. Access denied.");
         setPassword("");

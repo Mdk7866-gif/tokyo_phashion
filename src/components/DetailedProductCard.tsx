@@ -40,6 +40,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
   const [selectedSize, setSelectedSize] = useState(product.size?.[0] || "");
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
@@ -86,7 +87,8 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
       const data = await res.json();
       if (res.ok) {
         window.dispatchEvent(new Event('cart-updated'));
-        alert("Added to cart!");
+        setAddedToCart(true);
+        setTimeout(() => setAddedToCart(false), 2000);
       } else {
         alert(data.error || "Failed to add to cart");
       }
@@ -248,10 +250,22 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
                 </div>
                 <button 
                   onClick={handleAddToCart}
-                  disabled={isAdding}
-                  className="flex-1 bg-black text-white h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-all disabled:opacity-50 active:scale-95"
+                  disabled={isAdding || addedToCart}
+                  className="flex-1 bg-black text-white h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
                 >
-                  {isAdding ? "Adding..." : "Add to Cart"}
+                  {isAdding ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-zinc-500 border-t-white rounded-full animate-spin"></div>
+                      Adding...
+                    </>
+                  ) : addedToCart ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      Added!
+                    </>
+                  ) : (
+                    "Add to Cart"
+                  )}
                 </button>
               </div>
               <button 

@@ -79,51 +79,44 @@ function ShopContent() {
     }
   }, [collection, subcatagory, productId, fetchProducts, fetchSingleProduct]);
 
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-zinc-200 border-t-black rounded-full animate-spin"></div>
-        <p className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Syncing Catalog...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center">
-        <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Oops! Something went wrong</h2>
-        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">{error}</p>
-        <div className="flex gap-4">
-          <button onClick={() => window.history.back()} className="mt-8 px-8 py-4 border-2 border-black text-black font-black text-xs tracking-widest uppercase rounded-full">Go Back</button>
-          <button onClick={() => window.location.reload()} className="mt-8 px-8 py-4 bg-black text-white font-black text-xs tracking-widest uppercase rounded-full">Retry</button>
-        </div>
-      </div>
-    );
-  }
-
   if (productId && singleProduct) {
     return (
       <div className="pt-24 pb-16">
-        {/* Pass the original collection name just in case DetailedProductCard needs it */}
         <DetailedProductCard product={{...singleProduct, collectionname: collection || ''}} />
       </div>
     );
   }
 
   return (
-    <div className="pt-32 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
-      {/* Shop Header */}
-      <div className="mb-12 md:mb-16 space-y-2 md:space-y-4">
-        <p className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-gray-400 uppercase">
-          {collection?.replace(/_/g, ' ')}
-        </p>
-        <h1 className="text-4xl md:text-7xl font-black text-black tracking-tighter uppercase leading-none">
-          {subcatagory ? subcatagory.replace(/_/g, ' ') : collection?.replace(/_/g, ' ')}
-        </h1>
-        <div className="h-1 w-12 md:w-20 bg-black mt-4 md:mt-6"></div>
-      </div>
+    <div className="pt-20 md:pt-28 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
+      {/* Shop Header - only show if not viewing a single product */}
+      {!productId && (
+        <div className="mb-12 md:mb-16 space-y-2 md:space-y-4">
+          <p className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-gray-400 uppercase min-h-[14px]">
+            {collection?.replace(/_/g, ' ')}
+          </p>
+          <h1 className="text-4xl md:text-7xl font-black text-black tracking-tighter uppercase leading-none min-h-[1em]">
+            {subcatagory ? subcatagory.replace(/_/g, ' ') : collection?.replace(/_/g, ' ')}
+          </h1>
+          <div className="h-1 w-12 md:w-20 bg-black mt-4 md:mt-6"></div>
+        </div>
+      )}
 
-      {products.length > 0 ? (
+      {loading ? (
+        <div className="min-h-[40vh] flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-zinc-200 border-t-black rounded-full animate-spin"></div>
+          <p className="mt-6 text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Syncing Catalog...</p>
+        </div>
+      ) : error ? (
+        <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 text-center">
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Oops! Something went wrong</h2>
+          <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">{error}</p>
+          <div className="flex gap-4">
+            <button onClick={() => window.history.back()} className="mt-8 px-8 py-4 border-2 border-black text-black font-black text-xs tracking-widest uppercase rounded-full hover:bg-black hover:text-white transition-colors">Go Back</button>
+            <button onClick={() => window.location.reload()} className="mt-8 px-8 py-4 bg-black text-white font-black text-xs tracking-widest uppercase rounded-full hover:bg-zinc-800 transition-colors">Retry</button>
+          </div>
+        </div>
+      ) : products.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-12">
           {products.map((product) => (
             <ShortProductCard 
