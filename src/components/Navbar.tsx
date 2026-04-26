@@ -9,7 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { user, loading, logout } = useAuth();
   const [cartCount, setCartCount] = useState(0);
@@ -23,21 +22,7 @@ const Navbar = () => {
   }, []);
 
   // Close user menu on outside click
-  useEffect(() => {
-    if (!showUserMenu) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest("#navbar-user-menu-root")) setShowUserMenu(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showUserMenu]);
 
-  async function handleLogout() {
-    setShowUserMenu(false);
-    await logout();
-    router.push("/");
-  }
 
   useEffect(() => {
     if (user) {
@@ -172,60 +157,6 @@ const Navbar = () => {
               </button>
             )}
 
-            {/* ── Auth Button ── */}
-            {!loading && (
-              <>
-                {!user ? (
-                  /* Login button */
-                  <Link
-                    id="navbar-login-btn"
-                    href="/login"
-                    className="navbar-login-btn"
-                    style={{
-                      backgroundColor: "#000",
-                      color: "#fff",
-                      border: scrolled ? "1px solid rgba(255,255,255,0.3)" : "none",
-                    }}
-                  >
-                    Login
-                  </Link>
-                ) : (
-                  /* User avatar / menu */
-                  <div id="navbar-user-menu-root" style={{ position: "relative" }}>
-                    <button
-                      id="navbar-user-avatar"
-                      onClick={() => setShowUserMenu((v) => !v)}
-                      className="navbar-avatar-btn"
-                      title={user.mobile_no}
-                      aria-label="Account menu"
-                    >
-                      {/* Avatar letter from last 2 digits of mobile_no */}
-                      <span>{user.mobile_no.slice(-2)}</span>
-                    </button>
-
-                    {/* Dropdown */}
-                    {showUserMenu && (
-                      <div className="navbar-user-dropdown">
-                        <div className="navbar-user-phone">
-                          <span>📱</span>
-                          <span>{user.mobile_no}</span>
-                        </div>
-                        <hr className="navbar-user-divider" />
-                        <Link href="/account" onClick={() => setShowUserMenu(false)} className="navbar-user-item">
-                          My Account
-                        </Link>
-                        <Link href="/orders" onClick={() => setShowUserMenu(false)} className="navbar-user-item">
-                          My Orders
-                        </Link>
-                        <button id="navbar-logout-btn" onClick={handleLogout} className="navbar-user-item logout">
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
           </div>
         </div>
       </header>
@@ -252,87 +183,6 @@ const Navbar = () => {
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .navbar-avatar-btn {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          background: #000;
-          color: #fff;
-          font-size: 0.7rem;
-          font-weight: 800;
-          border: 1px solid rgba(255,255,255,0.1);
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          letter-spacing: 0.05em;
-          transition: all 0.3s ease;
-        }
-        .navbar-avatar-btn:hover {
-          transform: scale(1.08);
-          background: #333;
-        }
-        /* When scrolled, make avatar white for visibility on black navbar */
-        header[style*="rgb(10, 10, 10)"] .navbar-avatar-btn {
-          background: #fff;
-          color: #000;
-        }
-
-        .navbar-user-dropdown {
-          position: absolute;
-          top: calc(100% + 10px);
-          right: 0;
-          min-width: 200px;
-          background: rgba(15,15,20,0.97);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 14px;
-          padding: 0.6rem 0;
-          box-shadow: 0 20px 48px rgba(0,0,0,0.6);
-          animation: dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
-          z-index: 100;
-        }
-        @keyframes dropIn {
-          from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .navbar-user-phone {
-          display: flex; align-items: center; gap: 0.5rem;
-          padding: 0.5rem 1rem 0.4rem;
-          font-size: 0.75rem;
-          color: rgba(255,255,255,0.45);
-        }
-
-        .navbar-user-divider {
-          border: none;
-          border-top: 1px solid rgba(255,255,255,0.07);
-          margin: 0.3rem 0;
-        }
-
-        .navbar-user-item {
-          display: block;
-          width: 100%;
-          padding: 0.55rem 1rem;
-          font-size: 0.82rem;
-          color: rgba(255,255,255,0.75);
-          text-decoration: none;
-          background: none;
-          border: none;
-          text-align: left;
-          cursor: pointer;
-          font-family: inherit;
-          transition: background 0.15s, color 0.15s;
-        }
-        .navbar-user-item:hover {
-          background: rgba(255,255,255,0.06);
-          color: #fff;
-        }
-        .navbar-user-item.logout {
-          color: #f87171;
-          margin-top: 0.1rem;
-        }
-        .navbar-user-item.logout:hover {
-          background: rgba(239,68,68,0.08);
-          color: #fca5a5;
-        }
       `}</style>
     </>
   );
