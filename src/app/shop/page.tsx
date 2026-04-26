@@ -81,14 +81,14 @@ function ShopContent() {
 
   if (productId && singleProduct) {
     return (
-      <div className="pt-24 pb-16">
+      <div className="pt-8 pb-16">
         <DetailedProductCard product={{...singleProduct, collectionname: collection || ''}} />
       </div>
     );
   }
 
   return (
-    <div className="pt-20 md:pt-28 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
+    <div className="pt-4 md:pt-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
       {/* Shop Header - only show if not viewing a single product */}
       {!productId && (
         <div className="mb-12 md:mb-16 space-y-2 md:space-y-4">
