@@ -18,8 +18,9 @@ export async function proxy(request: NextRequest) {
   // 1. Check Admin Paths
   const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
   if (isAdminPath) {
-    // Skip auth for login page and auth API
-    if (pathname === '/api/admin/auth' || pathname === '/admin/login') {
+    // Skip auth for login page, auth API, and public collection fetching
+    const PUBLIC_ADMIN_APIS = ['/api/admin/auth', '/api/admin/getallcollection'];
+    if (pathname === '/admin/login' || PUBLIC_ADMIN_APIS.includes(pathname)) {
       return NextResponse.next();
     }
 
