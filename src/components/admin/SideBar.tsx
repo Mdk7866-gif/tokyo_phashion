@@ -132,6 +132,26 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleDeleteSubcategory = async (colName: string, subName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!confirm(`Are you sure you want to delete subcategory "${subName}"? All products within this subcategory will be deleted.`)) return;
+    
+    try {
+      const res = await fetch(`/api/admin/deletesubcategory?collection=${colName}&subcategory=${subName}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchCollections();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete subcategory");
+      }
+    } catch (err) {
+      console.error("Failed to delete subcategory:", err);
+    }
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -275,14 +295,24 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         <div className="pl-4 border-l border-white/10 ml-4 mt-2 mb-2 space-y-2">
                           {col.subcategories && col.subcategories.length > 0 ? (
                             col.subcategories.map((sub) => (
-                              <Link
-                                key={sub}
-                                href={`/admin/?collection=${col.name}&subcategory=${sub}`}
-                                onClick={onClose}
-                                className="block p-2 text-[11px] text-gray-400 font-bold tracking-widest uppercase hover:text-white transition-colors truncate"
-                              >
-                                {sub.replace(/_/g, ' ')}
-                              </Link>
+                              <div key={sub} className="flex items-center justify-between group/sub hover:bg-white/5 rounded-md pr-2 transition-colors">
+                                <Link
+                                  href={`/admin/?collection=${col.name}&subcategory=${sub}`}
+                                  onClick={onClose}
+                                  className="flex-1 p-2 text-[11px] text-gray-400 font-bold tracking-widest uppercase hover:text-white transition-colors truncate"
+                                >
+                                  {sub.replace(/_/g, ' ')}
+                                </Link>
+                                <button 
+                                  onClick={(e) => handleDeleteSubcategory(col.name, sub, e)}
+                                  className="p-1 text-red-500/60 hover:text-red-500 transition-colors shrink-0"
+                                  title="Delete Subcategory"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                  </svg>
+                                </button>
+                              </div>
                             ))
                           ) : (
                             <div className="p-2 text-[10px] text-gray-600 tracking-widest uppercase">No subcategories</div>
