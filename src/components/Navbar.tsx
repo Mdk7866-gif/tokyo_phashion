@@ -12,6 +12,7 @@ const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { user, loading, logout } = useAuth();
+  const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,38 @@ const Navbar = () => {
     await logout();
     router.push("/");
   }
+
+  useEffect(() => {
+    if (user) {
+      const fetchCartItems = async () => {
+        try {
+          const res = await fetch("/api/user/getcartitems");
+          if (res.ok) {
+            const data = await res.json();
+            setCartCount(data.cartitems?.length || 0);
+          }
+        } catch (error) {
+          console.error("Failed to fetch cart count:", error);
+        }
+      };
+      fetchCartItems();
+      
+      // Also refresh on a custom event if we add items elsewhere
+      const handleCartRefresh = () => fetchCartItems();
+      window.addEventListener('cart-updated', handleCartRefresh);
+      return () => window.removeEventListener('cart-updated', handleCartRefresh);
+    } else {
+      setCartCount(0);
+    }
+  }, [user]);
+
+  const handleCartClick = () => {
+    if (!user) {
+      router.push("/login");
+    } else {
+      router.push("/cart");
+    }
+  };
 
   /* ── icon button base styles ── */
   const iconBtn = (dark: boolean) => ({
@@ -116,8 +149,9 @@ const Navbar = () => {
             </button>
 
             {/* Cart */}
-            {!loading && user && (
+            {!loading && (
               <button
+                onClick={handleCartClick}
                 style={iconBtn(true)}
                 className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
                 aria-label="Cart"
@@ -127,12 +161,14 @@ const Navbar = () => {
                   <line x1="3" x2="21" y1="6" y2="6"/>
                   <path d="M16 10a4 4 0 0 1-8 0"/>
                 </svg>
-                <span
-                  className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
-                  style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
-                >
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
+                    style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
               </button>
             )}
 

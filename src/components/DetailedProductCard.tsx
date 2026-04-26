@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 interface Product {
   _id: string;
   productname: string;
@@ -24,9 +25,63 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(product.size?.[0] || "");
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const { user } = useAuth();
+  const router = useRouter();
 
   const selectedImage = product.images?.[selectedColorIndex]?.url || "";
   const selectedColorName = product.images?.[selectedColorIndex]?.colurname || "";
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    
+    if (!selectedSize) {
+      alert("Please select a size");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user.mobile_no}`;
+
+      const res = await fetch("/api/user/addcart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile_no: user.mobile_no,
+          name: product.productname,
+          link,
+          originalprice: product.original_price,
+          discountprice: product.discount_price,
+          image: selectedImage,
+          colour: selectedColorName,
+          size: selectedSize,
+          catagory: product.collectionname,
+          subcatagory: product.subcatagory,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        window.dispatchEvent(new Event('cart-updated'));
+        alert("Added to cart!");
+      } else {
+        alert(data.error || "Failed to add to cart");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-10 lg:px-20 py-10 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -149,8 +204,12 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
                     +
                   </button>
                 </div>
-                <button className="flex-1 bg-black text-white h-16 rounded-[1.5rem] font-black text-[11px] md:text-xs tracking-[0.3em] uppercase hover:bg-zinc-800 transition-all shadow-2xl hover:-translate-y-1 active:translate-y-0">
-                  ADD TO CART
+                <button 
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
+                  className="flex-1 bg-black text-white h-16 rounded-[1.5rem] font-black text-[11px] md:text-xs tracking-[0.3em] uppercase hover:bg-zinc-800 transition-all shadow-2xl hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  {isAdding ? "ADDING..." : "ADD TO CART"}
                 </button>
               </div>
               <button className="w-full bg-white border-2 border-black text-black h-16 rounded-[1.5rem] font-black text-[11px] md:text-xs tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all shadow-lg active:scale-[0.98]">

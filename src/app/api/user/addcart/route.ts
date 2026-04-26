@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     const { 
       mobile_no, 
       name, 
-      link, 
+      link,    //this is link of the product which user wants to buy e.g.shop?collection=pants&subcatagory=casual&id=69e8cb5e547c763445f44fa4
       originalprice, 
       discountprice, 
-      image, 
+      image, // cloudinary url of images
       colour, 
       size, 
       catagory, 
