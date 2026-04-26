@@ -51,8 +51,13 @@ export default function AdminOrderReceivedPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-8">Orders Received (In Progress)</h1>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Orders Received (In Progress)</h1>
+        <div className="bg-black text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest shadow-md">
+          Total Received: {orders.length}
+        </div>
+      </div>
       
       {orders.length === 0 ? (
         <div className="bg-white p-10 rounded-2xl border border-zinc-100 text-center">
@@ -61,8 +66,8 @@ export default function AdminOrderReceivedPage() {
       ) : (
         <div className="space-y-6">
           {orders.map((order, idx) => (
-            <div key={order._id || idx} className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-              <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 flex flex-wrap justify-between gap-6">
+            <div key={order._id || idx} className="bg-white rounded-3xl border-2 border-zinc-200 shadow-md overflow-hidden">
+              <div className="p-4 md:p-6 bg-zinc-50/80 border-b border-zinc-200 flex flex-wrap justify-between gap-6">
                 <div>
                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Order Date</p>
                   <p className="text-sm font-black">{new Date(order.created_at).toLocaleString()}</p>

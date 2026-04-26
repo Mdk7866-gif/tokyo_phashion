@@ -29,19 +29,54 @@ export default function AdminCustomerPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-black uppercase tracking-tight mb-8">Customers List</h1>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Customers List</h1>
+        <div className="bg-black text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest shadow-md">
+          Total Customers: {customers.length}
+        </div>
+      </div>
       
       {customers.length === 0 ? (
         <div className="bg-white p-10 rounded-2xl border border-zinc-100 text-center">
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">No customers found.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-white rounded-3xl border-2 border-zinc-200 shadow-md overflow-hidden">
+          {/* Mobile view */}
+          <div className="md:hidden divide-y divide-zinc-100">
+            {customers.map((cust, idx) => (
+              <div key={idx} className="p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-bold text-sm uppercase">{cust.username || "Unknown"}</p>
+                    <p className="text-xs font-bold text-zinc-500">{cust.mobile_no}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Joined</p>
+                    <p className="text-[11px] font-bold">{cust.created_At ? new Date(cust.created_At).toLocaleDateString() : "N/A"}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Address</p>
+                  <p className="text-xs font-medium text-zinc-600 line-clamp-2">{cust.address?.full_address || "N/A"}</p>
+                  <p className="text-[10px] text-zinc-400 mt-0.5 uppercase">
+                    {cust.address?.cityname ? `${cust.address.cityname}, ` : ""}{cust.address?.statename || ""}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Last Login</p>
+                  <p className="text-[11px] font-bold">{cust.last_login ? new Date(cust.last_login).toLocaleString() : "N/A"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop view */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-zinc-50 border-b border-zinc-100">
+                <tr className="bg-zinc-50 border-b border-zinc-200">
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Name</th>
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Mobile No</th>
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Address</th>
@@ -49,7 +84,7 @@ export default function AdminCustomerPage() {
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Last Login</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-50">
+              <tbody className="divide-y divide-zinc-100">
                 {customers.map((cust, idx) => (
                   <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="p-4">

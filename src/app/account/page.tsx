@@ -36,6 +36,8 @@ export default function AccountPage() {
     },
   });
 
+  const [reviewData, setReviewData] = useState<{ [key: string]: { stars: number, comment: string } }>({});
+
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
@@ -189,6 +191,28 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error("Failed to cancel order", error);
+    }
+  };
+
+  const handleReviewSubmit = async (orderId: string) => {
+    const data = reviewData[orderId];
+    if (!data?.stars) return alert("Please select a star rating");
+    
+    try {
+      const res = await fetch("/api/user/submitreview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, review_stars: data.stars, review_comment: data.comment || "" }),
+      });
+      if (res.ok) {
+        alert("Review submitted successfully!");
+        fetchOrders(); // Refresh to show review
+      } else {
+        alert("Failed to submit review");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("An error occurred while submitting review.");
     }
   };
 
@@ -403,8 +427,8 @@ export default function AccountPage() {
                 ) : (
                   <div className="space-y-6">
                     {orders.map((order, idx) => (
-                      <div key={order._id || idx} className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
-                        <div className="p-4 bg-zinc-50/50 border-b border-zinc-100 flex flex-wrap justify-between gap-4">
+                      <div key={order._id || idx} className="bg-white rounded-2xl border-2 border-zinc-200 shadow-md overflow-hidden">
+                        <div className="p-4 bg-zinc-50/80 border-b border-zinc-200 flex flex-wrap justify-between gap-4">
                           <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Order Date</p>
                             <p className="text-xs font-bold">{new Date(order.created_at).toLocaleDateString()}</p>
@@ -415,7 +439,7 @@ export default function AccountPage() {
                           </div>
                            <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Status</p>
-                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter ${order.status === 'cancelled' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'}`}>
+                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter ${order.status === 'cancelled' ? 'bg-rose-100 text-rose-600' : order.status === 'delivered' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                               {order.status || "Processing"}
                             </span>
                           </div>
@@ -448,11 +472,50 @@ export default function AccountPage() {
                                </div>
                                <div>
                                   <h5 className="text-xs font-bold uppercase">{item.name || "Fashion Item"}</h5>
-                                  <p className="text-[10px] text-zinc-500">Qty: {item.quantity || 1} • Size: {item.size || "M"}</p>
                                </div>
                             </div>
                           ))}
                         </div>
+
+                        {order.status === 'delivered' && !order.review_stars && (
+                          <div className="p-4 border-t border-zinc-200 bg-zinc-50/80">
+                            <h4 className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-3">Leave a Review</h4>
+                            <div className="space-y-3 max-w-sm">
+                              <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    onClick={() => setReviewData(prev => ({ ...prev, [order._id]: { ...prev[order._id], stars: star } }))}
+                                    className={`text-xl ${reviewData[order._id]?.stars >= star ? 'text-yellow-400' : 'text-zinc-300'}`}
+                                  >
+                                    ★
+                                  </button>
+                                ))}
+                              </div>
+                              <textarea
+                                placeholder="How was your experience?"
+                                value={reviewData[order._id]?.comment || ""}
+                                onChange={(e) => setReviewData(prev => ({ ...prev, [order._id]: { ...prev[order._id], comment: e.target.value } }))}
+                                className="w-full text-xs p-3 rounded-xl border border-zinc-300 outline-none focus:border-black resize-none"
+                                rows={2}
+                              />
+                              <button
+                                onClick={() => handleReviewSubmit(order._id)}
+                                className="px-4 py-2 bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                              >
+                                Submit Review
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {order.review_stars && (
+                          <div className="p-4 border-t border-zinc-200 bg-green-50/50">
+                            <h4 className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1">Your Review</h4>
+                            <div className="text-yellow-500 text-sm mb-1">{'★'.repeat(Number(order.review_stars))}{'☆'.repeat(5 - Number(order.review_stars))}</div>
+                            {order.review_comment && <p className="text-xs text-zinc-600 italic">"{order.review_comment}"</p>}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
