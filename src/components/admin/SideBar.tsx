@@ -165,6 +165,31 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           
+          {/* Main Menus */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">Main Menu</h3>
+            <div className="space-y-1">
+              {[
+                { label: "Customer", path: "/admin/customer" },
+                { label: "Order Received", path: "/admin/orderreceived" },
+                { label: "Order Delivered", path: "/admin/orderdelivered" },
+                { label: "Order Cancelled", path: "/admin/ordercancelled" },
+                { label: "Forms", path: "/admin/form" }
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.path}
+                  onClick={onClose}
+                  className="block p-3 rounded-lg text-sm font-bold tracking-wider uppercase bg-white/5 hover:bg-white/10 text-white transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <hr className="border-white/10" />
+
           {/* Add Collection */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400">Add Collection</h3>
