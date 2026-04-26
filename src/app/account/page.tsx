@@ -160,6 +160,7 @@ export default function AccountPage() {
       const data = await res.json();
       if (res.ok) {
         setMessage({ type: "success", text: "Profile updated successfully!" });
+        alert("Profile updated successfully!");
       } else {
         setMessage({ type: "error", text: data.error || "Failed to update profile." });
       }
@@ -248,14 +249,6 @@ export default function AccountPage() {
     }
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white py-12 px-4 md:px-12">
       <div className="max-w-6xl mx-auto">
@@ -291,7 +284,14 @@ export default function AccountPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 bg-zinc-50/50 rounded-3xl p-6 md:p-10 border border-zinc-100">
+          <div className="flex-1 bg-zinc-50/50 rounded-3xl p-6 md:p-10 border border-zinc-100 min-h-[500px]">
+            {authLoading || loading ? (
+              <div className="flex flex-col items-center justify-center h-full py-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mb-4"></div>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Loading Account Info...</p>
+              </div>
+            ) : (
+              <>
             
             {/* Profile Tab */}
             {activeTab === "profile" && (
@@ -476,7 +476,7 @@ export default function AccountPage() {
                         <div className="p-4 bg-zinc-50/80 border-b border-zinc-200 flex flex-wrap justify-between gap-4">
                           <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Order Date</p>
-                            <p className="text-xs font-bold">{new Date(order.created_at).toLocaleDateString()}</p>
+                            <p className="text-xs font-bold" suppressHydrationWarning>{new Date(order.created_at).toLocaleDateString()}</p>
                           </div>
                           <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Amount</p>
@@ -490,7 +490,7 @@ export default function AccountPage() {
                           </div>
                           <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Estimated Delivery</p>
-                            <p className="text-xs font-bold text-zinc-900">
+                            <p className="text-xs font-bold text-zinc-900" suppressHydrationWarning>
                               {(() => {
                                 const d = new Date(order.created_at);
                                 d.setDate(d.getDate() + 7);
@@ -567,8 +567,9 @@ export default function AccountPage() {
                 )}
               </div>
             )}
-
-          </div>
+          </>
+        )}
+      </div>
         </div>
       </div>
       

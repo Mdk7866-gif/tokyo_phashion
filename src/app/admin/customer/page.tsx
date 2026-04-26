@@ -94,7 +94,7 @@ export default function AdminCustomerPage() {
                   {/* Joined Date */}
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Joined Date</p>
-                    <p className="text-sm font-black text-zinc-900">
+                    <p className="text-sm font-black text-zinc-900" suppressHydrationWarning>
                       {cust.created_At ? new Date(cust.created_At).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
                     </p>
                   </div>
@@ -102,7 +102,7 @@ export default function AdminCustomerPage() {
                   {/* Last Active */}
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Last Login</p>
-                    <p className="text-sm font-black text-zinc-900">
+                    <p className="text-sm font-black text-zinc-900" suppressHydrationWarning>
                       {cust.last_login ? new Date(cust.last_login).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : "N/A"}
                     </p>
                   </div>
