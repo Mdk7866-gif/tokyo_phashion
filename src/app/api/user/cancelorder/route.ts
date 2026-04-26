@@ -3,11 +3,11 @@ import clientPromise from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * POST /api/user/cancelorder
- * Updates order status to 'cancelled'.
+ * Updates order status to 'cancelled' using userId for security.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -23,16 +23,29 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await verifyAccessToken(accessToken);
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const orders = db.collection('ordereddata');
 
+    // Security check: ensure this order belongs to the logged-in user
+    // We match by ID AND (userId OR mobile_no)
+    const query: any = { 
+      _id: new ObjectId(orderId),
+      $or: [
+        { userId: payload.userId }
+      ]
+    };
+    
+    if (payload.mobile_no) {
+        query.$or.push({ mobile_no: payload.mobile_no });
+    }
+
     const result = await orders.updateOne(
-      { _id: new ObjectId(orderId), mobile_no: payload.mobile_no },
+      query,
       { $set: { status: 'cancelled', updated_at: new Date() } }
     );
 

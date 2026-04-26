@@ -1,50 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-
-import { normalizePhone } from '@/lib/twilio';
+import { ObjectId } from 'mongodb';
 import { verifyAccessToken } from '@/lib/auth';
+import { normalizePhone } from '@/lib/utils';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * POST /api/user/portfolio
- * Updates or creates the user's profile information.
- * Expected body: { mobile_no, username, address: { full_address, cityname, statename, pincode } }
+ * Updates user's profile information using userId from JWT.
  */
 export async function POST(request: NextRequest) {
   try {
     const { mobile_no, username, address } = await request.json();
 
-    if (!mobile_no) {
-      return NextResponse.json(
-        { error: 'Mobile number is required.' },
-        { status: 400 }
-      );
+    // Verify User via JWT
+    const accessToken = request.cookies.get('access_token')?.value;
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    const normalized = normalizePhone(mobile_no);
-
-    // Optional: Security check to ensure user is logged in as this mobile_no
-    const accessToken = request.cookies.get('access_token')?.value;
-    if (accessToken) {
-        const payload = await verifyAccessToken(accessToken);
-        if (payload && payload.mobile_no !== normalized) {
-            return NextResponse.json(
-                { error: 'Unauthorized: Mobile number mismatch.' },
-                { status: 403 }
-            );
-        }
+    const payload = await verifyAccessToken(accessToken);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
     }
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const users = db.collection('userdata');
 
-    // Update the user document
+    const normalizedMobile = mobile_no ? normalizePhone(mobile_no) : '';
+
+    // Update the user document by _id
     const result = await users.updateOne(
-      { mobile_no: normalized },
+      { _id: new ObjectId(payload.userId) },
       {
         $set: {
+          mobile_no: normalizedMobile,
           username: username || '',
           address: {
             full_address: address?.full_address || '',
@@ -54,26 +46,23 @@ export async function POST(request: NextRequest) {
           },
           updated_At: new Date(),
         },
-      },
-      { upsert: true }
+      }
     );
 
     return NextResponse.json({
+      success: true,
       message: 'Portfolio updated successfully.',
-      updated: result.modifiedCount > 0 || result.upsertedCount > 0,
+      updated: result.modifiedCount > 0,
     });
   } catch (error) {
-    console.error('[portfolio] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    console.error('[portfolio POST] Error:', error);
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }
 
 /**
  * GET /api/user/portfolio
- * Fetches the user's profile information.
+ * Fetches the user's profile information using userId from JWT.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -83,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await verifyAccessToken(accessToken);
-    if (!payload || !payload.mobile_no) {
+    if (!payload) {
       return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
     }
 
@@ -91,7 +80,7 @@ export async function GET(request: NextRequest) {
     const db = mongoClient.db(DB_NAME);
     const users = db.collection('userdata');
 
-    const user = await users.findOne({ mobile_no: payload.mobile_no });
+    const user = await users.findOne({ _id: new ObjectId(payload.userId) });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found.' }, { status: 404 });
@@ -100,7 +89,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       user: {
-        mobile_no: user.mobile_no,
+        email: user.email || '',
+        mobile_no: user.mobile_no || '',
         username: user.username || '',
         address: user.address || { full_address: '', cityname: '', statename: '', pincode: '' },
         cartitems: user.cartitems || [],
@@ -109,9 +99,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('[portfolio GET] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

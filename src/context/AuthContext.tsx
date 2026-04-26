@@ -11,7 +11,9 @@ import React, {
 
 interface User {
   userId: string;
-  mobile_no: string;
+  email?: string;
+  mobile_no?: string;
+  username?: string;
 }
 
 interface AuthContextType {

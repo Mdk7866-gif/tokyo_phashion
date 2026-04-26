@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth';
-import { normalizePhone } from '@/lib/twilio';
+import { normalizePhone } from '@/lib/utils';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * GET /api/user/getordereddata
- * Fetches all orders for the logged-in user from 'ordereddata' collection.
+ * Fetches all orders for the logged-in user using userId or mobile_no.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -17,17 +17,26 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await verifyAccessToken(accessToken);
-    if (!payload || !payload.mobile_no) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
-
-    const normalized = normalizePhone(payload.mobile_no);
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const orders = db.collection('ordereddata');
 
-    const userOrders = await orders.find({ mobile_no: normalized }).sort({ created_at: -1 }).toArray();
+    // Fetch orders linked to this userId OR the mobile number associated with the session
+    const query: any = {
+      $or: [
+        { userId: payload.userId }
+      ]
+    };
+
+    if (payload.mobile_no) {
+      query.$or.push({ mobile_no: normalizePhone(payload.mobile_no) });
+    }
+
+    const userOrders = await orders.find(query).sort({ created_at: -1 }).toArray();
 
     return NextResponse.json({
       success: true,
@@ -36,9 +45,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('[getordereddata] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

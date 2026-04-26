@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth';
-import { normalizePhone } from '@/lib/twilio';
+import { normalizePhone } from '@/lib/utils';
+import { ObjectId } from 'mongodb';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * POST /api/user/saveordereddata
  * Saves an order to the 'ordereddata' collection.
+ * Uses userId from JWT for security instead of mobile_no mismatch checks.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -20,39 +22,36 @@ export async function POST(request: NextRequest) {
       delivery_type 
     } = await request.json();
 
-    if (!mobile_no || !items || items.length === 0 || !user_address) {
-      return NextResponse.json(
-        { error: 'Missing required fields for order.' },
-        { status: 400 }
-      );
-    }
-
-    const normalized = normalizePhone(mobile_no);
-
-    // Security check
+    // 1. Verify Authentication
     const accessToken = request.cookies.get('access_token')?.value;
-    if (accessToken) {
-      const payload = await verifyAccessToken(accessToken);
-      if (payload && payload.mobile_no !== normalized) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Mobile number mismatch.' },
-          { status: 403 }
-        );
-      }
-    } else {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Unauthorized: Please login again.' }, { status: 401 });
     }
+
+    const payload = await verifyAccessToken(accessToken);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid session. Please login again.' }, { status: 401 });
+    }
+
+    // 2. Validate Required Fields
+    if (!mobile_no || !items || items.length === 0 || !user_address) {
+      return NextResponse.json({ error: 'Missing required fields for order.' }, { status: 400 });
+    }
+
+    const normalizedPhone = normalizePhone(mobile_no);
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const orders = db.collection('ordereddata');
 
+    // 3. Prepare Order Data
     const orderData = {
-      mobile_no: normalized,
+      userId: payload.userId, // Link order to user's unique ID
+      mobile_no: normalizedPhone,
       created_at: new Date(),
       updated_at: new Date(),
       customer_name: customer_name || "",
-      items: items, // Array of product objects
+      items: items, 
       user_address: user_address,
       total_amount: total_amount,
       review_stars: "",
@@ -63,6 +62,13 @@ export async function POST(request: NextRequest) {
 
     const result = await orders.insertOne(orderData);
 
+    // 4. Also update the user's last mobile number used in their profile if they just changed it
+    const users = db.collection('userdata');
+    await users.updateOne(
+      { _id: new ObjectId(payload.userId) },
+      { $set: { mobile_no: normalizedPhone, updated_At: new Date() } }
+    );
+
     return NextResponse.json({
       success: true,
       message: 'Order saved successfully.',
@@ -71,9 +77,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[saveordereddata] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

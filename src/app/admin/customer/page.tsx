@@ -50,7 +50,8 @@ export default function AdminCustomerPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-bold text-sm uppercase">{cust.username || "Unknown"}</p>
-                    <p className="text-xs font-bold text-zinc-500">{cust.mobile_no}</p>
+                    <p className="text-[10px] font-bold text-zinc-400 truncate">{cust.email}</p>
+                    <p className="text-[11px] font-bold text-zinc-500">{cust.mobile_no || "No Mobile"}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Joined</p>
@@ -78,7 +79,7 @@ export default function AdminCustomerPage() {
               <thead>
                 <tr className="bg-zinc-50 border-b border-zinc-200">
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Name</th>
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Mobile No</th>
+                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Contact Info</th>
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Address</th>
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Created At</th>
                   <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Last Login</th>
@@ -91,7 +92,8 @@ export default function AdminCustomerPage() {
                       <p className="font-bold text-sm uppercase">{cust.username || "Unknown"}</p>
                     </td>
                     <td className="p-4">
-                      <p className="font-bold text-sm">{cust.mobile_no}</p>
+                      <p className="font-bold text-sm truncate max-w-[150px]" title={cust.email}>{cust.email}</p>
+                      <p className="text-[11px] font-bold text-zinc-500">{cust.mobile_no || "N/A"}</p>
                     </td>
                     <td className="p-4">
                       <p className="text-xs font-medium text-zinc-600 max-w-[250px] truncate" title={cust.address?.full_address}>

@@ -1,49 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { normalizePhone } from '@/lib/twilio';
 import { verifyAccessToken } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * DELETE /api/user/deletecartitem
- * Removes an item from the user's cart.
+ * Removes an item from the user's cart using userId from JWT.
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const { mobile_no, name, link, size, colour } = await request.json();
+    const { name, link, size, colour } = await request.json();
 
-    if (!mobile_no || !name || !link) {
-      return NextResponse.json(
-        { error: 'Missing required fields for deletion.' },
-        { status: 400 }
-      );
+    // 1. Verify Authentication
+    const accessToken = request.cookies.get('access_token')?.value;
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const normalized = normalizePhone(mobile_no);
-
-    // Security check
-    const accessToken = request.cookies.get('access_token')?.value;
-    if (accessToken) {
-      const payload = await verifyAccessToken(accessToken);
-      if (payload && payload.mobile_no !== normalized) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Mobile number mismatch.' },
-          { status: 403 }
-        );
-      }
-    } else {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const payload = await verifyAccessToken(accessToken);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const users = db.collection('userdata');
 
-    // Pull the item from the cartitems array
-    // Matching by name, link, size, and colour to be specific
+    // 2. Remove the specific item from the cartitems array
     const result = await users.updateOne(
-      { mobile_no: normalized },
+      { _id: new ObjectId(payload.userId) },
       { 
         $pull: { 
           cartitems: { 
@@ -68,9 +55,6 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('[deletecartitem] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

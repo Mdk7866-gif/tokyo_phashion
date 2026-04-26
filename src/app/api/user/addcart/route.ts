@@ -1,59 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { normalizePhone } from '@/lib/twilio';
 import { verifyAccessToken } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
-const DB_NAME = process.env.DATABASE_NAME!;
+const DB_NAME = process.env.DATABASE_NAME || 'tokyofashion';
 
 /**
  * POST /api/user/addcart
- * Adds an item to the user's cart in the userdata collection.
+ * Adds an item to the user's cart using userId from JWT.
  */
 export async function POST(request: NextRequest) {
   try {
     const { 
-      mobile_no, 
       name, 
-      link,    //this is link of the product which user wants to buy e.g.shop?collection=pants&subcatagory=casual&id=69e8cb5e547c763445f44fa4
+      link, 
       originalprice, 
       discountprice, 
-      image, // cloudinary url of images
+      image, 
       colour, 
       size, 
       catagory, 
       subcatagory 
     } = await request.json();
 
-    if (!mobile_no || !name) {
-      return NextResponse.json(
-        { error: 'Mobile number and item name are required.' },
-        { status: 400 }
-      );
+    // 1. Verify Authentication
+    const accessToken = request.cookies.get('access_token')?.value;
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const normalized = normalizePhone(mobile_no);
-
-    // Security check
-    const accessToken = request.cookies.get('access_token')?.value;
-    if (accessToken) {
-      const payload = await verifyAccessToken(accessToken);
-      if (payload && payload.mobile_no !== normalized) {
-        return NextResponse.json(
-          { error: 'Unauthorized: Mobile number mismatch.' },
-          { status: 403 }
-        );
-      }
-    } else {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const payload = await verifyAccessToken(accessToken);
+    if (!payload) {
+      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
     const mongoClient = await clientPromise;
     const db = mongoClient.db(DB_NAME);
     const users = db.collection('userdata');
 
-    // Check if exactly the same product (name, link, size, colour) already exists in cart
+    // 2. Check if item already exists in cart for this user
     const existingItem = await users.findOne({
-      mobile_no: normalized,
+      _id: new ObjectId(payload.userId),
       cartitems: {
         $elemMatch: {
           name: name,
@@ -65,12 +52,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingItem) {
-      return NextResponse.json(
-        { error: 'Item already in cart' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Item already in cart' }, { status: 400 });
     }
 
+    // 3. Prepare Cart Item
     const cartItem = {
       name,
       link,
@@ -84,9 +69,9 @@ export async function POST(request: NextRequest) {
       created_at: new Date()
     };
 
-    // Push to cartitems array
+    // 4. Update User Cart
     const result = await users.updateOne(
-      { mobile_no: normalized },
+      { _id: new ObjectId(payload.userId) },
       { 
         $push: { cartitems: cartItem } as any,
         $set: { updated_At: new Date() }
@@ -104,9 +89,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[addcart] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }

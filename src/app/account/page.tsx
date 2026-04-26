@@ -28,6 +28,7 @@ export default function AccountPage() {
 
   const [formData, setFormData] = useState({
     username: "",
+    mobile_no: "",
     address: {
       full_address: "",
       cityname: "",
@@ -66,6 +67,7 @@ export default function AccountPage() {
         if (data.success && data.user) {
           setFormData({
             username: data.user.username || "",
+            mobile_no: data.user.mobile_no || "",
             address: {
               full_address: data.user.address?.full_address || "",
               cityname: data.user.address?.cityname || "",
@@ -119,7 +121,7 @@ export default function AccountPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mobile_no: user?.mobile_no,
+          mobile_no: formData.mobile_no,
           username: formData.username,
           address: formData.address,
         }),
@@ -267,8 +269,8 @@ export default function AccountPage() {
                 <h2 className="text-xl font-black mb-8">PERSONAL INFORMATION</h2>
                 
                 <div className="mb-8 p-6 bg-white rounded-2xl border border-zinc-100 shadow-sm">
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mb-1">Registered Mobile</p>
-                  <p className="text-lg font-bold">{user?.mobile_no}</p>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.2em] mb-1">Registered Email</p>
+                  <p className="text-lg font-bold">{user?.email}</p>
                 </div>
 
                 {message && (
@@ -278,16 +280,29 @@ export default function AccountPage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      placeholder="Your Name"
-                      className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Username</label>
+                      <input
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        placeholder="Your Name"
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Mobile Number</label>
+                      <input
+                        type="tel"
+                        name="mobile_no"
+                        value={formData.mobile_no}
+                        onChange={handleChange}
+                        placeholder="10-digit number"
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md"
+                      />
+                    </div>
                   </div>
 
                   <div className="pt-6 border-t border-zinc-100">

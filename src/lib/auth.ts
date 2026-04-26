@@ -2,7 +2,8 @@ import { SignJWT, jwtVerify, type JWTPayload as JosePayload } from 'jose';
 
 export interface JWTPayload {
   userId: string;
-  mobile_no: string;
+  email?: string;
+  mobile_no?: string;
 }
 
 function getSecret(secret: string): Uint8Array {

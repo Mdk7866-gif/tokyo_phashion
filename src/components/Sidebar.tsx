@@ -118,13 +118,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 </button>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-rose-500 flex items-center justify-center font-black text-xs">
-                      {user.mobile_no.slice(-2)}
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-rose-500 flex items-center justify-center font-black text-xs shrink-0">
+                      {user.email ? user.email[0].toUpperCase() : "?"}
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-0">
                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Welcome back</span>
-                      <span className="text-xs font-black tracking-tight">{user.mobile_no}</span>
+                      <span className="text-xs font-black tracking-tight truncate">{user.email || "User"}</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">

@@ -12,6 +12,14 @@ interface BuyNowProps {
 const BuyNow: React.FC<BuyNowProps> = ({ isOpen, onClose, items, totalAmount, userProfile }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  // Enforce profile completion
+  React.useEffect(() => {
+    if (isOpen && (!userProfile.username || !userProfile.address?.full_address || !userProfile.mobile_no)) {
+      alert("Your profile is incomplete. Please provide your Name, Mobile Number, and Address before placing an order.");
+      onClose();
+      router.push('/account?tab=profile');
+    }
+  }, [isOpen, userProfile, router, onClose]);
 
   if (!isOpen) return null;
 

@@ -15,6 +15,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
-    user: { userId: payload.userId, mobile_no: payload.mobile_no },
+    user: { userId: payload.userId, mobile_no: payload.mobile_no, email: payload.email },
   });
 }
