@@ -46,8 +46,9 @@ export default function ContactPage() {
         setDetailes('');
         setPhoto(null);
       }
-    } catch (err: any) {
-      setResult({ error: err?.message || 'Request failed' });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Request failed';
+      setResult({ error: errorMessage });
     } finally {
       setSubmitting(false);
     }

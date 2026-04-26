@@ -89,10 +89,10 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Contact form API Error:', error);
     return NextResponse.json(
-      { error: error?.message || 'Internal Server Error' },
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
       { status: 500 }
     );
   }

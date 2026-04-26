@@ -1,11 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+interface Product {
+  _id: string;
+  productname: string;
+  original_price: number;
+  discount_price: number;
+  stars: number;
+  images: { url: string; colurname: string }[];
+  collectionname: string;
+  subcatagory: string;
+  size: string[];
+  description?: string;
+  instoke?: string;
+}
 
 interface ProductEntryFormProps {
   collectionName: string;
   subcategoryName: string;
-  initialData?: any; // Data for editing
+  initialData?: Partial<Product> & { _id?: string }; // Data for editing
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -14,7 +29,7 @@ const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (event) => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
@@ -90,7 +105,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
         const newImages = [...images];
         newImages[index].url = compressedBase64;
         setImages(newImages);
-      } catch (err) {
+      } catch {
         alert("Failed to process image");
       }
     }
@@ -130,7 +145,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
 
     setLoading(true);
 
-    let starsValue = parseFloat(formData.stars);
+    const starsValue = parseFloat(formData.stars);
     if (isNaN(starsValue) || starsValue < 0 || starsValue > 5) {
       setMessage("❌ Validation Error: Stars rating must be between 0 and 5.");
       return;
@@ -266,7 +281,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
                 <textarea
                   name="description"
                   value={formData.description}
-                  onChange={(e: any) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all min-h-[100px] resize-none"
                   placeholder="e.g. Premium cotton t-shirt with oversized fit and vintage wash."
                 />
@@ -310,7 +325,9 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Image File</label>
                       <div className="flex items-center gap-2">
                         {img.url ? (
-                          <img src={img.url} className="w-10 h-10 object-cover rounded-md border border-gray-200 shadow-sm shrink-0" alt="preview" />
+                          <div className="relative w-10 h-10 shrink-0">
+                            <Image src={img.url} fill unoptimized className="object-cover rounded-md border border-gray-200 shadow-sm" alt="preview" />
+                          </div>
                         ) : (
                           <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-gray-400 text-xs border border-gray-300 shrink-0">Img</div>
                         )}

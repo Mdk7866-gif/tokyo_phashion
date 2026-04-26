@@ -4,6 +4,18 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import BuyNow from "./BuyNow";
+import Image from "next/image";
+
+interface UserProfile {
+  mobile_no: string;
+  username: string;
+  address: {
+    full_address: string;
+    cityname: string;
+    pincode: string;
+    statename: string;
+  };
+}
 
 interface Product {
   _id: string;
@@ -29,7 +41,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const { user } = useAuth();
   const router = useRouter();
@@ -125,10 +137,12 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
         <div className="lg:w-3/5 space-y-6">
           <div className="relative aspect-[3/4] bg-zinc-50 overflow-hidden rounded-3xl border border-zinc-100">
             {selectedImage ? (
-              <img 
+              <Image 
                 src={selectedImage} 
                 alt={product.productname} 
-                className="w-full h-full object-cover" 
+                fill
+                unoptimized
+                className="object-cover" 
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-zinc-300 text-sm font-bold uppercase tracking-widest">
@@ -157,7 +171,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
                 onClick={() => setSelectedColorIndex(idx)}
                 className={`relative w-20 aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${selectedColorIndex === idx ? "border-black scale-105" : "border-transparent opacity-60 hover:opacity-100"}`}
               >
-                <img src={img.url} className="w-full h-full object-cover" alt={img.colurname} />
+                <Image src={img.url} fill unoptimized className="object-cover" alt={img.colurname} />
               </button>
             ))}
           </div>
@@ -320,7 +334,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
           quantity: quantity
         }]} 
         totalAmount={product.discount_price * quantity} 
-        userProfile={userProfile} 
+        userProfile={userProfile || { mobile_no: '', username: '', address: { full_address: '', cityname: '', pincode: '', statename: '' } }} 
       />
     </div>
   );

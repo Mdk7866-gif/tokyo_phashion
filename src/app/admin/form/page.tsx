@@ -1,9 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
+
+interface ContactForm {
+  name?: string;
+  fullname?: string;
+  email: string;
+  mobile_number: string;
+  created_at?: string;
+  detailes?: string;
+  message?: string;
+  photo_url?: string;
+}
+
 
 export default function AdminFormsPage() {
-  const [forms, setForms] = useState<any[]>([]);
+  const [forms, setForms] = useState<ContactForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -69,10 +82,10 @@ export default function AdminFormsPage() {
                   <div>
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Attachment (Click to expand)</p>
                     <div 
-                      onClick={() => setSelectedImage(form.photo_url)}
+                      onClick={() => setSelectedImage(form.photo_url || null)}
                       className="relative aspect-video rounded-xl overflow-hidden border border-zinc-200 cursor-zoom-in hover:opacity-90 transition-opacity"
                     >
-                      <img src={form.photo_url} alt="Form attachment" className="object-cover w-full h-full" />
+                      <Image src={form.photo_url} alt="Form attachment" fill className="object-cover" />
                     </div>
                   </div>
                 )}
@@ -97,10 +110,12 @@ export default function AdminFormsPage() {
             </svg>
           </button>
           <div className="relative max-w-5xl max-h-full w-full h-full flex items-center justify-center">
-            <img 
+            <Image 
               src={selectedImage} 
               alt="Expanded attachment" 
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300" 
+              fill
+              unoptimized
+              className="object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300" 
               onClick={(e) => e.stopPropagation()}
             />
           </div>

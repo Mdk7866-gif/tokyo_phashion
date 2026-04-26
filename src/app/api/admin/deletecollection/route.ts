@@ -41,7 +41,7 @@ export async function DELETE(request: Request) {
       message: `Collection '${collectionName}' deleted successfully`,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
 
     return NextResponse.json(

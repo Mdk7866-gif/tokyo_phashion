@@ -1,7 +1,25 @@
 "use client";
 
-import React, { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+
+
+interface Product {
+  _id: string;
+  productname: string;
+  original_price: number;
+  discount_price: number;
+  stars: number;
+  images: { url: string; colurname: string }[];
+  collectionname: string;
+  subcatagory: string;
+  size: string[];
+  description?: string;
+  instoke: string;
+  isPlaceholder?: boolean;
+}
+
 import ProductEntryForm from "@/components/admin/ProductEntryForm";
 import AdminOverview from "@/components/admin/AdminOverview";
 
@@ -11,9 +29,24 @@ function AdminDashboard() {
   const subcategory = searchParams.get('subcategory');
   
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+
+  const fetchProducts = useCallback(async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await fetch(`/api/admin/getproducts?collection=${collection}${subcategory ? `&subcategory=${subcategory}` : ''}`);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products.filter((p: Product) => !p.isPlaceholder));
+      }
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, [collection, subcategory]);
 
   useEffect(() => {
     if (collection) {
@@ -21,22 +54,8 @@ function AdminDashboard() {
     } else {
       setProducts([]);
     }
-  }, [collection, subcategory]);
+  }, [collection, subcategory, fetchProducts]);
 
-  const fetchProducts = async () => {
-    setLoadingProducts(true);
-    try {
-      const res = await fetch(`/api/admin/getproducts?collection=${collection}${subcategory ? `&subcategory=${subcategory}` : ''}`);
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.products.filter((p: any) => !p.isPlaceholder));
-      }
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
 
   const handleDeleteProduct = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
@@ -110,13 +129,15 @@ function AdminDashboard() {
                   {/* Image Display - 2x2 grid if multiple images */}
                   <div className={`w-full h-full grid ${product.images && product.images.length > 1 ? "grid-cols-2 grid-rows-2" : "grid-cols-1 grid-rows-1"}`}>
                     {product.images && product.images.length > 0 ? (
-                      product.images.slice(0, 4).map((img: any, idx: number) => (
-                        <img 
-                          key={idx}
-                          src={img.url} 
-                          alt={`${product.productname} ${idx}`} 
-                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out ${product.images.length === 1 ? "" : "border-[0.5px] border-white/20"}`} 
-                        />
+                      product.images.slice(0, 4).map((img, idx: number) => (
+                        <div key={idx} className="relative w-full h-full overflow-hidden">
+                          <Image 
+                            src={img.url} 
+                            alt={`${product.productname} ${idx}`} 
+                            fill
+                            className={`object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out ${product.images.length === 1 ? "" : "border-[0.5px] border-white/20"}`} 
+                          />
+                        </div>
                       ))
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">

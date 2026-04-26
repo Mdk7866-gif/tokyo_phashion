@@ -4,6 +4,22 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ShortProductCard from "@/components/ShortProductCard";
 import DetailedProductCard from "@/components/DetailedProductCard";
+import { useCallback } from "react";
+
+interface Product {
+  _id: string;
+  productname: string;
+  original_price: number;
+  discount_price: number;
+  stars: number;
+  images: { url: string; colurname: string }[];
+  collectionname: string;
+  subcatagory: string;
+  size: string[];
+  description?: string;
+  instoke?: string;
+  isPlaceholder?: boolean;
+}
 
 function ShopContent() {
   const searchParams = useSearchParams();
@@ -11,22 +27,12 @@ function ShopContent() {
   const subcatagory = searchParams.get('subcatagory');
   const productId = searchParams.get('id');
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [singleProduct, setSingleProduct] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [singleProduct, setSingleProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (productId) {
-      fetchSingleProduct();
-    } else if (collection) {
-      fetchProducts();
-    } else {
-      setLoading(false);
-    }
-  }, [collection, subcatagory, productId]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -34,18 +40,18 @@ function ShopContent() {
       const res = await fetch(`/api/admin/getproducts?collection=${encodeURIComponent(collection || '')}${subcatagory ? `&subcategory=${encodeURIComponent(subcatagory)}` : ''}`);
       const data = await res.json();
       if (data.success) {
-        setProducts(data.products.filter((p: any) => !p.isPlaceholder));
+        setProducts(data.products.filter((p: Product) => !p.isPlaceholder));
       } else {
         setError(data.error || "Failed to load products");
       }
-    } catch (err) {
+    } catch {
       setError("Connection error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [collection, subcatagory]);
 
-  const fetchSingleProduct = async () => {
+  const fetchSingleProduct = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -56,12 +62,22 @@ function ShopContent() {
       } else {
         setError(data.error || "Product not found");
       }
-    } catch (err) {
+    } catch {
       setError("Connection error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [collection, productId]);
+
+  useEffect(() => {
+    if (productId) {
+      fetchSingleProduct();
+    } else if (collection) {
+      fetchProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [collection, subcatagory, productId, fetchProducts, fetchSingleProduct]);
 
   if (loading) {
     return (
@@ -89,7 +105,7 @@ function ShopContent() {
     return (
       <div className="pt-24 pb-16">
         {/* Pass the original collection name just in case DetailedProductCard needs it */}
-        <DetailedProductCard product={{...singleProduct, collectionname: collection}} />
+        <DetailedProductCard product={{...singleProduct, collectionname: collection || ''}} />
       </div>
     );
   }

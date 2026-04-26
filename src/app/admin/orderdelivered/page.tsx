@@ -3,8 +3,37 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
+interface OrderItem {
+  name: string;
+  image?: string;
+  quantity?: number;
+  size?: string;
+  colour?: string;
+  discountprice?: number;
+  originalprice?: number;
+}
+
+interface AdminOrder {
+  _id: string;
+  created_at: string;
+  updated_at?: string;
+  customer_name: string;
+  mobile_no: string;
+  total_amount: number;
+  user_address?: {
+    full_address: string;
+    cityname: string;
+    statename: string;
+    pincode: string;
+  };
+  items: OrderItem[];
+  review_stars?: number;
+  review_comment?: string;
+}
+
+
 export default function AdminOrderDeliveredPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,7 +114,7 @@ export default function AdminOrderDeliveredPage() {
                 <div>
                   <h4 className="text-xs font-bold tracking-widest uppercase text-zinc-400 mb-4 border-b border-zinc-100 pb-2">Order Items ({order.items?.length || 0})</h4>
                   <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                    {order.items && order.items.map((item: any, i: number) => (
+                    {order.items && order.items.map((item: OrderItem, i: number) => (
                       <div key={i} className="flex items-center gap-4 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100">
                          <div className="w-16 h-16 bg-white rounded-lg overflow-hidden shrink-0 relative border border-zinc-100">
                             {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover" />}
@@ -107,7 +136,7 @@ export default function AdminOrderDeliveredPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-yellow-500 font-bold text-sm">★ {order.review_stars}</span>
                   </div>
-                  <p className="text-xs text-zinc-700 italic font-medium">"{order.review_comment}"</p>
+                  <p className="text-xs text-zinc-700 italic font-medium">&quot;{order.review_comment}&quot;</p>
                 </div>
               )}
 

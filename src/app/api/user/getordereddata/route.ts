@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     const orders = db.collection('ordereddata');
 
     // Fetch orders linked to this userId OR the mobile number associated with the session
-    const query: any = {
+    const query = {
       $or: [
         { userId: payload.userId }
-      ]
+      ] as Array<Record<string, unknown>>
     };
 
     if (payload.mobile_no) {

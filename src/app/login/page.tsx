@@ -1,13 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Script from 'next/script';
 
 declare global {
   interface Window {
-    google: any;
+    google: {
+      accounts: {
+        id: {
+          initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
+          renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+        };
+      };
+    };
   }
 }
 
@@ -22,31 +29,7 @@ export default function LoginPage() {
 
   const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) {
-      console.error("Google Client ID is missing from process.env!");
-      setError('Google Client ID is not configured in .env');
-      return;
-    }
-    
-    // Poll for both window.google and the ref to be ready
-    const interval = setInterval(() => {
-      if (window.google && googleBtnRef.current) {
-        initializeGoogle();
-        clearInterval(interval);
-      }
-    }, 100);
-
-    // Timeout after 5 seconds
-    const timeout = setTimeout(() => clearInterval(interval), 5000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [GOOGLE_CLIENT_ID]);
-
-  const handleCallback = async (response: any) => {
+  const handleCallback = useCallback(async (response: { credential: string }) => {
     setLoading(true);
     setError('');
     try {
@@ -62,13 +45,14 @@ export default function LoginPage() {
       await refreshUser();
       const from = searchParams.get('from') || '/';
       router.replace(from);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong.';
+      setError(errorMessage);
       setLoading(false);
     }
-  };
+  }, [refreshUser, router, searchParams]);
 
-  const initializeGoogle = () => {
+  const initializeGoogle = useCallback(() => {
     console.log("Initializing Google Sign-In...", { 
       hasGoogle: !!window.google, 
       hasClientId: !!GOOGLE_CLIENT_ID, 
@@ -96,7 +80,31 @@ export default function LoginPage() {
     } else {
       console.warn("Initialization conditions not met.");
     }
-  };
+  }, [GOOGLE_CLIENT_ID, handleCallback]);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) {
+      console.error("Google Client ID is missing from process.env!");
+      setError('Google Client ID is not configured in .env');
+      return;
+    }
+    
+    // Poll for both window.google and the ref to be ready
+    const interval = setInterval(() => {
+      if (window.google && googleBtnRef.current) {
+        initializeGoogle();
+        clearInterval(interval);
+      }
+    }, 100);
+
+    // Timeout after 5 seconds
+    const timeout = setTimeout(() => clearInterval(interval), 5000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [GOOGLE_CLIENT_ID, initializeGoogle]);
 
   return (
     <div className="login-root">

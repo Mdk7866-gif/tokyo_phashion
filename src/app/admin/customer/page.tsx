@@ -2,8 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 
+interface Customer {
+  username?: string;
+  email: string;
+  mobile_no?: string;
+  created_At?: string;
+  last_login?: string;
+  address?: {
+    full_address?: string;
+    cityname?: string;
+    statename?: string;
+  };
+}
+
 export default function AdminCustomerPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -63,13 +63,13 @@ export async function POST(request: NextRequest) {
         last_login: new Date(),
       };
       const result = await users.insertOne(newUser);
-      user = { ...newUser, _id: result.insertedId } as any;
+      user = { ...newUser, _id: result.insertedId };
     } else {
       // Update existing user
       // Check if google credentials already in array
-      const hasGoogle = user.login_credentials?.some((c: any) => c.provider === 'google' && c.id === googleId);
+      const hasGoogle = user.login_credentials?.some((c: { provider: string; id: string }) => c.provider === 'google' && c.id === googleId);
       
-      const updateData: any = {
+      const updateData: { $set: Record<string, unknown>; $push?: Record<string, unknown> } = {
         $set: { 
           last_login: new Date(),
           updated_At: new Date()
@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
         updateData.$push = { login_credentials: googleCredential };
       } else {
         // Update existing google credential in array
-        updateData.$set["login_credentials.$[elem]"] = googleCredential;
+        (updateData.$set as Record<string, unknown>)["login_credentials.$[elem]"] = googleCredential;
       }
 
       await users.updateOne(
         { _id: user._id },
-        updateData,
+        updateData as { [key: string]: unknown },
         { arrayFilters: [{ "elem.provider": "google", "elem.id": googleId }] }
       );
     }
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Google Auth Error:', error);
     return NextResponse.json({ error: 'Authentication failed.' }, { status: 500 });
   }

@@ -25,8 +25,8 @@ export async function GET(request: Request) {
       .toArray();
 
     return NextResponse.json({ success: true, products });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Get products error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

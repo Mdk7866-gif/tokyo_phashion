@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 
 interface Collection {
@@ -15,7 +15,6 @@ interface SidebarProps {
 }
 
 const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const router = useRouter();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");

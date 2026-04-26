@@ -14,7 +14,7 @@ export async function PUT(request: Request) {
 
     // Process images: if they are base64, upload to Cloudinary. If they are already URLs, keep them.
     if (updateData.images && Array.isArray(updateData.images)) {
-      updateData.images = await Promise.all(updateData.images.map(async (img: any) => {
+      updateData.images = await Promise.all(updateData.images.map(async (img: { url: string }) => {
         if (img.url && img.url.startsWith('data:image')) {
           const uploadedUrl = await uploadImage(img.url, { 
             folder: 'tokyofashion/admin_insert' 
@@ -41,8 +41,9 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json({ success: true, message: 'Product updated successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Update product error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

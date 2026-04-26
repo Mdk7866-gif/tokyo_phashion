@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
 
     // Security check: ensure this order belongs to the logged-in user
     // We match by ID AND (userId OR mobile_no)
-    const query: any = { 
+    const query = { 
       _id: new ObjectId(orderId),
       $or: [
         { userId: payload.userId }
-      ]
+      ] as Array<Record<string, unknown>>
     };
     
     if (payload.mobile_no) {

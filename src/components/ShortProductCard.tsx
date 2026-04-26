@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -28,10 +29,12 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
     <Link href={detailUrl} className="group flex flex-col bg-white overflow-hidden transition-all duration-500">
       <div className="relative aspect-[3/4] bg-gray-50 rounded-xl md:rounded-[2rem] overflow-hidden">
         {firstImage ? (
-          <img 
+          <Image 
             src={firstImage} 
             alt={product.productname} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s] ease-out"
+            fill
+            unoptimized
+            className="object-cover group-hover:scale-110 transition-transform duration-[2s] ease-out"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px] font-black uppercase tracking-widest bg-gray-100">

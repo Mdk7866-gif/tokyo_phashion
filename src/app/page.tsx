@@ -5,6 +5,12 @@ import PhotoCard1 from "@/components/PhotoCard1";
 import VideoCard1 from "@/components/VideoCard1";
 import PhotoCard2Carousel from "@/components/PhotoCard2";
 
+const ArrowRight = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1.5">
+    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+  </svg>
+);
+
 export default function Home() {
   const [currentHero, setCurrentHero] = useState(0);
 
@@ -83,11 +89,7 @@ export default function Home() {
     return () => obs.disconnect();
   }, []);
 
-  const ArrowRight = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1.5">
-      <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
-    </svg>
-  );
+
 
   return (
     <div className="flex flex-col w-full min-h-screen items-center overflow-x-hidden bg-white">

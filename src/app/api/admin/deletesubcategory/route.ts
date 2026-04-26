@@ -30,8 +30,8 @@ export async function DELETE(request: NextRequest) {
       message: `Successfully deleted ${result.deletedCount} items from subcategory "${subcategoryName}" in collection "${collectionName}".`,
       deletedCount: result.deletedCount
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete subcategory API Error:', error);
-    return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

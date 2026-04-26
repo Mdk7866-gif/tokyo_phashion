@@ -1,12 +1,36 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface CartItem {
+  name: string;
+  link: string;
+  originalprice: number;
+  discountprice: number;
+  image: string;
+  colour: string;
+  size: string;
+  catagory: string;
+  subcatagory: string;
+  quantity?: number;
+}
+
+interface UserProfile {
+  mobile_no: string;
+  username: string;
+  address: {
+    full_address: string;
+    cityname: string;
+    pincode: string;
+    statename: string;
+  };
+}
+
 interface BuyNowProps {
   isOpen: boolean;
   onClose: () => void;
-  items: any[];
+  items: CartItem[];
   totalAmount: number;
-  userProfile: any; // Must include mobile_no, username, address
+  userProfile: UserProfile; // Must include mobile_no, username, address
 }
 
 const BuyNow: React.FC<BuyNowProps> = ({ isOpen, onClose, items, totalAmount, userProfile }) => {

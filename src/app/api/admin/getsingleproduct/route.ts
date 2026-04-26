@@ -24,8 +24,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ success: true, product });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Get single product error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
   }
 }

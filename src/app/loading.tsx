@@ -6,20 +6,27 @@ export default function Loading() {
 
   useEffect(() => {
     // Check if user has already seen the splash screen
-    const hasVisited = localStorage.getItem('hasVisited');
+    const hasVisited = typeof window !== 'undefined' ? localStorage.getItem('hasVisited') : null;
     
     if (hasVisited) {
-      setStage('hidden');
+      // stage is already 'hidden' by default, no need to set it
       return;
     }
 
-    // If first visit, show the splash screen and mark as visited
-    setStage('showing');
-    localStorage.setItem('hasVisited', 'true');
+    // Use a small timeout to avoid cascading render warning
+    const startTimer = setTimeout(() => {
+      setStage('showing');
+      localStorage.setItem('hasVisited', 'true');
+    }, 0);
 
     const fadeTimer = setTimeout(() => setStage('fading'), 1800); // Start fade out at 1.8s
     const hideTimer = setTimeout(() => setStage('hidden'), 2400); // Fully hide at 2.4s
-    return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); }
+    
+    return () => { 
+      clearTimeout(startTimer);
+      clearTimeout(fadeTimer); 
+      clearTimeout(hideTimer); 
+    }
   }, []);
 
   if (stage === 'hidden') return null;

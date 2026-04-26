@@ -39,7 +39,7 @@ export async function DELETE(request: NextRequest) {
             size: size,
             colour: colour
           } 
-        } as any,
+        } as never,
         $set: { updated_At: new Date() }
       }
     );
@@ -55,6 +55,6 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('[deletecartitem] Error:', error);
-    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error.' }, { status: 500 });
   }
 }

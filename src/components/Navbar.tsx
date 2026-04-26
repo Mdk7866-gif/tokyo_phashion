@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +11,7 @@ const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
 
@@ -44,7 +45,7 @@ const Navbar = () => {
       window.addEventListener('cart-updated', handleCartRefresh);
       return () => window.removeEventListener('cart-updated', handleCartRefresh);
     } else {
-      setCartCount(0);
+      requestAnimationFrame(() => setCartCount(0));
     }
   }, [user]);
 

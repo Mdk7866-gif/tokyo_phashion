@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       message: `Collection '${collectionName}' created successfully`,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
 
     return NextResponse.json(

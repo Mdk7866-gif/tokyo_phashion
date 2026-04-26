@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const result = await users.updateOne(
       { _id: new ObjectId(payload.userId) },
       { 
-        $push: { cartitems: cartItem } as any,
+        $push: { cartitems: cartItem } as never,
         $set: { updated_At: new Date() }
       }
     );
@@ -89,6 +89,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[addcart] Error:', error);
-    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error.' }, { status: 500 });
   }
 }

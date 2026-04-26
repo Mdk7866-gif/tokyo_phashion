@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       message: `Subcategory '${subcategory}' added to '${collectionName}' successfully`,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

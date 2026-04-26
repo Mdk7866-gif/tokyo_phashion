@@ -9,6 +9,36 @@ import BuyNow from "@/components/BuyNow";
 
 type Tab = "profile" | "cart" | "orders";
 
+interface CartItem {
+  name: string;
+  link: string;
+  size: string;
+  colour: string;
+  image: string;
+  catagory: string;
+  subcatagory: string;
+  discountprice: number;
+  originalprice: number;
+  quantity?: number;
+}
+
+interface OrderItem {
+  name: string;
+  image?: string;
+}
+
+interface Order {
+  _id: string;
+  created_at: string;
+  total_amount?: number;
+  price?: number;
+  status: string;
+  items: OrderItem[];
+  review_stars?: number;
+  review_comment?: string;
+}
+
+
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -39,8 +69,8 @@ export default function AccountPage() {
 
   const [reviewData, setReviewData] = useState<{ [key: string]: { stars: number, comment: string } }>({});
 
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
 
   useEffect(() => {
@@ -133,14 +163,14 @@ export default function AccountPage() {
       } else {
         setMessage({ type: "error", text: data.error || "Failed to update profile." });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "An error occurred. Please try again." });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteCartItem = async (item: any) => {
+  const handleDeleteCartItem = async (item: CartItem) => {
     try {
       const res = await fetch("/api/user/deletecartitem", {
         method: "DELETE",
@@ -480,7 +510,7 @@ export default function AccountPage() {
                           )}
                         </div>
                         <div className="p-4 space-y-4">
-                          {order.items && order.items.map((item: any, i: number) => (
+                          {order.items && order.items.map((item: OrderItem, i: number) => (
                             <div key={i} className="flex items-center gap-4">
                                <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 relative">
                                   {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover" />}
@@ -528,7 +558,7 @@ export default function AccountPage() {
                           <div className="p-4 border-t border-zinc-200 bg-green-50/50">
                             <h4 className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1">Your Review</h4>
                             <div className="text-yellow-500 text-sm mb-1">{'★'.repeat(Number(order.review_stars))}{'☆'.repeat(5 - Number(order.review_stars))}</div>
-                            {order.review_comment && <p className="text-xs text-zinc-600 italic">"{order.review_comment}"</p>}
+                            {order.review_comment && <p className="text-xs text-zinc-600 italic">&quot;{order.review_comment}&quot;</p>}
                           </div>
                         )}
                       </div>
@@ -545,9 +575,24 @@ export default function AccountPage() {
       <BuyNow 
         isOpen={isBuyNowOpen} 
         onClose={() => setIsBuyNowOpen(false)} 
-        items={cartItems} 
+        items={cartItems.map(item => ({
+          ...item,
+          image: item.image || "",
+          catagory: item.catagory || "",
+          subcatagory: item.subcatagory || "",
+          discountprice: item.discountprice || item.originalprice
+        }))} 
         totalAmount={cartItems.reduce((acc, item) => acc + (item.discountprice || item.originalprice), 0)} 
-        userProfile={{ mobile_no: user?.mobile_no, username: formData.username, address: formData.address }} 
+        userProfile={{ 
+          mobile_no: user?.mobile_no || "", 
+          username: formData.username, 
+          address: {
+            full_address: formData.address.full_address,
+            cityname: formData.address.cityname,
+            statename: formData.address.statename,
+            pincode: formData.address.pincode
+          }
+        }} 
       />
     </div>
   );
