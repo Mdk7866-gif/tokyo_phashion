@@ -12,12 +12,12 @@ function getSecret(secret: string): Uint8Array {
 const ACCESS_SECRET  = () => getSecret(process.env.ACCESS_TOKEN_SECRET!);
 const REFRESH_SECRET = () => getSecret(process.env.REFRESH_TOKEN_SECRET!);
 
-/** Generate a short-lived access token (15 minutes) */
+/** Generate a long-lived access token (7 days) */
 export async function generateAccessToken(payload: JWTPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('15m')
+    .setExpirationTime('7d')
     .sign(ACCESS_SECRET());
 }
 
