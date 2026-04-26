@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
+import BuyNow from "@/components/BuyNow";
 
 type Tab = "profile" | "cart" | "orders";
 
@@ -37,6 +38,7 @@ export default function AccountPage() {
 
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,10 +47,14 @@ export default function AccountPage() {
     }
 
     if (user) {
-      fetchProfile();
-      fetchOrders();
+      if (activeTab === "profile" || activeTab === "cart") {
+        fetchProfile();
+      }
+      if (activeTab === "orders") {
+        fetchOrders();
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, activeTab]);
 
   const fetchProfile = async () => {
     try {
@@ -77,7 +83,7 @@ export default function AccountPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("/api/user/orders");
+      const res = await fetch("/api/user/getordereddata");
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -152,6 +158,37 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error("Failed to delete item", error);
+    }
+  };
+
+  const handleCheckout = () => {
+    if (!formData.username || !formData.address.full_address) {
+      alert("Please complete your profile (name and address) before purchasing.");
+      setActiveTab("profile");
+      return;
+    }
+    setIsBuyNowOpen(true);
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+    try {
+      const res = await fetch("/api/user/cancelorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (res.ok) {
+        setOrders((prev) => 
+          prev.map((o) => o._id === orderId ? { ...o, status: "cancelled" } : o)
+        );
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to cancel order");
+      }
+    } catch (error) {
+      console.error("Failed to cancel order", error);
     }
   };
 
@@ -342,7 +379,10 @@ export default function AccountPage() {
                         <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Bag Total</span>
                         <span className="text-2xl font-black tracking-tighter">₹{cartItems.reduce((acc, item) => acc + (item.discountprice || item.originalprice), 0)}</span>
                       </div>
-                      <button className="w-full bg-white text-black h-16 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase hover:bg-zinc-100 transition-all active:scale-95">
+                      <button 
+                        onClick={handleCheckout}
+                        className="w-full bg-white text-black h-16 rounded-xl font-black text-[10px] tracking-[0.3em] uppercase hover:bg-zinc-100 transition-all active:scale-95"
+                      >
                         Proceed to Checkout
                       </button>
                     </div>
@@ -373,24 +413,45 @@ export default function AccountPage() {
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Amount</p>
                             <p className="text-xs font-bold text-emerald-600">₹{order.total_amount || order.price || 0}</p>
                           </div>
-                          <div>
+                           <div>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Status</p>
-                            <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-[10px] font-black uppercase tracking-tighter">
+                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter ${order.status === 'cancelled' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'}`}>
                               {order.status || "Processing"}
                             </span>
                           </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Estimated Delivery</p>
+                            <p className="text-xs font-bold text-zinc-900">
+                              {(() => {
+                                const d = new Date(order.created_at);
+                                d.setDate(d.getDate() + 7);
+                                return d.toLocaleDateString();
+                              })()}
+                            </p>
+                          </div>
+                          {order.status === 'in progress' && (
+                            <div className="flex items-end">
+                              <button 
+                                onClick={() => handleCancelOrder(order._id)}
+                                className="px-4 py-1.5 bg-white border border-rose-200 text-rose-500 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                              >
+                                Cancel Order
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div className="p-4 space-y-4">
-                          {/* Order items would go here if available */}
-                          <div className="flex items-center gap-4">
-                             <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0">
-                                {order.image && <Image src={order.image} alt={order.productname || ""} width={48} height={48} className="object-cover" />}
-                             </div>
-                             <div>
-                                <h5 className="text-xs font-bold uppercase">{order.productname || "Fashion Item"}</h5>
-                                <p className="text-[10px] text-zinc-500">Qty: {order.quantity || 1} • Size: {order.size || "M"}</p>
-                             </div>
-                          </div>
+                          {order.items && order.items.map((item: any, i: number) => (
+                            <div key={i} className="flex items-center gap-4">
+                               <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 relative">
+                                  {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover" />}
+                               </div>
+                               <div>
+                                  <h5 className="text-xs font-bold uppercase">{item.name || "Fashion Item"}</h5>
+                                  <p className="text-[10px] text-zinc-500">Qty: {item.quantity || 1} • Size: {item.size || "M"}</p>
+                               </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -402,6 +463,14 @@ export default function AccountPage() {
           </div>
         </div>
       </div>
+      
+      <BuyNow 
+        isOpen={isBuyNowOpen} 
+        onClose={() => setIsBuyNowOpen(false)} 
+        items={cartItems} 
+        totalAmount={cartItems.reduce((acc, item) => acc + (item.discountprice || item.originalprice), 0)} 
+        userProfile={{ mobile_no: user?.mobile_no, username: formData.username, address: formData.address }} 
+      />
     </div>
   );
 }

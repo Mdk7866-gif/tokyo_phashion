@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import BuyNow from "./BuyNow";
 
 interface Product {
   _id: string;
@@ -27,6 +28,8 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
   const [selectedSize, setSelectedSize] = useState(product.size?.[0] || "");
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const { user } = useAuth();
   const router = useRouter();
@@ -80,6 +83,37 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
       alert("An error occurred");
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (!selectedSize) {
+      alert("Please select a size");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/user/portfolio");
+      if (res.ok) {
+        const data = await res.json();
+        const profile = data.user;
+        if (!profile?.username || !profile?.address?.full_address) {
+          alert("Please complete your profile (name and address) before purchasing.");
+          router.push("/account?tab=profile");
+          return;
+        }
+        setUserProfile(profile);
+        setIsBuyNowOpen(true);
+      } else {
+        alert("Failed to fetch profile");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred");
     }
   };
 
@@ -206,7 +240,10 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
                   {isAdding ? "Adding..." : "Add to Cart"}
                 </button>
               </div>
-              <button className="w-full bg-white border border-black text-black h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-black hover:text-white transition-all active:scale-95">
+              <button 
+                onClick={handleBuyNow}
+                className="w-full bg-white border border-black text-black h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-black hover:text-white transition-all active:scale-95"
+              >
                 Buy Now
               </button>
             </div>
@@ -267,6 +304,24 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
           </div>
         </div>
       </div>
+      <BuyNow 
+        isOpen={isBuyNowOpen} 
+        onClose={() => setIsBuyNowOpen(false)} 
+        items={[{
+          name: product.productname,
+          link: `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user?.mobile_no}`,
+          originalprice: product.original_price,
+          discountprice: product.discount_price,
+          image: selectedImage,
+          colour: selectedColorName,
+          size: selectedSize,
+          catagory: product.collectionname,
+          subcatagory: product.subcatagory,
+          quantity: quantity
+        }]} 
+        totalAmount={product.discount_price * quantity} 
+        userProfile={userProfile} 
+      />
     </div>
   );
 };
