@@ -12,6 +12,7 @@ interface Product {
   stars: number;
   images: { url: string; colurname: string }[];
   subcatagory: string;
+  instoke?: string;
 }
 
 interface ShortProductCardProps {
@@ -46,6 +47,15 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
         {product.original_price > product.discount_price && (
           <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black text-white text-[8px] md:text-[10px] font-black px-2 py-1 md:px-3 md:py-1.5 rounded-full tracking-widest uppercase shadow-lg">
             -{Math.round(((product.original_price - product.discount_price) / product.original_price) * 100)}%
+          </div>
+        )}
+
+        {/* Out of Stock Overlay */}
+        {product.instoke === "Out of Stock" && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center">
+            <div className="bg-rose-600 text-white text-[10px] md:text-xs font-black px-4 py-2 rounded-full tracking-widest uppercase shadow-xl transform -rotate-12 border-2 border-white">
+              Out of Stock
+            </div>
           </div>
         )}
       </div>

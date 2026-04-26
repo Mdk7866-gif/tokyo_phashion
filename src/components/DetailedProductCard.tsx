@@ -236,24 +236,28 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
                 <div className="flex items-center border border-zinc-100 rounded-xl bg-zinc-50 h-14">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-full flex items-center justify-center font-bold text-lg hover:opacity-50"
+                    disabled={product.instoke === "Out of Stock"}
+                    className="w-10 h-full flex items-center justify-center font-bold text-lg hover:opacity-50 disabled:opacity-30"
                   >
                     −
                   </button>
                   <span className="w-8 text-center font-bold text-sm">{quantity}</span>
                   <button 
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-full flex items-center justify-center font-bold text-lg hover:opacity-50"
+                    disabled={product.instoke === "Out of Stock"}
+                    className="w-10 h-full flex items-center justify-center font-bold text-lg hover:opacity-50 disabled:opacity-30"
                   >
                     +
                   </button>
                 </div>
                 <button 
                   onClick={handleAddToCart}
-                  disabled={isAdding || addedToCart}
-                  className="flex-1 bg-black text-white h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-zinc-800 transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                  disabled={isAdding || addedToCart || product.instoke === "Out of Stock"}
+                  className={`flex-1 h-14 rounded-xl font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${product.instoke === "Out of Stock" ? "bg-zinc-100 text-zinc-400 cursor-not-allowed" : "bg-black text-white hover:bg-zinc-800 active:scale-95 disabled:opacity-50"}`}
                 >
-                  {isAdding ? (
+                  {product.instoke === "Out of Stock" ? (
+                    "Out of Stock"
+                  ) : isAdding ? (
                     <>
                       <div className="w-4 h-4 border-2 border-zinc-500 border-t-white rounded-full animate-spin"></div>
                       Adding...
@@ -270,7 +274,8 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
               </div>
               <button 
                 onClick={handleBuyNow}
-                className="w-full bg-white border border-black text-black h-14 rounded-xl font-bold text-xs tracking-widest uppercase hover:bg-black hover:text-white transition-all active:scale-95"
+                disabled={product.instoke === "Out of Stock"}
+                className={`w-full h-14 rounded-xl font-bold text-xs tracking-widest uppercase transition-all ${product.instoke === "Out of Stock" ? "hidden" : "bg-white border border-black text-black hover:bg-black hover:text-white active:scale-95"}`}
               >
                 Buy Now
               </button>
