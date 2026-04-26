@@ -170,6 +170,7 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <h3 className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">Main Menu</h3>
             <div className="space-y-1">
               {[
+                { label: "Dashboard", path: "/admin" },
                 { label: "Customer", path: "/admin/customer" },
                 { label: "Order Received", path: "/admin/orderreceived" },
                 { label: "Order Delivered", path: "/admin/orderdelivered" },
