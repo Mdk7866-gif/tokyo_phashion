@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 export default function AdminFormsPage() {
   const [forms, setForms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchForms();
@@ -49,20 +50,60 @@ export default function AdminFormsPage() {
                 <div className="break-words max-w-full">
                   <h3 className="font-bold text-lg uppercase truncate">{form.name || form.fullname || "Anonymous"}</h3>
                   <p className="text-xs font-bold text-zinc-500 break-words">{form.email}</p>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-2">Mobile</p>
+                  <p className="text-xs font-bold text-zinc-800">{form.mobile_number}</p>
                 </div>
                 <div className="text-left md:text-right mt-2 md:mt-0 w-full md:w-auto">
                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Date</p>
                   <p className="text-xs font-bold">{form.created_at ? new Date(form.created_at).toLocaleString() : "Unknown"}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Message</p>
-                <div className="text-sm text-zinc-700 whitespace-pre-wrap font-medium break-words max-h-96 overflow-y-auto pr-2 bg-zinc-50 p-4 rounded-xl border border-zinc-100">
-                  {form.message}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Message</p>
+                  <div className="text-sm text-zinc-700 whitespace-pre-wrap font-medium break-words max-h-96 overflow-y-auto pr-2 bg-zinc-50 p-4 rounded-xl border border-zinc-100">
+                    {form.detailes || form.message}
+                  </div>
                 </div>
+                {form.photo_url && (
+                  <div>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Attachment (Click to expand)</p>
+                    <div 
+                      onClick={() => setSelectedImage(form.photo_url)}
+                      className="relative aspect-video rounded-xl overflow-hidden border border-zinc-200 cursor-zoom-in hover:opacity-90 transition-opacity"
+                    >
+                      <img src={form.photo_url} alt="Form attachment" className="object-cover w-full h-full" />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Image Modal Popup */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
+            onClick={() => setSelectedImage(null)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+          <div className="relative max-w-5xl max-h-full w-full h-full flex items-center justify-center">
+            <img 
+              src={selectedImage} 
+              alt="Expanded attachment" 
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300" 
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         </div>
       )}
     </div>
