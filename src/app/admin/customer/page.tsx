@@ -55,82 +55,61 @@ export default function AdminCustomerPage() {
           <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">No customers found.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border-2 border-zinc-200 shadow-md overflow-hidden">
-          {/* Mobile view */}
-          <div className="md:hidden divide-y divide-zinc-100">
-            {customers.map((cust, idx) => (
-              <div key={idx} className="p-4 space-y-3">
-                <div className="flex justify-between items-start">
+        <div className="space-y-6">
+          {customers.map((cust, idx) => (
+            <div key={idx} className="bg-white rounded-3xl border-2 border-zinc-200 shadow-md overflow-hidden">
+              {/* Customer Header */}
+              <div className="p-4 md:p-6 bg-zinc-50/80 border-b border-zinc-200 flex flex-wrap justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-sm md:text-base">
+                    {(cust.username || cust.email || "U").charAt(0).toUpperCase()}
+                  </div>
                   <div>
-                    <p className="font-bold text-sm uppercase">{cust.username || "Unknown"}</p>
-                    <p className="text-[10px] font-bold text-zinc-400 truncate">{cust.email}</p>
-                    <p className="text-[11px] font-bold text-zinc-500">{cust.mobile_no || "No Mobile"}</p>
+                    <h3 className="font-black text-base md:text-lg uppercase tracking-tight">{cust.username || "Anonymous Customer"}</h3>
+                    <p className="text-[10px] md:text-xs font-bold text-zinc-500 tracking-wider uppercase">{cust.email}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Joined</p>
-                    <p className="text-[11px] font-bold">{cust.created_At ? new Date(cust.created_At).toLocaleDateString() : "N/A"}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Address</p>
-                  <p className="text-xs font-medium text-zinc-600 line-clamp-2">{cust.address?.full_address || "N/A"}</p>
-                  <p className="text-[10px] text-zinc-400 mt-0.5 uppercase">
-                    {cust.address?.cityname ? `${cust.address.cityname}, ` : ""}{cust.address?.statename || ""}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Last Login</p>
-                  <p className="text-[11px] font-bold">{cust.last_login ? new Date(cust.last_login).toLocaleString() : "N/A"}</p>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Desktop view */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-zinc-50 border-b border-zinc-200">
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Name</th>
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Contact Info</th>
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Address</th>
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Created At</th>
-                  <th className="p-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">Last Login</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {customers.map((cust, idx) => (
-                  <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="p-4">
-                      <p className="font-bold text-sm uppercase">{cust.username || "Unknown"}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-bold text-sm truncate max-w-[150px]" title={cust.email}>{cust.email}</p>
-                      <p className="text-[11px] font-bold text-zinc-500">{cust.mobile_no || "N/A"}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-xs font-medium text-zinc-600 max-w-[250px] truncate" title={cust.address?.full_address}>
-                        {cust.address?.full_address || "N/A"}
-                      </p>
-                      <p className="text-[10px] text-zinc-400 mt-1 uppercase">
+              {/* Customer Details */}
+              <div className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+                  {/* Contact Info */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Mobile Number</p>
+                    <p className="text-sm font-black text-zinc-900">{cust.mobile_no || "Not Provided"}</p>
+                  </div>
+
+                  {/* Address */}
+                  <div className="space-y-1 lg:col-span-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Location</p>
+                    <div className="text-sm font-medium text-zinc-800">
+                      <p className="line-clamp-1" title={cust.address?.full_address}>{cust.address?.full_address || "No address saved"}</p>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">
                         {cust.address?.cityname ? `${cust.address.cityname}, ` : ""}{cust.address?.statename || ""}
                       </p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-xs font-bold text-zinc-700">
-                        {cust.created_At ? new Date(cust.created_At).toLocaleDateString() : "N/A"}
-                      </p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-xs font-bold text-zinc-700">
-                        {cust.last_login ? new Date(cust.last_login).toLocaleString() : "N/A"}
-                      </p>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  {/* Joined Date */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Joined Date</p>
+                    <p className="text-sm font-black text-zinc-900">
+                      {cust.created_At ? new Date(cust.created_At).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : "N/A"}
+                    </p>
+                  </div>
+
+                  {/* Last Active */}
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Last Login</p>
+                    <p className="text-sm font-black text-zinc-900">
+                      {cust.last_login ? new Date(cust.last_login).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
