@@ -2,19 +2,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useAlert } from '@/components/AlertMessageCard';
 
 type ApiResult =
   | { success: true; message: string; insertedId?: unknown; photo_url?: string | null }
   | { error: string };
 
 export default function ContactPage() {
+  const { showAlert } = useAlert();
   const [name, setName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [detailes, setDetailes] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<ApiResult | null>(null);
 
   const previewUrl = useMemo(() => {
     if (!photo) return null;
@@ -24,7 +25,6 @@ export default function ContactPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    setResult(null);
 
     try {
       const form = new FormData();
@@ -39,16 +39,18 @@ export default function ContactPage() {
       });
 
       const data = (await res.json()) as ApiResult;
-      setResult(data);
       if (res.ok) {
+        showAlert({ type: 'success', message: 'Message sent successfully! We will get back to you soon.' });
         setName('');
         setMobileNumber('');
         setDetailes('');
         setPhoto(null);
+      } else {
+        showAlert({ type: 'error', message: 'error' in data ? data.error : 'Failed to send message.' });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Request failed';
-      setResult({ error: errorMessage });
+      showAlert({ type: 'error', message: errorMessage });
     } finally {
       setSubmitting(false);
     }
@@ -62,38 +64,12 @@ export default function ContactPage() {
           <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-xs">Reach out for any queries or custom orders</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-16">
-          {/* Contact Info */}
-          <div className="space-y-12">
-            <div>
-              <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Address</h3>
-              <p className="text-sm font-black uppercase leading-relaxed">
-                11-12, 14 Valkeshwar Flora,<br />
-                Nr. Shahid Circle Nava Naroda,<br />
-                Ahmedabad, Gujarat - 382346
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Contact</h3>
-              <p className="text-sm font-black uppercase mb-1">Email: info@tokyophashion.com</p>
-              <p className="text-sm font-black uppercase">Phone: +91 98765 43210</p>
-            </div>
-
-            <div>
-              <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Follow Us</h3>
-              <div className="flex gap-4">
-                <span className="text-xs font-black uppercase tracking-widest border-b-2 border-black pb-1 cursor-pointer hover:opacity-50 transition-opacity">Instagram</span>
-                <span className="text-xs font-black uppercase tracking-widest border-b-2 border-black pb-1 cursor-pointer hover:opacity-50 transition-opacity">Facebook</span>
-              </div>
-            </div>
-          </div>
-
+        <div className="max-w-xl mx-auto">
           {/* Form */}
-          <div>
+          <div className="bg-white p-8 md:p-10 rounded-[32px] border-2 border-zinc-100 shadow-xl shadow-zinc-100/50">
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Full Name</label>
+                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block ml-2">Full Name</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -104,18 +80,22 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Mobile Number</label>
+                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block ml-2">Mobile Number</label>
                 <input
+                  type="tel"
                   value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setMobileNumber(value);
+                  }}
                   required
                   className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-6 py-4 text-sm font-bold outline-none focus:border-black transition-colors"
-                  placeholder="+91 00000 00000"
+                  placeholder="8511274216"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Details</label>
+                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block ml-2">Details</label>
                 <textarea
                   value={detailes}
                   onChange={(e) => setDetailes(e.target.value)}
@@ -127,7 +107,7 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Attachment (Optional)</label>
+                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block ml-2">Attachment (Optional)</label>
                 <div className="relative">
                   <input
                     type="file"
@@ -157,21 +137,10 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-black text-white h-16 rounded-2xl font-black text-xs tracking-[0.3em] uppercase hover:bg-zinc-800 transition-all active:scale-[0.98] disabled:opacity-50"
+                className="w-full bg-black text-white h-16 rounded-2xl font-black text-xs tracking-[0.3em] uppercase hover:bg-zinc-800 transition-all active:scale-[0.98] disabled:opacity-50 shadow-xl shadow-black/10"
               >
                 {submitting ? 'Sending...' : 'Send Message'}
               </button>
-
-              {result && 'success' in result && (
-                <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl text-center">
-                  <p className="text-emerald-600 text-xs font-black uppercase tracking-widest">Message Sent Successfully</p>
-                </div>
-              )}
-              {result && 'error' in result && (
-                <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl text-center">
-                  <p className="text-rose-600 text-xs font-black uppercase tracking-widest">{result.error}</p>
-                </div>
-              )}
             </form>
           </div>
         </div>

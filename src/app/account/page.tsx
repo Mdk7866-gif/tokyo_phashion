@@ -79,6 +79,28 @@ export default function AccountPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
+  const [formInitialized, setFormInitialized] = useState(false);
+
+  // Persistence: Restore form data from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem("profileFormDraft");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed);
+      } catch (e) {
+        console.error("Failed to parse saved form data", e);
+      }
+    }
+    setFormInitialized(true);
+  }, []);
+
+  // Persistence: Save form data to localStorage whenever it changes
+  useEffect(() => {
+    if (formInitialized) {
+      localStorage.setItem("profileFormDraft", JSON.stringify(formData));
+    }
+  }, [formData, formInitialized]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -112,6 +134,8 @@ export default function AccountPage() {
               pincode: data.user.address?.pincode || "",
             },
           });
+          // After fetching real data, we can clear the draft if it matches or just let it stay
+          // But usually, we want to clear it after a successful SUBMIT
           setCartItems(data.user.cartitems || []);
         }
       }
@@ -137,7 +161,13 @@ export default function AccountPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    
+    // Numeric validation for mobile number
+    if (name === "mobile_no") {
+      value = value.replace(/\D/g, '').slice(0, 10);
+    }
+
     if (name in formData.address) {
       setFormData((prev) => ({
         ...prev,
@@ -168,6 +198,7 @@ export default function AccountPage() {
       if (res.ok) {
         setMessage({ type: "success", text: "Profile updated successfully!" });
         showAlert({ type: "success", message: "Profile updated successfully!" });
+        localStorage.removeItem("profileFormDraft"); // Clear draft on success
       } else {
         setMessage({ type: "error", text: data.error || "Failed to update profile." });
       }
