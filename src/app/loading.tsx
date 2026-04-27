@@ -5,25 +5,24 @@ export default function Loading() {
   const [stage, setStage] = useState<'showing' | 'fading' | 'hidden'>('hidden');
 
   useEffect(() => {
-    // Check if user has already seen the splash screen
-    const hasVisited = typeof window !== 'undefined' ? localStorage.getItem('hasVisited') : null;
+    // Check if user has already seen the splash screen in THIS session
+    // We use sessionStorage so it shows once per site entry (new tab/window)
+    // or localStorage if they want it truly once ever. 
+    // User said "first time user enter the website", usually means per visit.
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
     
-    if (hasVisited) {
-      // stage is already 'hidden' by default, no need to set it
+    if (hasSeenSplash) {
+      setStage('hidden');
       return;
     }
 
-    // Use a small timeout to avoid cascading render warning
-    const startTimer = setTimeout(() => {
-      setStage('showing');
-      localStorage.setItem('hasVisited', 'true');
-    }, 0);
+    setStage('showing');
+    sessionStorage.setItem('hasSeenSplash', 'true');
 
-    const fadeTimer = setTimeout(() => setStage('fading'), 1800); // Start fade out at 1.8s
-    const hideTimer = setTimeout(() => setStage('hidden'), 2400); // Fully hide at 2.4s
+    const fadeTimer = setTimeout(() => setStage('fading'), 2000); 
+    const hideTimer = setTimeout(() => setStage('hidden'), 2600); 
     
     return () => { 
-      clearTimeout(startTimer);
       clearTimeout(fadeTimer); 
       clearTimeout(hideTimer); 
     }
@@ -46,15 +45,14 @@ export default function Loading() {
               TP
             </span>
           </div>
-          {/* Outer Ring */}
           <div className="absolute -inset-4 border border-white/20 rounded-full animate-[spin_4s_linear_infinite]" />
         </div>
         
         {/* Company Name */}
         <div className="flex flex-col items-center gap-4">
-          <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent" style={{ animation: 'lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} />
+          <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent w-full" style={{ animation: 'lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} />
           
-          <div className="flex overflow-hidden py-2 px-4 shadow-[0_0_20px_rgba(255,255,255,0.05)] text-white">
+          <div className="flex overflow-hidden py-2 px-4 text-white">
             {"TOKYO PHASHION".split("").map((char, index) => (
               <span 
                 key={index} 
@@ -71,14 +69,10 @@ export default function Loading() {
             ))}
           </div>
           
-          <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent" style={{ animation: 'lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards', animationDelay: '1s', opacity: 0 }} />
+          <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent w-full" style={{ animation: 'lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards', animationDelay: '1s', opacity: 0 }} />
         </div>
       </div>
       
-      {/* Decorative background flair */}
-      <div className="absolute bottom-0 left-0 w-full h-[50vh] bg-gradient-to-t from-zinc-900/30 to-transparent pointer-events-none" />
-
-      {/* Inline styles guarantee animations play immediately without globals.css sync issues */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes letterReveal {
           0% { transform: translateY(100%); opacity: 0; filter: blur(4px); }

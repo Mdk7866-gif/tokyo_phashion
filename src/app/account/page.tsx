@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
 import BuyNow from "@/components/BuyNow";
+import { useAlert } from "@/components/AlertMessageCard";
 
 type Tab = "profile" | "cart" | "orders";
 
@@ -25,6 +26,11 @@ interface CartItem {
 interface OrderItem {
   name: string;
   image?: string;
+  link?: string;
+  size?: string;
+  colour?: string;
+  discountprice?: number;
+  originalprice?: number;
 }
 
 interface Order {
@@ -41,6 +47,7 @@ interface Order {
 
 export default function AccountPage() {
   const { user, loading: authLoading } = useAuth();
+  const { showAlert } = useAlert();
   const router = useRouter();
 
   const searchParams = useSearchParams();
@@ -160,7 +167,7 @@ export default function AccountPage() {
       const data = await res.json();
       if (res.ok) {
         setMessage({ type: "success", text: "Profile updated successfully!" });
-        alert("Profile updated successfully!");
+        showAlert({ type: "success", message: "Profile updated successfully!" });
       } else {
         setMessage({ type: "error", text: data.error || "Failed to update profile." });
       }
@@ -198,7 +205,7 @@ export default function AccountPage() {
 
   const handleCheckout = () => {
     if (!formData.username || !formData.address.full_address) {
-      alert("Please complete your profile (name and address) before purchasing.");
+      showAlert({ type: "error", message: "Please complete your profile (name and address) before purchasing." });
       setActiveTab("profile");
       return;
     }
@@ -206,30 +213,40 @@ export default function AccountPage() {
   };
 
   const handleCancelOrder = async (orderId: string) => {
-    if (!confirm("Are you sure you want to cancel this order?")) return;
-    try {
-      const res = await fetch("/api/user/cancelorder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-      });
+    showAlert({
+      type: "confirm",
+      message: "Are you sure you want to cancel this order?",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/user/cancelorder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId }),
+          });
 
-      if (res.ok) {
-        setOrders((prev) => 
-          prev.map((o) => o._id === orderId ? { ...o, status: "cancelled" } : o)
-        );
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to cancel order");
+          if (res.ok) {
+            setOrders((prev) => 
+              prev.map((o) => o._id === orderId ? { ...o, status: "cancelled" } : o)
+            );
+            showAlert({ type: "success", message: "Order cancelled successfully." });
+          } else {
+            const data = await res.json();
+            showAlert({ type: "error", message: data.error || "Failed to cancel order" });
+          }
+        } catch (error) {
+          console.error("Failed to cancel order", error);
+          showAlert({ type: "error", message: "An error occurred while cancelling the order." });
+        }
       }
-    } catch (error) {
-      console.error("Failed to cancel order", error);
-    }
+    });
   };
 
   const handleReviewSubmit = async (orderId: string) => {
     const data = reviewData[orderId];
-    if (!data?.stars) return alert("Please select a star rating");
+    if (!data?.stars) {
+      showAlert({ type: "error", message: "Please select a star rating" });
+      return;
+    }
     
     try {
       const res = await fetch("/api/user/submitreview", {
@@ -238,14 +255,14 @@ export default function AccountPage() {
         body: JSON.stringify({ orderId, review_stars: data.stars, review_comment: data.comment || "" }),
       });
       if (res.ok) {
-        alert("Review submitted successfully!");
+        showAlert({ type: "success", message: "Review submitted successfully!" });
         fetchOrders(); // Refresh to show review
       } else {
-        alert("Failed to submit review");
+        showAlert({ type: "error", message: "Failed to submit review" });
       }
     } catch(e) {
       console.error(e);
-      alert("An error occurred while submitting review.");
+      showAlert({ type: "error", message: "An error occurred while submitting review." });
     }
   };
 
@@ -409,39 +426,43 @@ export default function AccountPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {cartItems.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-6 p-4 bg-white rounded-2xl border border-zinc-100 shadow-sm">
-                        <div className="relative w-20 h-24 bg-zinc-100 rounded-xl overflow-hidden shrink-0">
-                          {item.image ? (
-                            <Image src={item.image} alt={item.name} fill className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-300">NO IMAGE</div>
-                          )}
-                        </div>
-                        <div 
-                          className="flex-1 cursor-pointer group/item"
-                          onClick={() => router.push(`/${item.link}`)}
-                        >
-                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{item.catagory || "Clothing"}</p>
-                          <h4 className="font-bold text-sm uppercase mb-1 group-hover/item:underline">{item.name}</h4>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold">₹{item.discountprice || item.originalprice}</span>
-                            {item.discountprice && item.originalprice > item.discountprice && (
-                              <span className="text-[10px] text-zinc-400 line-through">₹{item.originalprice}</span>
-                            )}
+                    {cartItems.map((item, idx) => {
+                      const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).split('&cartid=')[0] : "/shop";
+                      
+                      return (
+                        <div key={idx} className="group/cart-item bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden hover:border-black transition-all">
+                          <div className="flex items-center gap-6 p-4">
+                            <Link href={cleanLink} className="relative w-20 h-24 bg-zinc-100 rounded-xl overflow-hidden shrink-0 block group-hover/cart-item:scale-[1.02] transition-transform">
+                              {item.image ? (
+                                <Image src={item.image} alt={item.name} fill className="object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-300">NO IMAGE</div>
+                              )}
+                            </Link>
+                            <Link href={cleanLink} className="flex-1 min-w-0 py-1 block">
+                              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{item.catagory || "Clothing"}</p>
+                              <h4 className="font-bold text-sm uppercase mb-1 group-hover/cart-item:underline truncate">{item.name}</h4>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold">₹{item.discountprice || item.originalprice}</span>
+                                {item.discountprice && item.originalprice > item.discountprice && (
+                                  <span className="text-[10px] text-zinc-400 line-through">₹{item.originalprice}</span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-zinc-500 mt-2 uppercase font-medium">Size: {item.size || "M"} • Colour: {item.colour || "Standard"}</p>
+                            </Link>
+                            <div className="pr-2">
+                              <button 
+                                onClick={() => handleDeleteCartItem(item)}
+                                className="p-3 hover:bg-rose-50 text-rose-500 rounded-xl transition-colors active:scale-90"
+                                title="Remove from cart"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                              </button>
+                            </div>
                           </div>
-                          <p className="text-[10px] text-zinc-500 mt-2 uppercase font-medium">Size: {item.size || "M"} • Colour: {item.colour || "Standard"}</p>
                         </div>
-                        <div className="pr-4">
-                          <button 
-                            onClick={() => handleDeleteCartItem(item)}
-                            className="p-2 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     
                     <div className="mt-10 p-8 bg-black text-white rounded-3xl space-y-6 shadow-2xl">
                       <div className="flex justify-between items-baseline">
@@ -510,16 +531,24 @@ export default function AccountPage() {
                           )}
                         </div>
                         <div className="p-4 space-y-4">
-                          {order.items && order.items.map((item: OrderItem, i: number) => (
-                            <div key={i} className="flex items-center gap-4">
-                               <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 relative">
-                                  {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover" />}
-                               </div>
-                               <div>
-                                  <h5 className="text-xs font-bold uppercase">{item.name || "Fashion Item"}</h5>
-                               </div>
-                            </div>
-                          ))}
+                          {order.items && order.items.map((item: OrderItem, i: number) => {
+                            const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).split('&cartid=')[0] : "/shop";
+                            
+                            return (
+                              <Link key={i} href={cleanLink} className="flex items-center gap-4 group/order-item p-2 rounded-xl hover:bg-zinc-50 transition-colors">
+                                 <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 relative border border-zinc-200">
+                                    {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover transition-transform group-hover/order-item:scale-110" />}
+                                 </div>
+                                 <div className="flex-1 min-w-0">
+                                    <h5 className="text-xs font-bold uppercase truncate group-hover/order-item:underline">{item.name || "Fashion Item"}</h5>
+                                    {item.size && <p className="text-[9px] text-zinc-500 font-bold uppercase">Size: {item.size} • Color: {item.colour}</p>}
+                                 </div>
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-300 group-hover/order-item:text-black transition-colors">
+                                   <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                                 </svg>
+                              </Link>
+                            );
+                          })}
                         </div>
 
                         {order.status === 'delivered' && !order.review_stars && (

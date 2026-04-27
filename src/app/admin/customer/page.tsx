@@ -12,6 +12,7 @@ interface Customer {
     full_address?: string;
     cityname?: string;
     statename?: string;
+    pincode?: string;
   };
 }
 
@@ -84,9 +85,9 @@ export default function AdminCustomerPage() {
                   <div className="space-y-1 lg:col-span-1">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Location</p>
                     <div className="text-sm font-medium text-zinc-800">
-                      <p className="line-clamp-1" title={cust.address?.full_address}>{cust.address?.full_address || "No address saved"}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed" title={cust.address?.full_address}>{cust.address?.full_address || "No address saved"}</p>
                       <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">
-                        {cust.address?.cityname ? `${cust.address.cityname}, ` : ""}{cust.address?.statename || ""}
+                        {cust.address?.cityname ? `${cust.address.cityname}, ` : ""}{cust.address?.statename || ""} {cust.address?.pincode ? `- ${cust.address.pincode}` : ""}
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAlert } from "@/components/AlertMessageCard";
 
 import Link from "next/link";
 
@@ -16,6 +17,7 @@ interface SidebarProps {
 
 const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [collections, setCollections] = useState<Collection[]>([]);
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -66,8 +68,9 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       if (res.ok) {
         setNewCollectionName("");
         fetchCollections();
+        showAlert({ type: "success", message: "Collection created successfully." });
       } else {
-        alert(data.error || "Failed to create collection");
+        showAlert({ type: "error", message: data.error || "Failed to create collection" });
       }
     } catch (err) {
       console.error("Failed to add collection:", err);
@@ -78,20 +81,27 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const handleDeleteCollection = async (name: string, e: React.MouseEvent) => {
     e.stopPropagation(); // prevent toggle expand
-    if (!confirm(`Are you sure you want to delete the collection '${name}'? This action cannot be undone.`)) return;
-    try {
-      const res = await fetch(`/api/admin/deletecollection?name=${encodeURIComponent(name)}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        fetchCollections();
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete collection");
+    showAlert({
+      type: "confirm",
+      message: `Are you sure you want to delete the collection '${name}'? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/deletecollection?name=${encodeURIComponent(name)}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            fetchCollections();
+            showAlert({ type: "success", message: "Collection deleted successfully." });
+          } else {
+            const data = await res.json();
+            showAlert({ type: "error", message: data.error || "Failed to delete collection" });
+          }
+        } catch (err) {
+          console.error("Failed to delete collection:", err);
+          showAlert({ type: "error", message: "An error occurred while deleting the collection." });
+        }
       }
-    } catch (err) {
-      console.error("Failed to delete collection:", err);
-    }
+    });
   };
 
   const toggleCollection = (name: string) => {
@@ -121,8 +131,9 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       if (res.ok) {
         setNewSubcategories(prev => ({ ...prev, [colName]: "" }));
         fetchCollections(); // refresh to show new subcategory
+        showAlert({ type: "success", message: "Subcategory created successfully." });
       } else {
-        alert(data.error || "Failed to create subcategory");
+        showAlert({ type: "error", message: data.error || "Failed to create subcategory" });
       }
     } catch (err) {
       console.error("Failed to add subcategory:", err);
@@ -134,21 +145,27 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const handleDeleteSubcategory = async (colName: string, subName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!confirm(`Are you sure you want to delete subcategory "${subName}"? All products within this subcategory will be deleted.`)) return;
-    
-    try {
-      const res = await fetch(`/api/admin/deletesubcategory?collection=${colName}&subcategory=${subName}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        fetchCollections();
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete subcategory");
+    showAlert({
+      type: "confirm",
+      message: `Are you sure you want to delete subcategory "${subName}"? All products within this subcategory will be deleted.`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/deletesubcategory?collection=${colName}&subcategory=${subName}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            fetchCollections();
+            showAlert({ type: "success", message: "Subcategory deleted successfully." });
+          } else {
+            const data = await res.json();
+            showAlert({ type: "error", message: data.error || "Failed to delete subcategory" });
+          }
+        } catch (err) {
+          console.error("Failed to delete subcategory:", err);
+          showAlert({ type: "error", message: "An error occurred while deleting the subcategory." });
+        }
       }
-    } catch (err) {
-      console.error("Failed to delete subcategory:", err);
-    }
+    });
   };
 
   return (

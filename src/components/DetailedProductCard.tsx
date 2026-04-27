@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import BuyNow from "./BuyNow";
+import { useAlert } from "./AlertMessageCard";
 import Image from "next/image";
 
 interface UserProfile {
@@ -45,6 +46,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const router = useRouter();
 
   const selectedImage = product.images?.[selectedColorIndex]?.url || "";
@@ -57,7 +59,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
     }
     
     if (!selectedSize) {
-      alert("Please select a size");
+      showAlert({ type: "error", message: "Please select a size" });
       return;
     }
 
@@ -90,11 +92,11 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
       } else {
-        alert(data.error || "Failed to add to cart");
+        showAlert({ type: "error", message: data.error || "Failed to add to cart" });
       }
     } catch (error) {
       console.error(error);
-      alert("An error occurred");
+      showAlert({ type: "error", message: "An error occurred while adding to cart." });
     } finally {
       setIsAdding(false);
     }
@@ -106,7 +108,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
       return;
     }
     if (!selectedSize) {
-      alert("Please select a size");
+      showAlert({ type: "error", message: "Please select a size" });
       return;
     }
 
@@ -116,18 +118,18 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
         const data = await res.json();
         const profile = data.user;
         if (!profile?.username || !profile?.address?.full_address) {
-          alert("Please complete your profile (name and address) before purchasing.");
+          showAlert({ type: "error", message: "Please complete your profile (name and address) before purchasing." });
           router.push("/account?tab=profile");
           return;
         }
         setUserProfile(profile);
         setIsBuyNowOpen(true);
       } else {
-        alert("Failed to fetch profile");
+        showAlert({ type: "error", message: "Failed to fetch profile information." });
       }
     } catch (error) {
       console.error(error);
-      alert("An error occurred");
+      showAlert({ type: "error", message: "An error occurred while initiating checkout." });
     }
   };
 

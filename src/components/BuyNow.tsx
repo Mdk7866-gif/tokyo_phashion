@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAlert } from './AlertMessageCard';
 
 interface CartItem {
   name: string;
@@ -35,11 +36,12 @@ interface BuyNowProps {
 
 const BuyNow: React.FC<BuyNowProps> = ({ isOpen, onClose, items, totalAmount, userProfile }) => {
   const router = useRouter();
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   // Enforce profile completion
   React.useEffect(() => {
     if (isOpen && (!userProfile.username || !userProfile.address?.full_address || !userProfile.mobile_no)) {
-      alert("Your profile is incomplete. Please provide your Name, Mobile Number, and Address before placing an order.");
+      showAlert({ type: "error", message: "Your profile is incomplete. Please provide your Name, Mobile Number, and Address before placing an order." });
       onClose();
       router.push('/account?tab=profile');
     }
@@ -65,22 +67,22 @@ const BuyNow: React.FC<BuyNowProps> = ({ isOpen, onClose, items, totalAmount, us
 
       const data = await res.json();
       if (res.ok) {
-        alert('Order placed successfully via Cash on Delivery!');
+        showAlert({ type: "success", message: "Order placed successfully via Cash on Delivery!" });
         onClose();
         router.push('/account?tab=orders');
       } else {
-        alert(data.error || 'Failed to place order.');
+        showAlert({ type: "error", message: data.error || "Failed to place order." });
       }
     } catch (error) {
       console.error(error);
-      alert('An error occurred while placing the order.');
+      showAlert({ type: "error", message: "An error occurred while placing the order." });
     } finally {
       setLoading(false);
     }
   };
 
   const handleOnline = () => {
-    alert('Online payment integration coming soon!');
+    showAlert({ type: "info", message: "Online payment integration coming soon!" });
   };
 
   return (

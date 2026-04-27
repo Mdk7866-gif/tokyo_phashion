@@ -129,9 +129,9 @@ export default function Home() {
       </section>
 
       {/* ─── SHOP BY CATEGORY ─── */}
-      <section className="w-full py-14 md:py-24 bg-white flex flex-col items-center">
-        <div className="w-full max-w-[1440px] px-4 md:px-12 fade-up">
-          <h2 className="sec-heading heading-underline">SHOP BY <span className="text-zinc-400">CATEGORY</span></h2>
+      <section className="w-full py-14 md:py-24 bg-white flex flex-col items-center min-h-[400px]">
+        <div className="w-full max-w-[1440px] px-4 md:px-12">
+          <h2 className="sec-heading heading-underline visible">SHOP BY <span className="text-zinc-400">CATEGORY</span></h2>
           <div className="cat-grid">
             {categories.map((cat, idx) => (
               <div key={idx} className="w-full">

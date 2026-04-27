@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       
       {/* Sidebar Content */}
       <div 
-        className={`fixed left-0 top-0 h-full w-[300px] bg-black text-white z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed left-0 top-0 h-full w-[300px] bg-black text-white z-[101] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
@@ -102,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-100px)]">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6">
           {/* User Section */}
           {!authLoading && (
             <div className="space-y-4">
@@ -268,23 +268,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </Link>
 
             {/* Admin Access */}
-            <div className="pt-2 mt-4 border-t border-white/10">
-              <Link
-                href="/admin/login"
-                onClick={onClose}
-                className="flex items-center gap-4 p-3 rounded-lg font-bold tracking-widest text-[9px] uppercase text-white/30 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                Admin
-              </Link>
-            </div>
+            <Link
+              href="/admin/login"
+              onClick={onClose}
+              className="flex items-center gap-4 p-3.5 bg-white/5 border border-white/10 rounded-xl font-bold tracking-widest text-[10px] uppercase text-zinc-400 hover:text-white hover:bg-white/10 transition-all group mt-6"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-white">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Admin Dashboard
+            </Link>
           </nav>
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 w-full p-6 space-y-4 border-t border-white/10 bg-black">
+        <div className="p-6 space-y-4 border-t border-white/10 bg-black shrink-0">
           <p className="text-center text-[9px] uppercase font-bold tracking-[0.3em] text-gray-500">CONNECT WITH US</p>
           <div className="flex items-center justify-center gap-4">
             <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full hover:bg-white/10 transition-colors">

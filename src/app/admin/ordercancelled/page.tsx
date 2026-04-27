@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface OrderItem {
   name: string;
@@ -11,6 +12,7 @@ interface OrderItem {
   colour?: string;
   discountprice?: number;
   originalprice?: number;
+  link?: string;
 }
 
 interface AdminOrder {
@@ -112,18 +114,31 @@ export default function AdminOrderCancelledPage() {
                 <div>
                   <h4 className="text-xs font-bold tracking-widest uppercase text-zinc-400 mb-4 border-b border-zinc-100 pb-2">Order Items ({order.items?.length || 0})</h4>
                   <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                    {order.items && order.items.map((item: OrderItem, i: number) => (
-                      <div key={i} className="flex items-center gap-4 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100">
-                         <div className="w-16 h-16 bg-white rounded-lg overflow-hidden shrink-0 relative border border-zinc-100">
-                            {item.image && <Image src={item.image} alt={item.name || ""} fill className="object-cover" />}
-                         </div>
-                         <div>
-                            <h5 className="text-xs font-bold uppercase truncate max-w-[200px]" title={item.name}>{item.name || "Fashion Item"}</h5>
-                            <p className="text-[10px] text-zinc-500 uppercase mt-1 font-bold">Qty: {item.quantity || 1} • Size: {item.size || "M"} • Color: {item.colour}</p>
-                            <p className="text-xs font-black mt-1 text-black">₹{item.discountprice || item.originalprice}</p>
-                         </div>
-                      </div>
-                    ))}
+                    {order.items && order.items.map((item: OrderItem, i: number) => {
+                      const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).split('&cartid=')[0] : "/shop";
+                      
+                      return (
+                        <Link key={i} href={cleanLink} className="block group/item">
+                          <div className="flex items-center gap-4 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100 hover:bg-white hover:border-black transition-all shadow-sm group-hover/item:shadow-md">
+                             <div className="w-16 h-16 bg-white rounded-lg overflow-hidden shrink-0 relative border border-zinc-100">
+                                {item.image && (
+                                  <Image src={item.image} alt={item.name || ""} fill className="object-cover transition-transform group-hover/item:scale-110" />
+                                )}
+                             </div>
+                             <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h5 className="text-xs font-bold uppercase truncate" title={item.name}>{item.name || "Fashion Item"}</h5>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover/item:opacity-100 transition-all text-black">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                                  </svg>
+                                </div>
+                                <p className="text-[10px] text-zinc-500 uppercase mt-1 font-bold">Qty: {item.quantity || 1} • Size: {item.size || "M"} • Color: {item.colour}</p>
+                                <p className="text-xs font-black mt-1 text-black">₹{item.discountprice || item.originalprice}</p>
+                             </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

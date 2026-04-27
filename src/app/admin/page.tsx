@@ -3,6 +3,7 @@
 import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useAlert } from "@/components/AlertMessageCard";
 
 
 interface Product {
@@ -25,6 +26,7 @@ import AdminOverview from "@/components/admin/AdminOverview";
 
 function AdminDashboard() {
   const searchParams = useSearchParams();
+  const { showAlert } = useAlert();
   const collection = searchParams.get('collection');
   const subcategory = searchParams.get('subcategory');
   
@@ -58,20 +60,27 @@ function AdminDashboard() {
 
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
-    try {
-      const res = await fetch(`/api/admin/deleteproduct?collection=${collection}&id=${id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        fetchProducts();
-      } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete product");
+    showAlert({
+      type: "confirm",
+      message: "Are you sure you want to delete this product? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/deleteproduct?collection=${collection}&id=${id}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            fetchProducts();
+            showAlert({ type: "success", message: "Product deleted successfully." });
+          } else {
+            const data = await res.json();
+            showAlert({ type: "error", message: data.error || "Failed to delete product" });
+          }
+        } catch (err) {
+          console.error("Failed to delete product:", err);
+          showAlert({ type: "error", message: "An error occurred while deleting the product." });
+        }
       }
-    } catch (err) {
-      console.error("Failed to delete product:", err);
-    }
+    });
   };
 
   if (!collection) {

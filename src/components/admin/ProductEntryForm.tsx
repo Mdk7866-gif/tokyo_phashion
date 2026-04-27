@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAlert } from '@/components/AlertMessageCard';
 
 interface Product {
   _id: string;
@@ -56,6 +57,7 @@ const compressImage = (file: File): Promise<string> => {
 
 export default function ProductEntryForm({ collectionName, subcategoryName, initialData, onSuccess, onCancel }: ProductEntryFormProps) {
   const [loading, setLoading] = useState(false);
+  const { showAlert } = useAlert();
   const [message, setMessage] = useState('');
   
   const [formData, setFormData] = useState({
@@ -97,7 +99,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        alert("Image is too large. Max 10MB allowed.");
+        showAlert({ type: "error", message: "Image is too large. Max 10MB allowed." });
         return;
       }
       try {
@@ -106,7 +108,7 @@ export default function ProductEntryForm({ collectionName, subcategoryName, init
         newImages[index].url = compressedBase64;
         setImages(newImages);
       } catch {
-        alert("Failed to process image");
+        showAlert({ type: "error", message: "Failed to process image. Please try another one." });
       }
     }
   };
