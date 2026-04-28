@@ -140,8 +140,28 @@ function ShopContent() {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-gray-400 font-bold text-sm tracking-widest uppercase">No products found in this collection yet.</p>
+        <div className="flex flex-col items-center justify-center py-32 md:py-48 text-center transition-all duration-1000 ease-in-out">
+          <div className="relative mb-8">
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.8em] text-zinc-300 block mb-2">Tokyo Phashion</span>
+            <h2 className="text-6xl md:text-9xl font-black text-black tracking-tighter uppercase leading-none opacity-[0.03] select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full whitespace-nowrap pointer-events-none">
+              LIMITED DROP
+            </h2>
+            <h3 className="text-4xl md:text-7xl font-black text-black tracking-tighter uppercase leading-none relative">
+              Coming <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent">Soon</span>
+            </h3>
+          </div>
+          <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] max-w-xs leading-loose mx-auto">
+            Our curators are finalizing the drop. <br/> Something extraordinary is on its way.
+          </p>
+          <div className="mt-12 flex flex-col items-center gap-4">
+             <div className="h-0.5 w-24 bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 rounded-full animate-pulse"></div>
+             <button 
+                onClick={() => window.history.back()}
+                className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-colors"
+              >
+                Go Back
+             </button>
+          </div>
         </div>
       )}
     </div>
