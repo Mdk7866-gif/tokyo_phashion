@@ -13,6 +13,8 @@ export async function GET() {
       .project({
         mobile_no: 1,
         username: 1,
+        email: 1,
+        image: 1,
         address: 1,
         created_At: 1,
         last_login: 1

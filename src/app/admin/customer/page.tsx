@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface Customer {
   username?: string;
   email: string;
+  image?: string;
   mobile_no?: string;
   created_At?: string;
   last_login?: string;
@@ -62,12 +64,16 @@ export default function AdminCustomerPage() {
               {/* Customer Header */}
               <div className="p-4 md:p-6 bg-zinc-50/80 border-b border-zinc-200 flex flex-wrap justify-between items-center gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-sm md:text-base">
-                    {(cust.username || cust.email || "U").charAt(0).toUpperCase()}
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-sm md:text-base overflow-hidden relative border border-zinc-200">
+                    {cust.image ? (
+                      <Image src={cust.image} alt={cust.username || "User"} fill className="object-cover" />
+                    ) : (
+                      (cust.username || cust.email || "U").charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div>
                     <h3 className="font-black text-base md:text-lg uppercase tracking-tight">{cust.username || "Anonymous Customer"}</h3>
-                    <p className="text-[10px] md:text-xs font-bold text-zinc-500 tracking-wider uppercase">{cust.email}</p>
+                    <p className="text-[10px] md:text-xs font-bold text-zinc-500 tracking-wider lowercase">{cust.email}</p>
                   </div>
                 </div>
               </div>
