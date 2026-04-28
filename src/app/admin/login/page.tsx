@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="text-center text-white/20 text-[10px] font-bold tracking-widest uppercase mt-8">
-          Tokyo Phashion © 2026
+          Tokyo Fashion © 2026
         </p>
       </div>
     </div>

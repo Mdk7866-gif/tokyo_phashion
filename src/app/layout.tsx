@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tokyo Phashion | Modern Menswear",
+  title: "Tokyo Fashion | Modern Menswear",
   description: "A century of style, craftsmanship and innovation.",
 };
 

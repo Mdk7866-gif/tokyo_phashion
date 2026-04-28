@@ -59,7 +59,7 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
             
             {/* Branding Accent */}
             <div className="bg-black py-2 px-6 flex justify-between items-center">
-               <span className="text-[9px] font-black tracking-[0.3em] text-white uppercase">Tokyo Phashion</span>
+               <span className="text-[9px] font-black tracking-[0.3em] text-white uppercase">Tokyo Fashion</span>
                <div className="flex gap-1">
                  <div className="w-1 h-1 rounded-full bg-white/40" />
                  <div className="w-1 h-1 rounded-full bg-white/40" />

@@ -59,7 +59,7 @@ const articles: BlogPost[] = [
     category: "CRAFT",
     date: "February 10, 2026",
     image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?q=80&w=1470&auto=format&fit=crop",
-    excerpt: "Discover the eco-friendly materials and ethical workshops that form the backbone of Tokyo Phashion's production."
+    excerpt: "Discover the eco-friendly materials and ethical workshops that form the backbone of Tokyo Fashion's production."
   }
 ];
 
@@ -231,7 +231,7 @@ export default function BlogPage() {
                     Preserving the Heritage of Modern Craftsmanship.
                 </h2>
                 <p className="text-zinc-600 text-base md:text-lg leading-relaxed mb-12 max-w-xl">
-                    Our digital journal is more than just trends—it&apos;s a chronicling of the hustle, from cycle-door-to-door suits to the full-scale manufacturing powerhouse that Tokyo Phashion is today.
+                    Our digital journal is more than just trends—it&apos;s a chronicling of the hustle, from cycle-door-to-door suits to the full-scale manufacturing powerhouse that Tokyo Fashion is today.
                 </p>
                 <div className="flex flex-col gap-6">
                     {[
@@ -264,7 +264,7 @@ export default function BlogPage() {
             {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-10">
                     <span className="text-white/20 text-4xl md:text-7xl font-serif italic tracking-tighter">SUBSCRIBE TO THE JOURNAL _</span>
-                    <span className="text-white/40 text-sm md:text-xl font-black tracking-[0.5em] uppercase">TOKYO PHASHION EDITION 2026</span>
+                    <span className="text-white/40 text-sm md:text-xl font-black tracking-[0.5em] uppercase">TOKYO FASHION EDITION 2026</span>
                 </div>
             ))}
         </div>

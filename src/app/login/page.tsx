@@ -124,7 +124,7 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="login-brand">
           <span className="text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none tracking-tighter">東京</span>
-          <span className="login-brand-name">TOKYO PHASHION</span>
+          <span className="login-brand-name">TOKYO FASHION</span>
         </div>
 
         <div className="login-content">

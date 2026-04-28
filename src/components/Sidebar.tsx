@@ -297,7 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </a>
           </div>
           <p className="text-center text-[8px] text-gray-600 tracking-[0.5em] uppercase mt-4">
-            &copy; 2026 TOKYO PHASHION
+            &copy; 2026 TOKYO FASHION
           </p>
         </div>
       </div>

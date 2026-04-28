@@ -53,7 +53,7 @@ export default function Loading() {
           <div className="h-px bg-gradient-to-r from-transparent via-white to-transparent w-full" style={{ animation: 'lineReveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards' }} />
           
           <div className="flex overflow-hidden py-2 px-4 text-white">
-            {"TOKYO PHASHION".split("").map((char, index) => (
+            {"TOKYO FASHION".split("").map((char, index) => (
               <span 
                 key={index} 
                 className="font-serif text-[11px] md:text-sm tracking-[0.4em] font-black uppercase inline-block"

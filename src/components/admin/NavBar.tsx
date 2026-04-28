@@ -67,7 +67,7 @@ const NavBar = () => {
               style={{ color: scrolled ? "#fff" : "#0a0a0a" }}
               className="text-[7px] md:text-[9px] font-black tracking-[0.4em] uppercase mt-2 transition-colors duration-300"
             >
-              TOKYO PHASHION
+              TOKYO FASHION
             </span>
           </Link>
 

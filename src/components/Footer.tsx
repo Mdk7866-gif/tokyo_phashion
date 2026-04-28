@@ -21,7 +21,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-sm font-bold tracking-widest uppercase text-gray-400">About Us</h3>
             <p className="text-sm text-gray-400 leading-relaxed max-w-md">
-              Tokyo Phashion represents a legacy built on a century of style, craftsmanship and innovation. 
+              Tokyo Fashion represents a legacy built on a century of style, craftsmanship and innovation. 
               We take pride in shaping the future of modern menswear, offering timeless elegance and 
               contemporary fashion, crafted with precision and delivered at unbeatable value.
             </p>
@@ -104,7 +104,7 @@ const Footer = () => {
       {/* Bottom Copyright Section */}
       <div className="mt-16 pt-8 border-t border-white/10 max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-[10px] text-gray-500 tracking-widest uppercase">
-          &copy; {new Date().getFullYear()} TOKYO PHASHION. All Rights Reserved.
+          &copy; {new Date().getFullYear()} TOKYO FASHION. All Rights Reserved.
         </p>
         <div className="flex items-center gap-4">
            {/* Tiny arrow to top if wanted */}
