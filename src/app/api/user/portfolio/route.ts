@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
         username: user.username || '',
         address: user.address || { full_address: '', cityname: '', statename: '', pincode: '' },
         cartitems: user.cartitems || [],
+        wishlistitems: user.wishlistitems || [],
       }
     });
 

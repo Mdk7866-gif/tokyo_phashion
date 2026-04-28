@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
       originalprice, 
       discountprice, 
       image, 
+      colour,
+      size,
       catagory, 
       subcatagory,
       createdAt 
@@ -38,18 +40,19 @@ export async function POST(request: NextRequest) {
     const users = db.collection('userdata');
 
     // 2. Check if item already exists in wishlist for this user
-    // We use name and link to uniquely identify the product in the wishlist
-    const existingItem = await users.findOne({
+    const existingInWishlist = await users.findOne({
       _id: new ObjectId(payload.userId),
       wishlistitems: {
         $elemMatch: {
           name: name,
-          link: link
+          link: link,
+          colour: colour,
+          size: size
         }
       }
     });
 
-    if (existingItem) {
+    if (existingInWishlist) {
       return NextResponse.json({ error: 'Item already in wishlist' }, { status: 400 });
     }
 
@@ -60,6 +63,8 @@ export async function POST(request: NextRequest) {
       originalprice,
       discountprice,
       image,
+      colour,
+      size,
       catagory,
       subcatagory,
       createdAt: createdAt || new Date()

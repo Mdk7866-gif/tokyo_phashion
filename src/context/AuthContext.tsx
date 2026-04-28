@@ -14,6 +14,8 @@ interface User {
   email?: string;
   mobile_no?: string;
   username?: string;
+  cartitems?: any[];
+  wishlistitems?: any[];
 }
 
 interface AuthContextType {
@@ -66,6 +68,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchUser();
+    
+    const handleUpdate = () => fetchUser();
+    window.addEventListener('cart-updated', handleUpdate);
+    window.addEventListener('wishlist-updated', handleUpdate);
+    
+    return () => {
+      window.removeEventListener('cart-updated', handleUpdate);
+      window.removeEventListener('wishlist-updated', handleUpdate);
+    };
   }, [fetchUser]);
 
   const logout = useCallback(async () => {

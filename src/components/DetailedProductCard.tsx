@@ -59,6 +59,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
   const [quantity, setQuantity] = useState(validQuantity);
 
   const [isAdding, setIsAdding] = useState(false);
+  const [isWishlisting, setIsWishlisting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -69,6 +70,18 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
 
   const selectedImage = product.images?.[selectedColorIndex]?.url || "";
   const selectedColorName = product.images?.[selectedColorIndex]?.colurname || "";
+
+  const isWishlisted = user?.wishlistitems?.some((item: any) => 
+    item.link.includes(`id=${product._id}`) && 
+    item.colour === selectedColorName && 
+    item.size === selectedSize
+  );
+
+  const isInCart = user?.cartitems?.some((item: any) => 
+    item.link.includes(`id=${product._id}`) && 
+    item.colour === selectedColorName && 
+    item.size === selectedSize
+  );
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -117,6 +130,52 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
       showAlert({ type: "error", message: "An error occurred while adding to cart." });
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    
+    if (!selectedSize) {
+      showAlert({ type: "error", message: "Please select a size" });
+      return;
+    }
+
+    setIsWishlisting(true);
+    try {
+      const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&colour=${encodeURIComponent(selectedColorName)}&size=${encodeURIComponent(selectedSize)}&quantity=${quantity}`;
+
+      const res = await fetch("/api/user/addwishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: product.productname,
+          link,
+          originalprice: product.original_price,
+          discountprice: product.discount_price,
+          image: selectedImage,
+          colour: selectedColorName,
+          size: selectedSize,
+          catagory: product.collectionname,
+          subcatagory: product.subcatagory,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        window.dispatchEvent(new Event('wishlist-updated'));
+        showAlert({ type: "success", message: "Added to Wishlist!" });
+      } else {
+        showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+      }
+    } catch (error) {
+      console.error(error);
+      showAlert({ type: "error", message: "An error occurred." });
+    } finally {
+      setIsWishlisting(false);
     }
   };
 
@@ -179,8 +238,19 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
               </svg>
             </div>
 
+            <button 
+              onClick={handleWishlist}
+              disabled={isWishlisting}
+              className={`absolute top-6 right-6 z-10 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 disabled:opacity-50 ${isWishlisted ? "text-rose-500" : "text-zinc-400 hover:text-rose-500 hover:bg-white"}`}
+              aria-label="Add to wishlist"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+
             {product.original_price > product.discount_price && (
-              <div className="absolute top-6 right-6 bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase">
+              <div className="absolute top-20 right-6 bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase">
                 {Math.round(((product.original_price - product.discount_price) / product.original_price) * 100)}% OFF
               </div>
             )}

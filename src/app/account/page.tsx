@@ -8,7 +8,9 @@ import Image from "next/image";
 import BuyNow from "@/components/BuyNow";
 import { useAlert } from "@/components/AlertMessageCard";
 
-type Tab = "profile" | "cart" | "orders";
+import UserWishListCard from "@/components/UserWishListCard";
+
+type Tab = "profile" | "cart" | "orders" | "wishlist";
 
 interface CartItem {
   name: string;
@@ -55,7 +57,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab === "cart" || tab === "profile" || tab === "orders") {
+    if (tab === "cart" || tab === "profile" || tab === "orders" || tab === "wishlist") {
       setActiveTab(tab as Tab);
     }
   }, [searchParams]);
@@ -77,6 +79,7 @@ export default function AccountPage() {
   const [reviewData, setReviewData] = useState<{ [key: string]: { stars: number, comment: string } }>({});
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
   const [formInitialized, setFormInitialized] = useState(false);
@@ -109,7 +112,7 @@ export default function AccountPage() {
     }
 
     if (user) {
-      if (activeTab === "profile" || activeTab === "cart") {
+      if (activeTab === "profile" || activeTab === "cart" || activeTab === "wishlist") {
         fetchProfile();
       }
       if (activeTab === "orders") {
@@ -137,6 +140,7 @@ export default function AccountPage() {
           // After fetching real data, we can clear the draft if it matches or just let it stay
           // But usually, we want to clear it after a successful SUBMIT
           setCartItems(data.user.cartitems || []);
+          setWishlistItems(data.user.wishlistitems || []);
         }
       }
     } catch (error) {
@@ -320,6 +324,14 @@ export default function AccountPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                 My Carts
                 {cartItems.length > 0 && <span className="ml-auto bg-rose-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">{cartItems.length}</span>}
+              </button>
+              <button 
+                onClick={() => setActiveTab("wishlist")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs tracking-widest uppercase transition-all ${activeTab === "wishlist" ? "bg-black text-white" : "hover:bg-zinc-100 text-zinc-500"}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                My Wishlist
+                {wishlistItems.length > 0 && <span className="ml-auto bg-rose-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">{wishlistItems.length}</span>}
               </button>
               <button 
                 onClick={() => setActiveTab("orders")}
@@ -507,6 +519,34 @@ export default function AccountPage() {
                         Proceed to Checkout
                       </button>
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Wishlist Tab */}
+            {activeTab === "wishlist" && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="text-xl font-black mb-8 uppercase tracking-tight">My Wishlist</h2>
+                {wishlistItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-zinc-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-200 mb-4"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Your wishlist is empty</p>
+                    <Link href="/shop" className="mt-6 text-xs font-black underline underline-offset-4 tracking-widest uppercase">Explore Items</Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                    {wishlistItems.map((item, idx) => (
+                      <UserWishListCard 
+                        key={idx} 
+                        item={item} 
+                        onRemove={(removedItem) => {
+                          setWishlistItems((prev) => prev.filter((i) => 
+                            !(i.name === removedItem.name && i.link === removedItem.link && i.size === removedItem.size && i.colour === removedItem.colour)
+                          ));
+                        }} 
+                      />
+                    ))}
                   </div>
                 )}
               </div>

@@ -13,6 +13,7 @@ const Navbar = () => {
 
   const { user, loading } = useAuth();
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,25 +28,33 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user) {
-      const fetchCartItems = async () => {
+      const fetchData = async () => {
         try {
-          const res = await fetch("/api/user/getcartitems");
+          // Fetch both cart and wishlist counts from portfolio
+          const res = await fetch("/api/user/portfolio");
           if (res.ok) {
             const data = await res.json();
-            setCartCount(data.cartitems?.length || 0);
+            if (data.success && data.user) {
+              setCartCount(data.user.cartitems?.length || 0);
+              setWishlistCount(data.user.wishlistitems?.length || 0);
+            }
           }
         } catch (error) {
-          console.error("Failed to fetch cart count:", error);
+          console.error("Failed to fetch counts:", error);
         }
       };
-      fetchCartItems();
+      fetchData();
       
-      // Also refresh on a custom event if we add items elsewhere
-      const handleCartRefresh = () => fetchCartItems();
-      window.addEventListener('cart-updated', handleCartRefresh);
-      return () => window.removeEventListener('cart-updated', handleCartRefresh);
+      const handleUpdate = () => fetchData();
+      window.addEventListener('cart-updated', handleUpdate);
+      window.addEventListener('wishlist-updated', handleUpdate);
+      return () => {
+        window.removeEventListener('cart-updated', handleUpdate);
+        window.removeEventListener('wishlist-updated', handleUpdate);
+      };
     } else {
-      requestAnimationFrame(() => setCartCount(0));
+      setCartCount(0);
+      setWishlistCount(0);
     }
   }, [user]);
 
@@ -134,6 +143,30 @@ const Navbar = () => {
               </svg>
             </button>
 
+            {/* Wishlist */}
+            {!loading && (
+              <button
+                onClick={() => {
+                  if (!user) router.push("/login");
+                  else router.push("/account?tab=wishlist");
+                }}
+                style={iconBtn(false)}
+                className="relative w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 hover:opacity-80 active:scale-95"
+                aria-label="Wishlist"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                {wishlistCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full transition-all duration-300 bg-rose-600 text-white"
+                  >
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Cart */}
             {!loading && (
               <button
@@ -147,8 +180,7 @@ const Navbar = () => {
                 </svg>
                 {cartCount > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full border transition-all duration-300"
-                    style={{ backgroundColor: "#fff", color: "#0a0a0a", borderColor: scrolled ? "transparent" : "#0a0a0a" }}
+                    className="absolute -top-1 -right-1 text-[8px] font-bold w-[18px] h-[18px] flex items-center justify-center rounded-full transition-all duration-300 bg-rose-600 text-white"
                   >
                     {cartCount}
                   </span>

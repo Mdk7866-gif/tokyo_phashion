@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { useAlert } from "@/components/AlertMessageCard";
 
 interface Product {
   _id: string;
@@ -23,8 +25,52 @@ interface ShortProductCardProps {
 const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collectionName }) => {
   const firstImage = product.images?.[0]?.url || "";
   
+  const { user } = useAuth();
+  const { showAlert } = useAlert();
+  const [isWishlisting, setIsWishlisting] = useState(false);
+
   // Build URL with provided collection name
   const detailUrl = `/shop?collection=${encodeURIComponent(collectionName)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}`;
+
+  const isWishlisted = user?.wishlistitems?.some((item: any) => item.link.includes(`id=${product._id}`));
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      showAlert({ type: "error", message: "Please login to wishlist." });
+      return;
+    }
+    setIsWishlisting(true);
+    try {
+      const res = await fetch("/api/user/addwishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: product.productname,
+          link: detailUrl.slice(1),
+          originalprice: product.original_price,
+          discountprice: product.discount_price,
+          image: firstImage,
+          colour: product.images?.[0]?.colurname || "Standard",
+          size: "M",
+          catagory: collectionName,
+          subcatagory: product.subcatagory,
+        }),
+      });
+      if (res.ok) {
+        window.dispatchEvent(new Event('wishlist-updated'));
+        showAlert({ type: "success", message: "Added to Wishlist!" });
+      } else {
+        const data = await res.json();
+        showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+      }
+    } catch (err) {
+      showAlert({ type: "error", message: "An error occurred." });
+    } finally {
+      setIsWishlisting(false);
+    }
+  };
 
   return (
     <Link href={detailUrl} className="group flex flex-col bg-white overflow-hidden transition-all duration-500">
@@ -58,6 +104,18 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
             </div>
           </div>
         )}
+
+        {/* Wishlist Button */}
+        <button 
+          onClick={handleWishlist}
+          disabled={isWishlisting}
+          className={`absolute top-2 right-2 md:top-4 md:right-4 z-10 w-8 h-8 md:w-10 md:h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 disabled:opacity-50 ${isWishlisted ? "text-rose-500" : "text-zinc-400 hover:text-rose-500 hover:bg-white"}`}
+          aria-label="Add to wishlist"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
       </div>
 
       <div className="py-3 md:py-4 space-y-0.5 md:space-y-1 px-1">
