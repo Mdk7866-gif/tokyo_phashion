@@ -34,12 +34,30 @@ interface Product {
 
 interface DetailedProductCardProps {
   product: Product;
+  initialColor?: string;
+  initialSize?: string;
+  initialQuantity?: number;
 }
 
-const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) => {
-  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState(product.size?.[0] || "");
-  const [quantity, setQuantity] = useState(1);
+const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ 
+  product,
+  initialColor,
+  initialSize,
+  initialQuantity
+}) => {
+  const defaultColorIndex = initialColor 
+    ? product.images?.findIndex(img => img.colurname.toLowerCase() === initialColor.toLowerCase())
+    : -1;
+  const startingColorIndex = defaultColorIndex !== undefined && defaultColorIndex >= 0 ? defaultColorIndex : 0;
+  
+  const [selectedColorIndex, setSelectedColorIndex] = useState(startingColorIndex);
+  
+  const validSize = initialSize && product.size?.includes(initialSize) ? initialSize : (product.size?.[0] || "");
+  const [selectedSize, setSelectedSize] = useState(validSize);
+  
+  const validQuantity = initialQuantity && initialQuantity > 0 ? initialQuantity : 1;
+  const [quantity, setQuantity] = useState(validQuantity);
+
   const [isAdding, setIsAdding] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [isBuyNowOpen, setIsBuyNowOpen] = useState(false);
@@ -65,7 +83,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
 
     setIsAdding(true);
     try {
-      const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user.mobile_no}`;
+      const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user.mobile_no}&colour=${encodeURIComponent(selectedColorName)}&size=${encodeURIComponent(selectedSize)}&quantity=${quantity}`;
 
       const res = await fetch("/api/user/addcart", {
         method: "POST",
@@ -344,7 +362,7 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({ product }) =>
         onClose={() => setIsBuyNowOpen(false)} 
         items={[{
           name: product.productname,
-          link: `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user?.mobile_no}`,
+          link: `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&cartid=${user?.mobile_no}&colour=${encodeURIComponent(selectedColorName)}&size=${encodeURIComponent(selectedSize)}&quantity=${quantity}`,
           originalprice: product.original_price,
           discountprice: product.discount_price,
           image: selectedImage,

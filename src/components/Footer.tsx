@@ -14,7 +14,7 @@ const Footer = () => {
             </span>
             <div className="flex flex-col border-l border-white/20 pl-3 leading-none">
               <span className="text-sm font-black tracking-[0.2em] text-white">TOKYO</span>
-              <span className="text-[10px] font-bold tracking-[0.4em] text-white opacity-50 mt-1">PHASHION</span>
+              <span className="text-[10px] font-bold tracking-[0.4em] text-white opacity-50 mt-1">FASHION</span>
             </div>
           </div>
           
@@ -81,7 +81,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <p className="text-sm text-gray-400 uppercase tracking-wider">info.tokyophashion@gmail.com</p>
+              <p className="text-sm text-gray-400 uppercase tracking-wider">info.tokyo.fashion.96@gmail.com</p>
             </div>
 
             <div className="pt-2">

@@ -47,7 +47,7 @@ const articles: BlogPost[] = [
   },
   {
     id: 5,
-    title: "Behind the Scenes: The Phashion Studio",
+    title: "Behind the Scenes: The Fashion Studio",
     category: "INSIDER",
     date: "February 20, 2026",
     image: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=1470&auto=format&fit=crop",

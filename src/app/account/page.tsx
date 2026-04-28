@@ -458,7 +458,7 @@ export default function AccountPage() {
                 ) : (
                   <div className="space-y-4">
                     {cartItems.map((item, idx) => {
-                      const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).split('&cartid=')[0] : "/shop";
+                      const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).replace(/&cartid=[^&]*/g, '') : "/shop";
                       
                       return (
                         <div key={idx} className="group/cart-item bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden hover:border-black transition-all">
@@ -563,7 +563,7 @@ export default function AccountPage() {
                         </div>
                         <div className="p-4 space-y-4">
                           {order.items && order.items.map((item: OrderItem, i: number) => {
-                            const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).split('&cartid=')[0] : "/shop";
+                            const cleanLink = item.link ? (item.link.startsWith('/') ? item.link : '/' + item.link).replace(/&cartid=[^&]*/g, '') : "/shop";
                             
                             return (
                               <Link key={i} href={cleanLink} className="flex items-center gap-4 group/order-item p-2 rounded-xl hover:bg-zinc-50 transition-colors">

@@ -80,9 +80,22 @@ function ShopContent() {
   }, [collection, subcatagory, productId, fetchProducts, fetchSingleProduct]);
 
   if (productId && singleProduct) {
+    const colour = searchParams.get('colour') || undefined;
+    const size = searchParams.get('size') || undefined;
+    const quantityParam = searchParams.get('quantity');
+    const quantity = quantityParam ? parseInt(quantityParam, 10) : undefined;
+
+    const componentKey = `${productId}-${colour || 'none'}-${size || 'none'}-${quantity || 1}`;
+
     return (
       <div className="pt-8 pb-16">
-        <DetailedProductCard product={{...singleProduct, collectionname: collection || ''}} />
+        <DetailedProductCard 
+          key={componentKey}
+          product={{...singleProduct, collectionname: collection || ''}} 
+          initialColor={colour}
+          initialSize={size}
+          initialQuantity={quantity}
+        />
       </div>
     );
   }

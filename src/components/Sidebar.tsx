@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </span>
             <div className="flex flex-col border-l border-white/20 pl-3 leading-none">
               <span className="text-xs font-black tracking-[0.2em] text-white">TOKYO</span>
-              <span className="text-[9px] font-bold tracking-[0.4em] text-white opacity-50 mt-1 uppercase">PHASHION</span>
+              <span className="text-[9px] font-bold tracking-[0.4em] text-white opacity-50 mt-1 uppercase">FASHION</span>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
