@@ -66,7 +66,7 @@ export default function LoginPage() {
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           theme: 'outline',
           size: 'large',
-          width: 320,
+          width: Math.min(window.innerWidth - 64, 320),
           shape: 'pill',
           logo_alignment: 'center'
         });

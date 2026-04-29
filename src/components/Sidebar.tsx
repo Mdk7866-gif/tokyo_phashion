@@ -85,8 +85,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         className={`fixed left-0 top-0 h-full w-[300px] bg-black text-white z-[101] transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <Logo width={85} color="#fff" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <Logo width={70} color="#fff" />
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-4">
           {/* User Section */}
           {!authLoading && (
             <div className="space-y-4">
@@ -147,7 +147,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           {/* Navigation Links */}
           <nav className="space-y-2 pt-4">
-            <Link href="/" onClick={onClose} className="flex items-center gap-4 p-3.5 bg-white/5 rounded-xl font-bold tracking-widest text-xs uppercase group transition-all hover:bg-white/10">
+            <Link href="/" onClick={onClose} className="flex items-center gap-4 p-2.5 bg-white/5 rounded-xl font-bold tracking-widest text-xs uppercase group transition-all hover:bg-white/10">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 group-hover:text-white">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
               </svg>
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             
             <div 
               onClick={toggleShop}
-              className={`flex items-center justify-between p-3.5 rounded-xl font-bold tracking-widest text-xs uppercase transition-all cursor-pointer group ${isShopOpen ? "bg-white/10" : "hover:bg-white/5"}`}
+              className={`flex items-center justify-between p-2.5 rounded-xl font-bold tracking-widest text-xs uppercase transition-all cursor-pointer group ${isShopOpen ? "bg-white/10" : "hover:bg-white/5"}`}
             >
               <div className="flex items-center gap-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 group-hover:text-white">
@@ -241,19 +241,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 )}
               </div>
             )}
-            <Link href="/about" onClick={onClose} className="flex items-center gap-4 p-3.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
+            <Link href="/about" onClick={onClose} className="flex items-center gap-4 p-2.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 group-hover:text-white">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
               ABOUT US
             </Link>
-            <Link href="/blog" onClick={onClose} className="flex items-center gap-4 p-3.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
+            <Link href="/blog" onClick={onClose} className="flex items-center gap-4 p-2.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 group-hover:text-white">
                 <path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>
               </svg>
               BLOG
             </Link>
-            <Link href="/contact" onClick={onClose} className="flex items-center gap-4 p-3.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
+            <Link href="/contact" onClick={onClose} className="flex items-center gap-4 p-2.5 rounded-xl font-bold tracking-widest text-xs uppercase hover:bg-white/5 transition-all group">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 group-hover:text-white">
                 <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
               </svg>
@@ -264,7 +264,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Link
               href="/admin/login"
               onClick={onClose}
-              className="flex items-center gap-4 p-3.5 bg-white/5 border border-white/10 rounded-xl font-bold tracking-widest text-[10px] uppercase text-zinc-400 hover:text-white hover:bg-white/10 transition-all group mt-6"
+              className="flex items-center gap-4 p-2.5 bg-white/5 border border-white/10 rounded-xl font-bold tracking-widest text-[10px] uppercase text-zinc-400 hover:text-white hover:bg-white/10 transition-all group mt-4"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-white">
                 <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -275,21 +275,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 space-y-4 border-t border-white/10 bg-black shrink-0">
-          <p className="text-center text-[9px] uppercase font-bold tracking-[0.3em] text-gray-500">CONNECT WITH US</p>
-          <div className="flex items-center justify-center gap-4">
-            <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
-              </svg>
-            </a>
-            <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="p-4 space-y-4 border-t border-white/10 bg-black shrink-0">
+          <a 
+            href="https://www.instagram.com/tokyofashion_official/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-3 py-3.5 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] group"
+          >
+            <div className="w-6 h-6 flex items-center justify-center rounded-lg bg-gradient-to-tr from-[#FFB000] via-[#FF0000] to-[#800080]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
               </svg>
-            </a>
-          </div>
-          <p className="text-center text-[8px] text-gray-600 tracking-[0.5em] uppercase mt-4">
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Follow on Instagram</span>
+          </a>
+          <p className="text-center text-[8px] text-gray-600 tracking-[0.5em] uppercase">
             &copy; 2026 TOKYO FASHION
           </p>
         </div>
