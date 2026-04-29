@@ -142,7 +142,7 @@ function ShopContent() {
       ) : (
         <div className="flex flex-col items-center justify-center py-32 md:py-48 text-center transition-all duration-1000 ease-in-out">
           <div className="relative mb-8">
-            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.8em] text-zinc-300 block mb-2">Tokyo Phashion</span>
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.8em] text-zinc-300 block mb-2">Tokyo fashion</span>
             <h2 className="text-6xl md:text-9xl font-black text-black tracking-tighter uppercase leading-none opacity-[0.03] select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full whitespace-nowrap pointer-events-none">
               LIMITED DROP
             </h2>
