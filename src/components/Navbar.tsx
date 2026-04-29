@@ -81,7 +81,7 @@ const Navbar = () => {
         style={{ maxHeight: scrolled ? "0px" : "40px", padding: scrolled ? "0" : "8px 16px" }}
       >
         <p className="text-[10px] font-bold tracking-widest uppercase whitespace-nowrap">
-          USE TP FOR EXTRA OFF.
+          USE TF FOR EXTRA OFF.
         </p>
       </div>
 
