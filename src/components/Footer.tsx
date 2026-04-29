@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Logo from "./Logo";
 
 const Footer = () => {
   return (
@@ -8,15 +9,7 @@ const Footer = () => {
       <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
         {/* About Section */}
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-3 group">
-            <span className="text-3xl font-black bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 bg-clip-text text-transparent">
-              東京
-            </span>
-            <div className="flex flex-col border-l border-white/20 pl-3 leading-none">
-              <span className="text-sm font-black tracking-[0.2em] text-white">TOKYO</span>
-              <span className="text-[10px] font-bold tracking-[0.4em] text-white opacity-50 mt-1">FASHION</span>
-            </div>
-          </div>
+          <Logo width={120} color="#fff" />
           
           <div className="space-y-4">
             <h3 className="text-sm font-bold tracking-widest uppercase text-gray-400">About Us</h3>

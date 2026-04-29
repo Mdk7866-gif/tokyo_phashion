@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAlert } from "@/components/AlertMessageCard";
 
 import Link from "next/link";
+import Logo from "../Logo";
 
 interface Collection {
   name: string;
@@ -182,15 +183,7 @@ const SideBar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3 group select-none">
-            <span className="text-2xl font-black bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none">
-              東京
-            </span>
-            <div className="flex flex-col border-l border-white/20 pl-3 leading-none">
-              <span className="text-xs font-black tracking-[0.2em] text-white">ADMIN</span>
-              <span className="text-[9px] font-bold tracking-[0.4em] text-white opacity-50 mt-1 uppercase">PANEL</span>
-            </div>
-          </div>
+          <Logo width={85} color="#fff" />
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
