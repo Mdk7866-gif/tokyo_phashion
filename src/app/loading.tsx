@@ -26,7 +26,7 @@ export default function Loading() {
   if (!isVisible) return null;
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#0b0b0b] overflow-hidden transition-opacity duration-700 ease-in-out ${isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       <div className="relative flex flex-col items-center">
@@ -38,42 +38,45 @@ export default function Loading() {
             className="w-full h-full"
           >
             {/* Red Sun Circle with pulse and reveal */}
-            <circle 
-              cx="200" 
-              cy="150" 
-              r="70" 
+            <circle
+              cx="200"
+              cy="150"
+              r="70"
               fill="#e11d48"
               className="animate-logo"
               style={{ transformOrigin: 'center', animationDelay: '0.1s' }}
             />
 
-            {/* Minimal Pagoda Shape - Slides up */}
-            <g 
+            {/* Tree Shape - Growing Animation */}
+            <g
               fill="#0b0b0b"
-              style={{ 
-                animation: 'letterReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              style={{
+                animation: 'treeGrow 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                 animationDelay: '0.4s',
-                opacity: 0,
-                transform: 'translateY(20px)'
+                transformOrigin: 'center bottom',
+                opacity: 0
               }}
             >
-              <rect x="185" y="140" width="30" height="80" />
-              <polygon points="170,140 230,140 200,115" />
-              <polygon points="175,165 225,165 200,140" />
-              <polygon points="180,190 220,190 200,165" />
+              {/* Trunk */}
+              <rect x="192" y="160" width="16" height="70" rx="2" />
+
+              {/* Tree layers (bonsai style) */}
+              <polygon points="200,110 160,150 240,150" />
+              <polygon points="200,135 170,175 230,175" />
+              <polygon points="200,160 180,200 220,200" />
             </g>
 
             {/* TOKYO Text */}
-            <text 
-              x="200" 
-              y="260" 
+            <text
+              x="200"
+              y="260"
               textAnchor="middle"
               fontSize="40"
               fill="#ffffff"
               fontFamily="Georgia, serif"
               letterSpacing="4"
               fontWeight="bold"
-              style={{ 
+              style={{
                 animation: 'logoReveal 0.8s ease-out forwards',
                 animationDelay: '0.6s',
                 opacity: 0
@@ -83,14 +86,14 @@ export default function Loading() {
             </text>
 
             {/* FASHION Text */}
-            <text 
-              x="200" 
-              y="290" 
+            <text
+              x="200"
+              y="290"
               textAnchor="middle"
               fontSize="16"
               fill="#aaaaaa"
               letterSpacing="8"
-              style={{ 
+              style={{
                 animation: 'logoReveal 0.8s ease-out forwards',
                 animationDelay: '0.8s',
                 opacity: 0
@@ -100,14 +103,14 @@ export default function Loading() {
             </text>
 
             {/* Japanese Text */}
-            <text 
-              x="200" 
-              y="320" 
+            <text
+              x="200"
+              y="320"
               textAnchor="middle"
               fontSize="18"
               fill="#e11d48"
               fontWeight="bold"
-              style={{ 
+              style={{
                 animation: 'logoReveal 1.2s ease-out forwards',
                 animationDelay: '1s',
                 opacity: 0
@@ -124,14 +127,14 @@ export default function Loading() {
 
         {/* Loading Bar */}
         <div className="w-48 md:w-64 h-[3px] bg-white/10 rounded-full overflow-hidden relative shadow-[0_0_15px_rgba(225,29,72,0.5)]">
-          <div 
+          <div
             className="absolute inset-y-0 left-0 bg-gradient-to-r from-transparent via-red-500 to-transparent w-full"
-            style={{ 
+            style={{
               animation: 'loadingProgress 1.5s ease-in-out infinite'
             }}
           />
         </div>
-        
+
         <p className="mt-8 text-xs font-black tracking-[0.5em] uppercase text-zinc-400 animate-pulse">
           Initializing Style
         </p>
@@ -142,6 +145,20 @@ export default function Loading() {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
         }
+          @keyframes treeGrow {
+  0% {
+    transform: scaleY(0.2) translateY(40px);
+    opacity: 0;
+  }
+  60% {
+    transform: scaleY(1.1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
       `}</style>
     </div>
   );
