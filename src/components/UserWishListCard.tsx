@@ -104,7 +104,7 @@ export default function UserWishListCard({ item, onRemove }: UserWishListCardPro
   };
 
   return (
-    <div className="group/wishlist-item bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden hover:border-black transition-all relative flex flex-col h-full">
+    <div className="group/wishlist-item bg-white rounded-[2rem] border-2 border-zinc-200 shadow-sm overflow-hidden hover:border-black transition-all relative flex flex-col h-full p-2">
       <div className="absolute top-2 right-2 z-10">
         <button 
           onClick={() => handleRemove()}

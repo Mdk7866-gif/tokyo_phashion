@@ -345,7 +345,7 @@ export default function AccountPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 bg-zinc-50/50 rounded-3xl p-6 md:p-10 border border-zinc-100 min-h-[500px]">
+          <div className="flex-1 bg-zinc-50/50 rounded-3xl p-6 md:p-10 border-2 border-zinc-200 min-h-[500px] shadow-inner">
             {authLoading || loading ? (
               <div className="flex flex-col items-center justify-center h-full py-20">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mb-4"></div>

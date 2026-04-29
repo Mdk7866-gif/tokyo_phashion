@@ -111,8 +111,8 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
   };
 
   return (
-    <Link href={detailUrl} className="group flex flex-col bg-white overflow-hidden transition-all duration-500">
-      <div className="relative aspect-[3/4] bg-gray-50 rounded-xl md:rounded-[2rem] overflow-hidden">
+    <Link href={detailUrl} className="group flex flex-col bg-white overflow-hidden transition-all duration-500 border-2 border-zinc-200 rounded-[2rem] p-2 hover:border-black hover:shadow-xl">
+      <div className="relative aspect-[3/4] bg-gray-50 rounded-[1.5rem] overflow-hidden border border-zinc-100">
         {firstImage ? (
           <Image 
             src={firstImage} 
