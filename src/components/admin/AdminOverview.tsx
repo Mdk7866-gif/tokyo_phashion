@@ -128,18 +128,6 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      <div className="mt-12 p-6 md:p-10 bg-zinc-50 rounded-3xl border border-zinc-200 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="text-center md:text-left">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Inventory Management</h3>
-          <p className="text-gray-500 text-xs font-medium max-w-sm">Select a collection from the sidebar to manage your products and stock.</p>
-        </div>
-        <div className="flex items-center gap-2 text-zinc-400 bg-white px-4 py-2 rounded-full border border-zinc-200 shadow-sm animate-pulse">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 18-6-6 6-6"/>
-            </svg>
-            <span className="text-[10px] font-bold uppercase tracking-widest">Select Collection</span>
-        </div>
-      </div>
     </div>
   );
 }
