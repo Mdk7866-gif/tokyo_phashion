@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Script from 'next/script';
+import Logo from '@/components/Logo';
+import Link from 'next/link';
 
 declare global {
   interface Window {
@@ -54,12 +56,6 @@ export default function LoginPage() {
   }, [refreshUser, router, searchParams]);
 
   const initializeGoogle = useCallback(() => {
-    console.log("Initializing Google Sign-In...", { 
-      hasGoogle: !!window.google, 
-      hasClientId: !!GOOGLE_CLIENT_ID, 
-      hasRef: !!googleBtnRef.current 
-    });
-
     if (window.google && GOOGLE_CLIENT_ID && googleBtnRef.current) {
       try {
         window.google.accounts.id.initialize({
@@ -67,30 +63,25 @@ export default function LoginPage() {
           callback: handleCallback,
         });
 
-        console.log("Rendering Google Button...");
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           theme: 'outline',
           size: 'large',
-          width: 340,
+          width: 320,
           shape: 'pill',
           logo_alignment: 'center'
         });
       } catch (err) {
         console.error("Google Init Error:", err);
       }
-    } else {
-      console.warn("Initialization conditions not met.");
     }
   }, [GOOGLE_CLIENT_ID, handleCallback]);
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
-      console.error("Google Client ID is missing from process.env!");
-      setError('Google Client ID is not configured in .env');
+      setError('Google Client ID is not configured.');
       return;
     }
     
-    // Poll for both window.google and the ref to be ready
     const interval = setInterval(() => {
       if (window.google && googleBtnRef.current) {
         initializeGoogle();
@@ -98,12 +89,8 @@ export default function LoginPage() {
       }
     }, 100);
 
-    // Timeout after 6 seconds to detect blocking
     const timeout = setTimeout(() => {
-      if (!window.google) {
-        console.warn("Google script seems to be blocked or taking too long.");
-        setIsGoogleBlocked(true);
-      }
+      if (!window.google) setIsGoogleBlocked(true);
       clearInterval(interval);
     }, 6000);
 
@@ -120,44 +107,57 @@ export default function LoginPage() {
         onLoad={initializeGoogle}
       />
 
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=1600&q=80&auto=format&fit=crop"
+          alt="Fashion Background"
+          className="w-full h-full object-cover animate-image-zoom"
+        />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
+      </div>
+
+      {/* Glass Card */}
       <div className="login-card">
         {/* Brand */}
-        <div className="login-brand">
-          <span className="text-4xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 bg-clip-text text-transparent leading-none tracking-tighter">東京</span>
-          <span className="login-brand-name">TOKYO FASHION</span>
-        </div>
+        <Link href="/" className="mb-10 block transform transition-transform hover:scale-105 active:scale-95">
+          <Logo width={120} color="#fff" className="mx-auto" />
+        </Link>
 
         <div className="login-content">
-          <h1 className="login-title">Welcome</h1>
-          <p className="login-subtitle">Sign in with your Google account to continue.</p>
+          <h1 className="login-title">Join the Collective</h1>
+          <p className="login-subtitle">Access exclusive drops and personalized fashion recommendations.</p>
 
           <div className="google-btn-container">
             {loading ? (
               <div className="login-loading-state">
                 <div className="login-spinner" />
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-4">Authenticating...</span>
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mt-6">Verifying Identity</span>
               </div>
             ) : isGoogleBlocked ? (
               <div className="google-blocked-state">
-                <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-4 text-center px-4">
-                  Google Sign-In is blocked. <br/> 
-                  <span className="text-[10px] text-gray-400 normal-case font-medium mt-1 block">Try disabling ad-blockers or tracking protection (especially in Edge/Safari).</span>
+                <p className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-6 text-center leading-relaxed">
+                  Authentication service blocked. <br/> 
+                  <span className="text-[9px] text-white/30 normal-case font-medium mt-2 block">Please disable ad-blockers to continue.</span>
                 </p>
                 <button 
                   onClick={() => window.location.reload()}
                   className="login-retry-btn"
                 >
-                  Retry Login
+                  Retry Connection
                 </button>
               </div>
             ) : (
-              <div ref={googleBtnRef} className="google-btn-wrapper" />
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-rose-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div ref={googleBtnRef} className="relative google-btn-wrapper" />
+              </div>
             )}
           </div>
 
           {error && (
-            <div className="login-error">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+            <div className="login-error animate-fade-in">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
               <span>{error}</span>
@@ -166,85 +166,84 @@ export default function LoginPage() {
         </div>
 
         <div className="login-footer">
-          <p className="text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
-            By signing in, you agree to our <br/>
-            <span className="text-black font-bold cursor-pointer">Terms of Service</span> & <span className="text-black font-bold cursor-pointer">Privacy Policy</span>
+          <p className="text-[9px] text-white/30 uppercase tracking-[0.2em] leading-loose">
+            By entering, you accept our <br/>
+            <span className="text-white/60 font-bold hover:text-white cursor-pointer transition-colors">Terms</span> & <span className="text-white/60 font-bold hover:text-white cursor-pointer transition-colors">Privacy</span>
           </p>
         </div>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
         .login-root {
           min-height: 100vh;
+          width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #ffffff;
-          padding: 2rem 1rem;
-          font-family: 'Inter', sans-serif;
+          position: relative;
+          padding: 2rem 1.5rem;
+          font-family: 'Outfit', sans-serif;
+          overflow: hidden;
+        }
+
+        .animate-image-zoom {
+          animation: imageZoom 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes imageZoom {
+          from { transform: scale(1); }
+          to { transform: scale(1.1); }
         }
 
         .login-card {
-          background: #ffffff;
-          border-radius: 40px;
-          padding: 4rem 2.5rem;
+          background: rgba(15, 15, 15, 0.4);
+          backdrop-filter: blur(25px) saturate(180%);
+          -webkit-backdrop-filter: blur(25px) saturate(180%);
+          border-radius: 3rem;
+          padding: 4.5rem 3rem;
           width: 100%;
-          max-width: 440px;
+          max-width: 460px;
           text-align: center;
-          box-shadow: 0 40px 100px rgba(0,0,0,0.08);
-          border: 1px solid #f0f0f0;
-          animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          position: relative;
+          z-index: 10;
+          animation: cardReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
 
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-brand {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.8rem;
-          margin-bottom: 3.5rem;
-        }
-
-        .login-brand-name {
-          font-size: 0.7rem;
-          font-weight: 800;
-          letter-spacing: 0.4em;
-          color: #000;
-          opacity: 0.5;
+        @keyframes cardReveal {
+          0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .login-title {
-          font-size: 2rem;
-          font-weight: 900;
-          color: #000;
-          margin-bottom: 0.75rem;
-          letter-spacing: -0.02em;
+          font-size: 2.25rem;
+          font-weight: 800;
+          color: #fff;
+          margin-bottom: 1rem;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
         }
 
         .login-subtitle {
-          font-size: 0.875rem;
-          color: #71717a;
-          margin-bottom: 3rem;
+          font-size: 0.95rem;
+          font-weight: 400;
+          color: rgba(255, 255, 255, 0.5);
+          margin-bottom: 3.5rem;
           line-height: 1.6;
+          max-width: 280px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .google-btn-container {
           display: flex;
           justify-content: center;
-          min-height: 50px;
-          margin-bottom: 2rem;
-        }
-
-        .google-btn-wrapper {
-          width: 100%;
-          display: flex;
-          justify-content: center;
+          align-items: center;
+          min-height: 60px;
+          margin-bottom: 1.5rem;
         }
 
         .login-loading-state {
@@ -254,12 +253,12 @@ export default function LoginPage() {
         }
 
         .login-spinner {
-          width: 24px;
-          height: 24px;
-          border: 3px solid #f3f3f3;
-          border-top: 3px solid #000;
+          width: 28px;
+          height: 28px;
+          border: 2px solid rgba(255,255,255,0.1);
+          border-top: 2px solid #fff;
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
         @keyframes spin {
@@ -271,59 +270,55 @@ export default function LoginPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.6rem;
-          padding: 1rem;
-          background: #fef2f2;
-          color: #dc2626;
-          border-radius: 16px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          margin-top: 1rem;
-          border: 1px solid #fee2e2;
-        }
-
-        .google-blocked-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          animation: fadeIn 0.5s ease;
+          gap: 0.75rem;
+          padding: 1rem 1.25rem;
+          background: rgba(220, 38, 38, 0.1);
+          color: #fca5a5;
+          border-radius: 1.25rem;
+          font-size: 0.85rem;
+          font-weight: 500;
+          border: 1px solid rgba(220, 38, 38, 0.2);
+          margin-top: 1.5rem;
         }
 
         .login-retry-btn {
-          padding: 0.75rem 2rem;
-          background: #000;
-          color: #fff;
+          padding: 0.85rem 2.25rem;
+          background: #fff;
+          color: #000;
           border-radius: 999px;
           font-size: 0.75rem;
           font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
-          transition: all 0.2s ease;
+          letter-spacing: 0.15em;
+          transition: all 0.3s ease;
         }
 
         .login-retry-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          transform: translateY(-3px);
+          box-shadow: 0 15px 30px rgba(0,0,0,0.3);
         }
 
         .login-footer {
-          margin-top: 4rem;
-          opacity: 0.6;
+          margin-top: 4.5rem;
         }
 
         @media (max-width: 480px) {
           .login-card {
-            padding: 3rem 1.5rem;
-            box-shadow: none;
-            border: none;
+            padding: 3.5rem 2rem;
+            border-radius: 2.5rem;
           }
+          .login-title {
+            font-size: 1.85rem;
+          }
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
