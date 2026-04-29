@@ -130,7 +130,7 @@ export default function AccountPage() {
         if (data.success && data.user) {
           setFormData({
             username: data.user.username || "",
-            mobile_no: data.user.mobile_no || "",
+            mobile_no: (data.user.mobile_no || "").replace(/\D/g, "").slice(-10),
             address: {
               full_address: data.user.address?.full_address || "",
               cityname: data.user.address?.cityname || "",
@@ -168,7 +168,7 @@ export default function AccountPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
     
-    // Numeric validation for mobile number
+    // Numeric validation for mobile number - strict 10 digits
     if (name === "mobile_no") {
       value = value.replace(/\D/g, '').slice(0, 10);
     }
@@ -183,8 +183,31 @@ export default function AccountPage() {
     }
   };
 
+  const validateForm = () => {
+    if (!formData.username.trim()) {
+      showAlert({ type: "error", message: "Please enter your name." });
+      return false;
+    }
+    if (formData.mobile_no.length !== 10) {
+      showAlert({ type: "error", message: "Please enter a valid 10-digit mobile number." });
+      return false;
+    }
+    if (!formData.address.full_address.trim()) {
+      showAlert({ type: "error", message: "Please enter your full address." });
+      return false;
+    }
+    if (!formData.address.cityname.trim() || !formData.address.pincode.trim()) {
+      showAlert({ type: "error", message: "Please enter your city and pincode." });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+
     setSaving(true);
     setMessage(null);
 
@@ -240,8 +263,7 @@ export default function AccountPage() {
   };
 
   const handleCheckout = () => {
-    if (!formData.username || !formData.address.full_address) {
-      showAlert({ type: "error", message: "Please complete your profile (name and address) before purchasing." });
+    if (!validateForm()) {
       setActiveTab("profile");
       return;
     }
@@ -390,9 +412,10 @@ export default function AccountPage() {
                         name="mobile_no"
                         value={formData.mobile_no}
                         onChange={handleChange}
-                        placeholder="10-digit number"
+                        placeholder="10-digit number (e.g. 9876543210)"
                         className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-4 outline-none focus:border-black transition-all shadow-sm focus:shadow-md"
                       />
+                      <p className="text-[9px] text-zinc-400 mt-2 font-medium">Enter 10 digits without any prefix like +91</p>
                     </div>
                   </div>
 
@@ -686,7 +709,7 @@ export default function AccountPage() {
         }))} 
         totalAmount={cartItems.reduce((acc, item) => acc + (item.discountprice || item.originalprice), 0)} 
         userProfile={{ 
-          mobile_no: user?.mobile_no || "", 
+          mobile_no: formData.mobile_no, 
           username: formData.username, 
           address: {
             full_address: formData.address.full_address,
