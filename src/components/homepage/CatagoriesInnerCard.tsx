@@ -20,9 +20,9 @@ interface Props {
 
 export default function CatagoriesInnerCard({ categoryName, subcategories, onClose }: Props) {
   return (
-    <div className="flex flex-col w-full h-full bg-white relative">
+    <div className="flex flex-col w-full h-full bg-white relative overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 md:p-6 border-b border-zinc-100">
+      <div className="flex items-center justify-between p-4 md:p-6 border-b border-zinc-100 flex-shrink-0">
         <h3 className="text-lg md:text-xl font-black uppercase tracking-widest text-black">
           {categoryName}
         </h3>
@@ -39,7 +39,7 @@ export default function CatagoriesInnerCard({ categoryName, subcategories, onClo
       </div>
 
       {/* Subcategories Grid */}
-      <div className="p-4 md:p-6 overflow-y-auto">
+      <div className="p-4 md:p-6 overflow-y-auto flex-1 custom-scrollbar">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {subcategories.map((sub) => (
             <Link

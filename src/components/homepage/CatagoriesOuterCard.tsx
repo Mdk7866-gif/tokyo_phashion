@@ -15,53 +15,53 @@ const CATEGORIES: MainCategory[] = [
   {
     id: "top_wear",
     name: "Top Wear",
-    imageUrl: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777449981/tokyofashion/admin_insert/paqmojw1dza9jysqko0h.webp",
     subcategories: [
       { id: "blazers", name: "Blazers and Coats", collection: "top_wear", subcatagory: "blazers_and_coats", imageUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80&auto=format&fit=crop" },
-      { id: "casual", name: "Casual Shirts", collection: "top_wear", subcatagory: "casual_shirts", imageUrl: "https://images.unsplash.com/photo-1589992896404-dc7f88b77ca0?w=400&q=80&auto=format&fit=crop" },
-      { id: "denims", name: "Denims", collection: "top_wear", subcatagory: "denims", imageUrl: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&q=80&auto=format&fit=crop" },
+      { id: "casual", name: "Casual Shirts", collection: "top_wear", subcatagory: "casual_shirts", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777442656/tokyofashion/admin_insert/y80uzqvsxlpny9fzf2xd.webp" },
+      { id: "denims", name: "Denims", collection: "top_wear", subcatagory: "denims", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777449496/tokyofashion/admin_insert/hqqsvdflnoh2rramcpi1.webp" },
       { id: "formal", name: "Formal Shirts", collection: "top_wear", subcatagory: "formal_shirts", imageUrl: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80&auto=format&fit=crop" },
-      { id: "tshirts", name: "T-Shirts", collection: "top_wear", subcatagory: "t_shirts", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80&auto=format&fit=crop" },
+      { id: "tshirts", name: "T-Shirts", collection: "top_wear", subcatagory: "t-shirts", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80&auto=format&fit=crop" },
     ],
   },
   {
     id: "bottom_wear",
     name: "Bottom Wear",
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777438982/tokyofashion/admin_insert/f6gw9qgw9juecjk7yg9i.webp",
     subcategories: [
       { id: "jeans", name: "Jeans", collection: "bottom_wear", subcatagory: "jeans", imageUrl: "https://images.unsplash.com/photo-1604176354204-9268737828e4?w=400&q=80&auto=format&fit=crop" },
-      { id: "trousers", name: "Trousers", collection: "bottom_wear", subcatagory: "trousers", imageUrl: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80&auto=format&fit=crop" },
-      { id: "shorts", name: "Shorts", collection: "bottom_wear", subcatagory: "shorts", imageUrl: "https://images.unsplash.com/photo-1591195853828-11db59a44f43?w=400&q=80&auto=format&fit=crop" },
-      { id: "trackpants", name: "Track Pants", collection: "bottom_wear", subcatagory: "track_pants", imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=400&q=80&auto=format&fit=crop" },
+      { id: "formal trousers", name: "Formal Trousers", collection: "bottom_wear", subcatagory: "formal_trousers", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777439089/tokyofashion/admin_insert/enkhvmehne7ni3mcvhyf.webp" },
+      { id: "casual trousers", name: "Casual Trousers", collection: "bottom_wear", subcatagory: "casual_trousers", imageUrl: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80&auto=format&fit=crop" },
+      { id: "shorts", name: "Shorts", collection: "bottom_wear", subcatagory: "shorts", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777467420/tokyofashion/admin_insert/ou5adzjh0qkyzgfkxomc.webp" },
+      { id: "trackpants", name: "Track Pants", collection: "bottom_wear", subcatagory: "trackpants", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777467659/tokyofashion/admin_insert/ba38anagfzrzkhobnkev.webp" },
     ],
   },
   {
     id: "festival_wear",
     name: "Festival Wear",
-    imageUrl: "https://images.unsplash.com/photo-1583391733975-4b38a8f2d0c0?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777444082/tokyofashion/admin_insert/m87o87kzwgrux87yc357.webp",
     subcategories: [
-      { id: "kurta", name: "Kurta Sets", collection: "festival_wear", subcatagory: "kurta_sets", imageUrl: "https://images.unsplash.com/photo-1570655652364-2e0a67455ac6?w=400&q=80&auto=format&fit=crop" },
-      { id: "sherwani", name: "Sherwani", collection: "festival_wear", subcatagory: "sherwani", imageUrl: "https://images.unsplash.com/photo-1596455607563-ad6193f76b17?w=400&q=80&auto=format&fit=crop" },
-      { id: "nehru_jackets", name: "Nehru Jackets", collection: "festival_wear", subcatagory: "nehru_jackets", imageUrl: "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=400&q=80&auto=format&fit=crop" },
+      { id: "kurta", name: "Kurta Sets", collection: "festival_wear", subcatagory: "kurtas", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777444126/tokyofashion/admin_insert/axacuusmklnjjrrm0tep.webp" },
+      { id: "sherwani", name: "Sherwani", collection: "festival_wear", subcatagory: "sherwanis", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777444489/tokyofashion/admin_insert/yfmko5coizjw39in4fik.webp" },
+      { id: "nehru_jackets", name: "Nehru Jackets", collection: "festival_wear", subcatagory: "nehru_jackets", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777444266/tokyofashion/admin_insert/l4aukezxhgfhboh95mwc.webp" },
     ],
   },
   {
     id: "full_pair",
     name: "Full Pair",
-    imageUrl: "https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777448360/tokyofashion/admin_insert/i4l3t6go5ygf5basytm7.webp",
     subcategories: [
-      { id: "coords", name: "Co-ords", collection: "full_pair", subcatagory: "co-ord_sets", imageUrl: "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?w=400&q=80&auto=format&fit=crop" },
-      { id: "suits", name: "Suits", collection: "full_pair", subcatagory: "suits", imageUrl: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80&auto=format&fit=crop" },
-      { id: "tracksuits", name: "Tracksuits", collection: "full_pair", subcatagory: "tracksuits", imageUrl: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80&auto=format&fit=crop" },
+      { id: "coords", name: "Co-ords", collection: "full_pair", subcatagory: "co-ord_sets", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777448360/tokyofashion/admin_insert/i4l3t6go5ygf5basytm7.webp" },
+      { id: "tracksuits", name: "Tracksuits", collection: "full_pair", subcatagory: "tracksuits", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777467659/tokyofashion/admin_insert/ba38anagfzrzkhobnkev.webp" },
     ],
   },
   {
     id: "inner_ware",
     name: "Inner Ware",
-    imageUrl: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777448860/tokyofashion/admin_insert/ick3lcanmtl7mpopirva.webp",
     subcategories: [
-      { id: "briefs", name: "Briefs & Trunks", collection: "inner_ware", subcatagory: "briefs", imageUrl: "https://images.unsplash.com/photo-1618354691792-d1d42acfd860?w=400&q=80&auto=format&fit=crop" },
-      { id: "vests", name: "Vests", collection: "inner_ware", subcatagory: "vests", imageUrl: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&q=80&auto=format&fit=crop" },
+      { id: "underware", name: "Underwares", collection: "inner_wear", subcatagory: "underwares", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777448931/tokyofashion/admin_insert/vkfovppoaygidptklhhh.webp" },
+      { id: "vests", name: "Vests", collection: "inner_wear", subcatagory: "vests", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777449021/tokyofashion/admin_insert/n2ak8u1dlmssxfesmv2v.webp" },
     ],
   },
   {
@@ -69,19 +69,25 @@ const CATEGORIES: MainCategory[] = [
     name: "Foot Ware",
     imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&auto=format&fit=crop",
     subcategories: [
-      { id: "sneakers", name: "Sneakers", collection: "foot_ware", subcatagory: "sneakers", imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80&auto=format&fit=crop" },
-      { id: "formal_shoes", name: "Formal Shoes", collection: "foot_ware", subcatagory: "formal_shoes", imageUrl: "https://images.unsplash.com/photo-1614252235314-e59661114e39?w=400&q=80&auto=format&fit=crop" },
-      { id: "sandals", name: "Sandals", collection: "foot_ware", subcatagory: "sandals", imageUrl: "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80&auto=format&fit=crop" },
+      { id: "casual_shoes", name: "Casual Shoes", collection: "foot_wear", subcatagory: "casual_shoes", imageUrl: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80&auto=format&fit=crop" },
+      { id: "formal_shoes", name: "Formal Shoes", collection: "foot_wear", subcatagory: "formal_shoes", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777446372/tokyofashion/admin_insert/wbvjop2r4wxrqdhp9ldj.webp" },
+      { id: "sandals", name: "Sandals", collection: "foot_wear", subcatagory: "sandals", imageUrl: "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&q=80&auto=format&fit=crop" },
+      { id: "slippers", name: "Slippers", collection: "foot_wear", subcatagory: "slippers", imageUrl: "https://images.unsplash.com/photo-1595341888016-a392ef81b7de?w=400&q=80&auto=format&fit=crop" },
+      { id: "sneakers", name: "Sneakers", collection: "foot_wear", subcatagory: "sneakers", imageUrl: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80&auto=format&fit=crop" },
+      { id: "socks", name: "Socks", collection: "foot_wear", subcatagory: "socks", imageUrl: "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=400&q=80&auto=format&fit=crop" },
+      { id: "sport_shoes", name: "Sport Shoes", collection: "foot_wear", subcatagory: "sport_shoes", imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&auto=format&fit=crop" },
     ],
   },
   {
     id: "fashion_accessories",
     name: "Fashion Accessories",
-    imageUrl: "https://images.unsplash.com/photo-1523779917675-b6ed3a42a561?w=400&q=80&auto=format&fit=crop",
+    imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777442983/tokyofashion/admin_insert/ftldfx7z89bvskvsinz7.webp",
     subcategories: [
       { id: "watches", name: "Watches", collection: "fashion_accessories", subcatagory: "watches", imageUrl: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&q=80&auto=format&fit=crop" },
       { id: "belts", name: "Belts", collection: "fashion_accessories", subcatagory: "belts", imageUrl: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=400&q=80&auto=format&fit=crop" },
-      { id: "sunglasses", name: "Sunglasses", collection: "fashion_accessories", subcatagory: "sunglasses", imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&q=80&auto=format&fit=crop" },
+      { id: "glasses", name: "Glasses", collection: "fashion_accessories", subcatagory: "glasses", imageUrl: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&q=80&auto=format&fit=crop" },
+      { id: "perfumes", name: "Perfumes", collection: "fashion_accessories", subcatagory: "perfumes", imageUrl: "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777443962/tokyofashion/admin_insert/wneeojbtik8h2afx3jlh.webp" },
+      
     ],
   },
 ];
@@ -132,7 +138,7 @@ export default function CatagoriesOuterCard() {
       {selectedCategory && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm transition-opacity">
           <div 
-            className="relative w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-up"
+            className="relative w-full max-w-2xl h-auto max-h-[80vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-up"
             onClick={(e) => e.stopPropagation()}
           >
             <CatagoriesInnerCard 
