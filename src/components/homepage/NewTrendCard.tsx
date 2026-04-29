@@ -29,8 +29,7 @@ const TRENDS: TrendItem[] = [
     discount: 46,
     stars: 4.8,
     reviews: 312,
-    imageUrl:
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=600&q=80&auto=format&fit=crop",
     badge: "Hot",
     badgeColor: "from-rose-500 to-pink-500",
     isNew: true,
@@ -44,8 +43,7 @@ const TRENDS: TrendItem[] = [
     discount: 44,
     stars: 4.6,
     reviews: 198,
-    imageUrl:
-      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=80&auto=format&fit=crop",
     badge: "Trending",
     badgeColor: "from-purple-500 to-indigo-500",
   },
@@ -58,8 +56,7 @@ const TRENDS: TrendItem[] = [
     discount: 44,
     stars: 4.9,
     reviews: 467,
-    imageUrl:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80&auto=format&fit=crop",
     badge: "Best Seller",
     badgeColor: "from-amber-500 to-orange-500",
     isNew: true,
@@ -73,8 +70,7 @@ const TRENDS: TrendItem[] = [
     discount: 42,
     stars: 4.7,
     reviews: 234,
-    imageUrl:
-      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80&auto=format&fit=crop",
     badgeColor: "from-sky-500 to-cyan-500",
   },
   {
@@ -86,8 +82,7 @@ const TRENDS: TrendItem[] = [
     discount: 44,
     stars: 4.5,
     reviews: 156,
-    imageUrl:
-      "https://images.unsplash.com/photo-1570655652364-2e0a67455ac6?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1570655652364-2e0a67455ac6?w=600&q=80&auto=format&fit=crop",
     badge: "New",
     badgeColor: "from-emerald-500 to-teal-500",
     isNew: true,
@@ -101,8 +96,7 @@ const TRENDS: TrendItem[] = [
     discount: 43,
     stars: 4.7,
     reviews: 289,
-    imageUrl:
-      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&q=80&auto=format&fit=crop",
     badgeColor: "from-blue-500 to-indigo-500",
   },
   {
@@ -114,8 +108,7 @@ const TRENDS: TrendItem[] = [
     discount: 40,
     stars: 4.4,
     reviews: 421,
-    imageUrl:
-      "https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=600&q=80&auto=format&fit=crop",
     badge: "Popular",
     badgeColor: "from-rose-400 to-pink-400",
   },
@@ -128,8 +121,7 @@ const TRENDS: TrendItem[] = [
     discount: 43,
     stars: 4.6,
     reviews: 178,
-    imageUrl:
-      "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?w=600&q=80&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?w=600&q=80&auto=format&fit=crop",
     badge: "Trending",
     badgeColor: "from-violet-500 to-purple-500",
     isNew: true,
@@ -161,70 +153,43 @@ function TrendCard({ item }: { item: TrendItem }) {
   return (
     <Link
       href="/shop"
-      className="group flex flex-col bg-white rounded-xl overflow-hidden border border-zinc-100 hover:border-zinc-200 transition-all duration-500 flex-shrink-0"
+      className="group flex flex-col bg-white rounded-xl overflow-hidden border border-zinc-100 hover:border-zinc-300 transition-all duration-500 flex-shrink-0"
       style={{ 
-        width: "calc((100% - 32px) / 3)", // 3 cards per row, 16px gap
-        minWidth: "160px",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.06)" 
+        width: "clamp(160px, 18vw, 220px)",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.04)" 
       }}
     >
-      {/* Image */}
       <div className="relative aspect-[3/4] overflow-hidden bg-zinc-50">
         <Image
           src={item.imageUrl}
           alt={item.name}
           fill
           unoptimized
-          className="object-cover group-hover:scale-110 transition-transform duration-[1.8s] ease-out"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
         />
-
-        {/* Discount badge */}
-        <div className="absolute top-2 left-2 bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded-full tracking-widest uppercase">
+        <div className="absolute top-2 left-2 bg-black/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full tracking-widest uppercase backdrop-blur-sm">
           -{item.discount}%
         </div>
-
-        {/* Category badge */}
         {item.badge && (
-          <div
-            className={`absolute top-2 right-2 bg-gradient-to-r ${item.badgeColor} text-white text-[8px] font-black px-2 py-0.5 rounded-full tracking-widest uppercase shadow-md`}
-          >
+          <div className={`absolute top-2 right-2 bg-gradient-to-r ${item.badgeColor} text-white text-[8px] font-black px-2.5 py-0.5 rounded-full tracking-widest uppercase shadow-lg`}>
             {item.badge}
           </div>
         )}
-
-        {/* New dot */}
-        {item.isNew && (
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[7px] font-black text-emerald-700 uppercase tracking-wider">New</span>
-          </div>
-        )}
       </div>
-
-      {/* Info */}
       <div className="p-2.5 md:p-3 flex flex-col gap-1">
-        {/* Category */}
-        <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
+        <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none">
           {item.category}
         </span>
-
-        {/* Name */}
-        <h3 className="text-[10px] md:text-xs font-black text-zinc-900 uppercase tracking-tight leading-tight line-clamp-1">
+        <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 uppercase tracking-tight leading-tight line-clamp-1">
           {item.name}
         </h3>
-
-        {/* Stars + reviews */}
         <div className="flex items-center gap-1.5 mt-0.5">
           <StarRating stars={item.stars} />
           <span className="text-[8px] font-bold text-zinc-400">({item.reviews})</span>
         </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-1.5 mt-0.5">
+        <div className="flex items-baseline gap-2 mt-0.5">
           <span className="text-xs md:text-sm font-black text-black">₹{item.discountPrice}</span>
-          <span className="text-[8px] md:text-[9px] font-bold text-zinc-400 line-through">
-            ₹{item.originalPrice}
-          </span>
+          <span className="text-[9px] md:text-[10px] font-bold text-zinc-400 line-through">₹{item.originalPrice}</span>
         </div>
       </div>
     </Link>
@@ -233,85 +198,93 @@ function TrendCard({ item }: { item: TrendItem }) {
 
 export default function NewTrendCard() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const scrollPos = useRef(0);
 
-  // Auto scroll effect
   useEffect(() => {
-    let animationId: number;
-    let lastTime = performance.now();
-    const speed = 30; // pixels per second
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
 
-    const scroll = (time: number) => {
-      const delta = (time - lastTime) / 1000;
-      lastTime = time;
+    let animationFrameId: number;
+    const speed = 0.45; // Reduced speed for buttery smoothness
 
-      if (!isPaused && scrollRef.current) {
-        scrollRef.current.scrollLeft += speed * delta;
+    const animate = () => {
+      if (!isInteracting) {
+        scrollPos.current += speed;
         
-        // Reset scroll when reaching the end to create a loop effect
-        // Realistically just loop around or stop. We'll just let it scroll.
-        if (
-          scrollRef.current.scrollLeft >=
-          scrollRef.current.scrollWidth - scrollRef.current.clientWidth - 1
-        ) {
-          // If we reached the end, snap back to start
-          scrollRef.current.scrollLeft = 0;
+        // Seamless loop check: if we scrolled past half the content (which is duplicated)
+        // Reset to start
+        if (scrollPos.current >= scrollContainer.scrollWidth / 2) {
+          scrollPos.current = 0;
         }
+        
+        scrollContainer.scrollLeft = scrollPos.current;
+      } else {
+        // Sync ref with actual DOM position while user is interacting
+        scrollPos.current = scrollContainer.scrollLeft;
       }
-      animationId = requestAnimationFrame(scroll);
+      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animationId = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(animationId);
-  }, [isPaused]);
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isInteracting]);
+
+  // Handle interaction states to avoid jank
+  const handleInteractionStart = () => setIsInteracting(true);
+  const handleInteractionEnd = () => setIsInteracting(false);
+
+  // Triple the items to ensure the loop is always seamless even on large screens
+  const displayTrends = [...TRENDS, ...TRENDS, ...TRENDS];
 
   return (
-    <section className="w-full px-4 md:px-8 py-10">
-      {/* Heading */}
-      <div className="flex flex-col items-center mb-8">
-        <span className="text-[10px] font-black tracking-[0.3em] text-zinc-400 uppercase mb-2">
-          What&apos;s Hot Right Now
+    <section className="w-full py-10 overflow-hidden">
+      <div className="flex flex-col items-center mb-8 px-4 text-center">
+        <span className="text-[10px] font-black tracking-[0.4em] text-zinc-400 uppercase mb-2">
+          What&apos;s Hot
         </span>
-        <h2 className="sec-heading heading-underline visible">New Trends</h2>
-        <p className="text-xs text-zinc-500 text-center mt-2 max-w-md">
-          The freshest styles handpicked for the modern Tokyo man.
-        </p>
+        <h2 className="sec-heading heading-underline visible !mb-0 text-black">New Trends</h2>
+        <div className="w-8 h-1 bg-black mt-3 rounded-full mx-auto" />
       </div>
 
-      {/* Slider */}
       <div 
-        className="w-full overflow-hidden relative"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
+        className="w-full relative group"
+        onMouseEnter={handleInteractionStart}
+        onMouseLeave={handleInteractionEnd}
+        onTouchStart={handleInteractionStart}
+        onTouchEnd={handleInteractionEnd}
       >
         <div 
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x snap-mandatory"
-          style={{ scrollBehavior: 'smooth' }}
+          className="flex gap-4 md:gap-5 overflow-x-auto hide-scrollbar px-4 md:px-8 py-2"
+          style={{ 
+            scrollBehavior: 'auto', // Important: must be 'auto' for JS loop to be smooth
+            WebkitOverflowScrolling: "touch"
+          }}
         >
-          {TRENDS.map((item) => (
-            <div key={item.id} className="snap-start flex-shrink-0" style={{ width: "calc((100% - 32px) / 3)", minWidth: "160px" }}>
-              <TrendCard item={item} />
-            </div>
-          ))}
-          {/* Duplicate some items at the end to make the loop look seamless if they reach the end */}
-          {TRENDS.slice(0, 3).map((item, i) => (
-            <div key={`dup-${item.id}-${i}`} className="snap-start flex-shrink-0" style={{ width: "calc((100% - 32px) / 3)", minWidth: "160px" }}>
+          {displayTrends.map((item, index) => (
+            <div 
+              key={`${item.id}-${index}`} 
+              className="flex-shrink-0"
+            >
               <TrendCard item={item} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Show More */}
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-10">
         <Link
           href="/trends"
-          className="group inline-flex items-center gap-2 px-6 py-2.5 rounded-full border-2 border-black text-black text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white active:scale-95 transition-all duration-300"
+          className="group relative inline-flex items-center justify-center px-10 py-3 overflow-hidden font-black text-[10px] uppercase tracking-[0.25em] transition-all duration-300 border-2 border-black rounded-full hover:text-white"
         >
-          + Show More
+          <span className="absolute inset-0 w-0 h-full bg-black transition-all duration-300 group-hover:w-full" />
+          <span className="relative z-10 flex items-center gap-2">
+            View All Trends
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </span>
         </Link>
       </div>
     </section>

@@ -8,12 +8,12 @@ import UnderCard from "@/components/homepage/UnderCard";
 /* ── Thin section divider ── */
 function SectionDivider() {
   return (
-    <div className="relative flex items-center w-full my-8 md:my-12 max-w-[1200px] mx-auto px-4">
-      <div className="flex-1 h-px bg-zinc-300" />
-      <span className="mx-4 text-[10px] md:text-xs font-black tracking-[0.4em] uppercase text-zinc-400 whitespace-nowrap select-none">
+    <div className="relative flex items-center w-full my-8 md:my-14 max-w-[1200px] mx-auto px-4">
+      <div className="flex-1 h-px bg-red-800" />
+      <span className="mx-4 text-[10px] md:text-xs font-black tracking-[0.5em] uppercase text-red-800 whitespace-nowrap select-none">
         TOKYO FASHION
       </span>
-      <div className="flex-1 h-px bg-zinc-300" />
+      <div className="flex-1 h-px bg-red-800" />
     </div>
   );
 }
