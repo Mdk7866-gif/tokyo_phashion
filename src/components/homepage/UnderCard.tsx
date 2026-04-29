@@ -297,7 +297,7 @@ export default function UnderCard() {
         accent="text-rose-600"
         priceColor="text-rose-600"
         badgeBg="bg-gradient-to-r from-rose-500 to-pink-500"
-        href="/shop?maxprice=499"
+        href="/under499"
       />
 
       {/* Spacer */}
@@ -311,7 +311,7 @@ export default function UnderCard() {
         accent="text-violet-600"
         priceColor="text-violet-600"
         badgeBg="bg-gradient-to-r from-violet-500 to-purple-600"
-        href="/shop?maxprice=999"
+        href="/under999"
       />
     </section>
   );

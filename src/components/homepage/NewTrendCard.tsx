@@ -275,7 +275,7 @@ export default function NewTrendCard() {
 
       <div className="flex justify-center mt-10">
         <Link
-          href="/trends"
+          href="/trend"
           className="group relative inline-flex items-center justify-center px-10 py-3 overflow-hidden font-black text-[10px] uppercase tracking-[0.25em] transition-all duration-300 border-2 border-black rounded-full hover:text-white"
         >
           <span className="absolute inset-0 w-0 h-full bg-black transition-all duration-300 group-hover:w-full" />
