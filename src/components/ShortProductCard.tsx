@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import { useAlert } from "@/components/AlertMessageCard";
 
 interface Product {
@@ -27,6 +28,7 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
   
   const { user } = useAuth();
   const { showAlert } = useAlert();
+  const router = useRouter();
   const [isWishlisting, setIsWishlisting] = useState(false);
 
   // Build URL with provided collection name
@@ -38,15 +40,45 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      showAlert({ type: "error", message: "Please login to wishlist." });
+      showAlert({ 
+        type: "info", 
+        title: "Login Required",
+        message: "Please login to add items to your wishlist.",
+        onConfirm: () => {
+          const currentPath = window.location.pathname + window.location.search;
+          router.push(`/login?from=${encodeURIComponent(currentPath)}`);
+        }
+      });
       return;
     }
+
     setIsWishlisting(true);
     try {
-      const res = await fetch("/api/user/addwishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      if (isWishlisted) {
+        // Find the specific item in the user's wishlist to get its exact properties
+        const existingItem = user?.wishlistitems?.find((item: any) => item.link.includes(`id=${product._id}`));
+        
+        if (existingItem) {
+          const res = await fetch("/api/user/deletewishlistitem", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: existingItem.name,
+              link: existingItem.link,
+              size: existingItem.size,
+              colour: existingItem.colour
+            }),
+          });
+          if (res.ok) {
+            window.dispatchEvent(new Event('wishlist-updated'));
+            showAlert({ type: "success", message: "Removed from Wishlist" });
+          } else {
+            const data = await res.json();
+            showAlert({ type: "error", message: data.error || "Failed to remove from wishlist" });
+          }
+        }
+      } else {
+        const wishlistData = {
           name: product.productname,
           link: detailUrl.slice(1),
           originalprice: product.original_price,
@@ -56,14 +88,20 @@ const ShortProductCard: React.FC<ShortProductCardProps> = ({ product, collection
           size: "M",
           catagory: collectionName,
           subcatagory: product.subcatagory,
-        }),
-      });
-      if (res.ok) {
-        window.dispatchEvent(new Event('wishlist-updated'));
-        showAlert({ type: "success", message: "Added to Wishlist!" });
-      } else {
-        const data = await res.json();
-        showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+        };
+
+        const res = await fetch("/api/user/addwishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(wishlistData),
+        });
+        if (res.ok) {
+          window.dispatchEvent(new Event('wishlist-updated'));
+          showAlert({ type: "success", message: "Added to Wishlist!" });
+        } else {
+          const data = await res.json();
+          showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+        }
       }
     } catch (err) {
       showAlert({ type: "error", message: "An error occurred." });

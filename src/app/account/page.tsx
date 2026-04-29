@@ -107,7 +107,8 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?from=${encodeURIComponent(currentPath)}`);
       return;
     }
 

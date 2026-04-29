@@ -85,7 +85,15 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
 
   const handleAddToCart = async () => {
     if (!user) {
-      router.push("/login");
+      showAlert({ 
+        type: "info", 
+        title: "Login Required",
+        message: "Please login to add items to your cart.",
+        onConfirm: () => {
+          const currentPath = window.location.pathname + window.location.search;
+          router.push(`/login?from=${encodeURIComponent(currentPath)}`);
+        }
+      });
       return;
     }
     
@@ -135,7 +143,15 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
 
   const handleWishlist = async () => {
     if (!user) {
-      router.push("/login");
+      showAlert({ 
+        type: "info", 
+        title: "Login Required",
+        message: "Please login to wishlist items.",
+        onConfirm: () => {
+          const currentPath = window.location.pathname + window.location.search;
+          router.push(`/login?from=${encodeURIComponent(currentPath)}`);
+        }
+      });
       return;
     }
     
@@ -144,32 +160,54 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
       return;
     }
 
+    const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&colour=${encodeURIComponent(selectedColorName)}&size=${encodeURIComponent(selectedSize)}&quantity=${quantity}`;
+
+    const wishlistData = {
+      name: product.productname,
+      link,
+      originalprice: product.original_price,
+      discountprice: product.discount_price,
+      image: selectedImage,
+      colour: selectedColorName,
+      size: selectedSize,
+      catagory: product.collectionname,
+      subcatagory: product.subcatagory,
+    };
+
     setIsWishlisting(true);
     try {
-      const link = `shop?collection=${encodeURIComponent(product.collectionname)}&subcatagory=${encodeURIComponent(product.subcatagory)}&id=${product._id}&colour=${encodeURIComponent(selectedColorName)}&size=${encodeURIComponent(selectedSize)}&quantity=${quantity}`;
-
-      const res = await fetch("/api/user/addwishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: product.productname,
-          link,
-          originalprice: product.original_price,
-          discountprice: product.discount_price,
-          image: selectedImage,
-          colour: selectedColorName,
-          size: selectedSize,
-          catagory: product.collectionname,
-          subcatagory: product.subcatagory,
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        window.dispatchEvent(new Event('wishlist-updated'));
-        showAlert({ type: "success", message: "Added to Wishlist!" });
+      if (isWishlisted) {
+        const res = await fetch("/api/user/deletewishlistitem", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: wishlistData.name,
+            link: wishlistData.link,
+            size: wishlistData.size,
+            colour: wishlistData.colour
+          }),
+        });
+        if (res.ok) {
+          window.dispatchEvent(new Event('wishlist-updated'));
+          showAlert({ type: "success", message: "Removed from Wishlist" });
+        } else {
+          const data = await res.json();
+          showAlert({ type: "error", message: data.error || "Failed to remove from wishlist" });
+        }
       } else {
-        showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+        const res = await fetch("/api/user/addwishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(wishlistData),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          window.dispatchEvent(new Event('wishlist-updated'));
+          showAlert({ type: "success", message: "Added to Wishlist!" });
+        } else {
+          showAlert({ type: "error", message: data.error || "Failed to wishlist" });
+        }
       }
     } catch (error) {
       console.error(error);
@@ -181,7 +219,15 @@ const DetailedProductCard: React.FC<DetailedProductCardProps> = ({
 
   const handleBuyNow = async () => {
     if (!user) {
-      router.push("/login");
+      showAlert({ 
+        type: "info", 
+        title: "Login Required",
+        message: "Please login to proceed with purchase.",
+        onConfirm: () => {
+          const currentPath = window.location.pathname + window.location.search;
+          router.push(`/login?from=${encodeURIComponent(currentPath)}`);
+        }
+      });
       return;
     }
     if (!selectedSize) {
