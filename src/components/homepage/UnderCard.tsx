@@ -70,7 +70,7 @@ const UNDER_499: BudgetProduct[] = [
     price: 379,
     originalPrice: 799,
     imageUrl:
-      "https://images.unsplash.com/photo-1565084888279-aca607bb8427?w=400&q=80&auto=format&fit=crop",
+      "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777444266/tokyofashion/admin_insert/l4aukezxhgfhboh95mwc.webp",
   },
 ];
 
@@ -82,7 +82,7 @@ const UNDER_999: BudgetProduct[] = [
     price: 699,
     originalPrice: 1499,
     imageUrl:
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f43?w=400&q=80&auto=format&fit=crop",
+      "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777467659/tokyofashion/admin_insert/ba38anagfzrzkhobnkev.webp",
     badge: "🔥 Hot",
   },
   {
@@ -92,7 +92,7 @@ const UNDER_999: BudgetProduct[] = [
     price: 899,
     originalPrice: 1999,
     imageUrl:
-      "https://images.unsplash.com/photo-1589992896404-dc7f88b77ca0?w=400&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80&auto=format&fit=crop",
   },
   {
     id: 3,
@@ -130,7 +130,7 @@ const UNDER_999: BudgetProduct[] = [
     price: 949,
     originalPrice: 2199,
     imageUrl:
-      "https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=400&q=80&auto=format&fit=crop",
+      "https://res.cloudinary.com/ddya4o2yl/image/upload/v1777442656/tokyofashion/admin_insert/y80uzqvsxlpny9fzf2xd.webp",
   },
 ];
 
