@@ -114,7 +114,7 @@ const TRENDS: TrendItem[] = [
   },
   {
     id: 8,
-    name: "Cargo Jogger Pants",
+    name: "Cargo Jogger Pantss",
     category: "Bottoms",
     originalPrice: 2299,
     discountPrice: 1299,
