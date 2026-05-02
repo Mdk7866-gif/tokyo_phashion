@@ -1,0 +1,266 @@
+Enum payment_method_enum {
+  cod
+  online
+}
+
+Enum payment_status_enum {
+  pending
+  paid
+  failed
+}
+
+Enum delivery_status_enum {
+  pending
+  cancelled
+  delivered
+}
+
+Table users {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  name varchar [not null]
+  email varchar [unique]
+  mobile_number varchar [unique]
+  google_id varchar [unique, note: 'Google OAuth id']
+  profile_image varchar
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (email) [unique]
+    (mobile_number) [unique]
+    (google_id) [unique]
+  }
+}
+
+Table addresses {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  full_address text [not null]
+  city varchar [not null]
+  state varchar [not null]
+  pincode varchar [not null]
+  is_default boolean [default: false]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (user_id)
+    (user_id, is_default)
+  }
+}
+
+Table categories {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  name varchar [not null, unique]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+Table subcategories {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  category_id uuid [not null]
+  name varchar [not null]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (category_id)
+    (category_id, name) [unique]
+  }
+}
+
+Table products {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  subcategory_id uuid [not null]
+  name varchar [not null]
+  description text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (subcategory_id)
+    (subcategory_id, created_at)
+  }
+}
+
+Table product_variants {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  product_id uuid [not null]
+  color varchar [not null]
+  original_price decimal(10,2) [not null]
+  discount_price decimal(10,2) [not null]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (product_id)
+    (product_id, color) [unique]
+  }
+}
+
+Table variant_sizes {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  product_variant_id uuid [not null]
+  size varchar [not null]
+  stock int [not null, default: 0]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (product_variant_id)
+    (product_variant_id, size) [unique]
+  }
+}
+
+Table product_images {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  product_variant_id uuid [not null]
+  image_url varchar [not null]
+  sort_order int [not null, default: 0]
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (product_variant_id)
+    (product_variant_id, sort_order)
+  }
+}
+
+Table cart_items {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  variant_size_id uuid [not null]
+  quantity int [not null, default: 1]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (user_id)
+    (variant_size_id)
+    (user_id, variant_size_id) [unique]
+  }
+}
+
+Table wishlist_items {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  product_variant_id uuid [not null]
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (user_id)
+    (product_variant_id)
+    (user_id, product_variant_id) [unique]
+  }
+}
+
+Table orders {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  address_id uuid [not null]
+  total_amount decimal(10,2) [not null]
+
+  payment_method payment_method_enum [not null]
+  payment_status payment_status_enum [not null, default: 'pending']
+  delivery_status delivery_status_enum [not null, default: 'pending']
+
+  tracking_id varchar [unique]
+  parcel_image_url varchar
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (user_id)
+    (address_id)
+    (user_id, created_at)
+    (delivery_status, created_at)
+    (tracking_id) [unique]
+  }
+}
+
+Table order_items {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  order_id uuid [not null]
+  product_id uuid [not null]
+  product_variant_id uuid [not null]
+  variant_size_id uuid [not null]
+
+  product_name_snapshot varchar [not null]
+  color_snapshot varchar [not null]
+  size_snapshot varchar [not null]
+  price_snapshot decimal(10,2) [not null]
+
+  quantity int [not null, default: 1]
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (order_id)
+    (product_id)
+    (product_variant_id)
+    (variant_size_id)
+    (order_id, variant_size_id) [unique]
+  }
+}
+
+Table payments {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  order_id uuid [not null]
+  razorpay_order_id varchar
+  razorpay_payment_id varchar
+  razorpay_signature varchar
+  amount decimal(10,2) [not null]
+  status payment_status_enum [not null, default: 'pending']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (order_id)
+    (status, created_at)
+    (razorpay_order_id)
+    (razorpay_payment_id)
+  }
+}
+
+Table reviews {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  product_id uuid [not null]
+  rating int [not null]
+  comment text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (user_id)
+    (product_id)
+    (user_id, product_id) [unique]
+  }
+}
+
+/* Relations */
+
+Ref: users.id < addresses.user_id
+Ref: categories.id < subcategories.category_id
+Ref: subcategories.id < products.subcategory_id
+Ref: products.id < product_variants.product_id
+Ref: product_variants.id < variant_sizes.product_variant_id
+Ref: product_variants.id < product_images.product_variant_id
+
+Ref: users.id < cart_items.user_id
+Ref: variant_sizes.id < cart_items.variant_size_id
+
+Ref: users.id < wishlist_items.user_id
+Ref: product_variants.id < wishlist_items.product_variant_id
+
+Ref: users.id < orders.user_id
+Ref: addresses.id < orders.address_id
+
+Ref: orders.id < order_items.order_id
+Ref: products.id < order_items.product_id
+Ref: product_variants.id < order_items.product_variant_id
+Ref: variant_sizes.id < order_items.variant_size_id
+
+Ref: orders.id < payments.order_id
+
+Ref: users.id < reviews.user_id
+Ref: products.id < reviews.product_id
