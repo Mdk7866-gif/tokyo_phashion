@@ -4,48 +4,21 @@ cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
 });
 
-export const uploadImage = async (
-  fileInput: string,
-  options?: { folder?: string }
-): Promise<string> => {
+export default cloudinary;
+
+export const uploadToCloudinary = async (fileUri: string, fileName: string) => {
   try {
-    const result = await cloudinary.uploader.upload(fileInput, {
-      folder: options?.folder ?? 'tokyofashion/misc',
+    const res = await cloudinary.uploader.upload(fileUri, {
+      invalidate: true,
+      resource_type: "auto",
+      public_id: fileName,
+      folder: "tokyofashion", // Storing in the requested folder
     });
-    return result.secure_url;
+    return res;
   } catch (error) {
-    console.error('Cloudinary Upload Error:', error);
-    throw new Error('Image upload failed');
+    throw error;
   }
 };
-
-export const uploadImageBuffer = async (
-  fileBuffer: Buffer,
-  options?: { folder?: string }
-): Promise<string> => {
-  const folder = options?.folder ?? 'tokyofashion/misc';
-
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: 'image',
-      },
-      (error, result) => {
-        if (error || !result?.secure_url) {
-          console.error('Cloudinary Stream Upload Error:', error);
-          reject(new Error('Image upload failed'));
-          return;
-        }
-
-        resolve(result.secure_url);
-      }
-    );
-
-    stream.end(fileBuffer);
-  });
-};
-
-export default cloudinary;

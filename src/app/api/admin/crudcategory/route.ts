@@ -5,9 +5,22 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 export async function POST(request: Request) {
   try {
     const { name } = await request.json();
-    const { data, error } = await supabaseAdmin.from('categories').insert([{ name: name.toLowerCase() }]).select().single();
+    
+    // 1. Create Category
+    const { data: category, error } = await supabaseAdmin
+      .from('categories')
+      .insert([{ name: name.toLowerCase() }])
+      .select()
+      .single();
+    
     if (error) throw error;
-    return NextResponse.json({ success: true, data });
+
+    // 2. Create empty thumbnail entry
+    await supabaseAdmin
+      .from('category_thumbnails')
+      .insert([{ category_id: category.id, image_url: null }]);
+
+    return NextResponse.json({ success: true, data: category });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

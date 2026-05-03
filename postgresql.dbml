@@ -21,7 +21,7 @@ Enum delivery_status_enum {
 
 Table users {
   id uuid [primary key, default: `gen_random_uuid()`]
-  name varchar [not null]
+  name varchar
   email varchar [unique]
   mobile_number varchar [unique]
   google_id varchar [unique]
@@ -64,9 +64,9 @@ Table categories {
 
 Table category_thumbnails {
   id uuid [primary key, default: `gen_random_uuid()`]
-  category_id uuid [not null]
+  category_id uuid [not null, unique]
 
-  image_url varchar [not null]
+  image_url varchar
 
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]

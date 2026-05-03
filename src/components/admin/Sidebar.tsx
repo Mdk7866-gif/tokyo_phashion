@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronRight,
   FolderOpen,
-  Tag
+  Tag,
+  Image as ImageIcon
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmationMessagePopUp from "../ConfirmationMessagePopUp";
@@ -192,6 +193,19 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
+            </Link>
+
+            <Link
+              href="/admin/homepagethumbnail"
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-3 text-xs font-black uppercase tracking-widest transition-all ${
+                pathname === "/admin/homepagethumbnail"
+                  ? "bg-black text-white"
+                  : "text-zinc-600 hover:bg-zinc-100"
+              }`}
+            >
+              <ImageIcon className="h-4 w-4" />
+              Homepage Thumbnails
             </Link>
 
             <div className="mt-6">
