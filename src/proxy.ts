@@ -30,6 +30,25 @@ export async function proxy(request: NextRequest) {
   // refreshing the auth token
   await supabase.auth.getUser()
 
+  // Admin route protection
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
+  const isAdminLoginRoute = request.nextUrl.pathname === '/admin/login';
+
+  if (isAdminRoute && !isAdminLoginRoute) {
+    const adminToken = request.cookies.get('admin_token')?.value;
+    if (adminToken !== process.env.ADMIN_PASSWORD) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+  }
+
+  // Redirect authenticated admins away from the login page
+  if (isAdminLoginRoute) {
+    const adminToken = request.cookies.get('admin_token')?.value;
+    if (adminToken === process.env.ADMIN_PASSWORD) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+  }
+
   return supabaseResponse
 }
 
