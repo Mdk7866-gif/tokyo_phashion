@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         .from('users')
         .upsert({
           id: user.id,
-          name: user.user_metadata.full_name || user.email?.split('@')[0] || 'Unknown',
+          name: '', // Leaving name empty as requested
           email: user.email,
           google_id: user.id,
           profile_image: user.user_metadata.avatar_url,

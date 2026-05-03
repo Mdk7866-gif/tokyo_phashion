@@ -34,8 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     }, [supabase]);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        window.location.href = "/";
+        const response = await fetch('/api/auth/logout', { method: 'POST' });
+        if (response.ok) {
+            window.location.href = "/";
+        }
     };
 
     const navItems = [

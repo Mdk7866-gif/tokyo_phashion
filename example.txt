@@ -1,3 +1,8 @@
+npx supabase gen types typescript --project-id mjtsprbylxplijipdpjx > src/lib/supabase/database.types.ts
+
+
+
+
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -7,15 +12,6 @@ TELEGRAM_CHAT_ID=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
-
-
-
-
-
-
-
-
-
 
 
 
