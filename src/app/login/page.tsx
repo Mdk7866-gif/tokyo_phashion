@@ -4,7 +4,7 @@ import React from "react";
 export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('/api/auth/login', { method: 'POST' });
+      const response = await fetch('/api/user/login', { method: 'POST' });
       const data = await response.json();
 
       if (data.url) {

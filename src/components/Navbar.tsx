@@ -5,34 +5,33 @@ import Link from "next/link";
 import { ShoppingCart, Heart, Menu, Search, User } from "lucide-react";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { User as SupabaseUser } from "@supabase/supabase-js";
+
 
 interface NavbarProps {
     onMenuClick: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
-    const [user, setUser] = useState<SupabaseUser | null>(null);
-    const supabase = createClient();
+    const [user, setUser] = useState<any | null>(null);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+            try {
+                const response = await fetch('/api/user/me');
+                const data = await response.json();
+                setUser(data.user);
+            } catch (error) {
+                console.error("Error fetching user session:", error);
+            }
         };
 
         getUser();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [supabase]);
+    }, []);
 
     const handleLogout = async () => {
-        const response = await fetch('/api/auth/logout', { method: 'POST' });
+        const response = await fetch('/api/user/logout', { method: 'POST' });
         if (response.ok) {
             window.location.href = "/";
         }

@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server'
 
 export async function POST() {
   const supabase = await createClient()
-
-  // Sign out from Supabase (this also clears the server-side cookies)
   const { error } = await supabase.auth.signOut()
 
   if (error) {
