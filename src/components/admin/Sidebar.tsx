@@ -296,10 +296,14 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                 </div>
                               ) : (
                                 <>
-                                  <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase">
+                                  <Link 
+                                    href={`/admin/product?category=${cat.name}&subcategory=${sub.name}&cat_id=${cat.id}&sub_id=${sub.id}`}
+                                    onClick={onClose}
+                                    className="flex flex-1 items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
+                                  >
                                     <Tag className="h-2.5 w-2.5" />
                                     {sub.name}
-                                  </div>
+                                  </Link>
                                   <div className="flex items-center gap-1 transition-opacity">
                                     <button onClick={() => {setEditingId(sub.id); setEditValue(sub.name);}} className="p-1 hover:bg-zinc-100 rounded">
                                       <Pencil className="h-2 w-2 text-zinc-400" />
