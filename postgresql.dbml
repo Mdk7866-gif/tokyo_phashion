@@ -46,7 +46,7 @@ Table addresses {
   is_default boolean [default: false]
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
-  deleted_at timestamptz // For soft delete logic
+  deleted_at timestamptz
 
   indexes {
     (user_id)
@@ -60,6 +60,20 @@ Table categories {
   name varchar [not null, unique]
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
+}
+
+Table category_thumbnails {
+  id uuid [primary key, default: `gen_random_uuid()`]
+  category_id uuid [not null]
+
+  image_url varchar [not null]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (category_id)
+  }
 }
 
 Table subcategories {
@@ -82,7 +96,7 @@ Table products {
   description text
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
-  deleted_at timestamptz // Soft delete
+  deleted_at timestamptz
 
   indexes {
     (subcategory_id)
@@ -91,15 +105,15 @@ Table products {
   }
 }
 
+// 🔥 UPDATED: Removed price from here
 Table product_variants {
   id uuid [primary key, default: `gen_random_uuid()`]
   product_id uuid [not null]
   color varchar [not null]
-  original_price decimal(10,2) [not null]
-  discount_price decimal(10,2) [not null]
+
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
-  deleted_at timestamptz // Soft delete
+  deleted_at timestamptz
 
   indexes {
     (product_id)
@@ -108,14 +122,21 @@ Table product_variants {
   }
 }
 
+// 🔥 UPDATED: Price + Stock per size
 Table variant_sizes {
   id uuid [primary key, default: `gen_random_uuid()`]
   product_variant_id uuid [not null]
+
   size varchar [not null]
+
+  original_price decimal(10,2) [not null]
+  discount_price decimal(10,2) [not null]
+
   stock int [not null, default: 0]
+
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
-  deleted_at timestamptz // Soft delete
+  deleted_at timestamptz
 
   indexes {
     (product_variant_id)
@@ -123,6 +144,8 @@ Table variant_sizes {
     (deleted_at)
   }
 }
+
+
 
 Table product_images {
   id uuid [primary key, default: `gen_random_uuid()`]
@@ -169,7 +192,6 @@ Table orders {
   id uuid [primary key, default: `gen_random_uuid()`]
   user_id uuid [not null]
 
-  // Fixed Typos: snapshot fields
   snapshot_order_full_address text [not null]
   snapshot_order_city varchar [not null]
   snapshot_order_state varchar [not null]
@@ -221,7 +243,7 @@ Table order_items {
 
 Table payments {
   id uuid [primary key, default: `gen_random_uuid()`]
-  order_id uuid [not null] // Constraint removed to allow multiple attempts
+  order_id uuid [not null]
   razorpay_order_id varchar
   razorpay_payment_id varchar
   razorpay_signature varchar
@@ -246,7 +268,7 @@ Table reviews {
   comment text
   created_at timestamptz [default: `now()`]
   updated_at timestamptz [default: `now()`]
-  deleted_at timestamptz // Soft delete for reviews
+  deleted_at timestamptz
 
   indexes {
     (user_id)
@@ -272,7 +294,7 @@ Ref: users.id < wishlist_items.user_id
 Ref: product_variants.id < wishlist_items.product_variant_id
 
 Ref: users.id < orders.user_id
-
+Ref: categories.id < category_thumbnails.category_id
 Ref: orders.id < order_items.order_id
 Ref: products.id < order_items.product_id
 Ref: product_variants.id < order_items.product_variant_id
