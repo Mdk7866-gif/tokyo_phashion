@@ -3,7 +3,8 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import UserCartItemCard from "@/components/UserCartItemCard";
-import { User, Heart, ShoppingCart, Package, LogOut } from "lucide-react";
+import AlertMessagePopUp from "@/components/AlertMessagePopUp";
+import { User, Heart, ShoppingCart, Package, LogOut, LayoutDashboard } from "lucide-react";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -14,12 +15,28 @@ function DashboardContent() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
   useEffect(() => {
     fetchUser();
     if (activeTab === "my cart") {
       fetchCart();
     }
   }, [activeTab]);
+
+  const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+    setAlert({ isOpen: true, title, message, type });
+  };
 
   const fetchUser = async () => {
     try {
@@ -42,9 +59,13 @@ function DashboardContent() {
       if (res.ok) {
         const json = await res.json();
         setCartItems(json.data || []);
+      } else {
+        const error = await res.json();
+        showAlert("Error", error.error || "Failed to fetch cart", "error");
       }
     } catch (e) {
       console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
     }
     setLoading(false);
   };
@@ -54,15 +75,23 @@ function DashboardContent() {
       const deleteRes = await fetch(`/api/user/crudcart?id=${id}`, { method: "DELETE" });
       if (deleteRes.ok) {
         setCartItems(prev => prev.filter(item => item.id !== id));
+      } else {
+        const error = await deleteRes.json();
+        showAlert("Error", error.error || "Failed to remove item", "error");
       }
     } catch (e) {
       console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
     }
   };
 
   const handleLogout = async () => {
-    await fetch("/api/user/logout", { method: "POST" });
-    router.push("/login");
+    try {
+      await fetch("/api/user/logout", { method: "POST" });
+      router.push("/login");
+    } catch (e) {
+      showAlert("Error", "Failed to sign out", "error");
+    }
   };
 
   const tabs = [
@@ -73,47 +102,51 @@ function DashboardContent() {
   ];
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 py-4 sm:px-6">
-      <div className="flex flex-col gap-4">
+    <div className="max-w-screen-xl mx-auto px-4 py-8 sm:px-6">
+      <div className="flex flex-col gap-6">
         
-        {/* Compact Sidebar / Tab Box */}
-        <div className="border border-black bg-white overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          {/* Header with Full Email */}
-          <div className="bg-black text-white px-4 py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                <User className="h-2.5 w-2.5 text-black" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-widest truncate">
-                {user?.email}
-              </span>
+        <AlertMessagePopUp
+          isOpen={alert.isOpen}
+          onClose={() => setAlert({ ...alert, isOpen: false })}
+          title={alert.title}
+          message={alert.message}
+          type={alert.type}
+        />
+
+        {/* Improved Tab Box */}
+        <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="flex flex-col sm:flex-row">
+            <div className="bg-black text-white px-6 py-4 flex items-center gap-3 sm:border-r sm:border-zinc-800">
+              <LayoutDashboard className="h-4 w-4" />
+              <h1 className="text-[11px] font-black uppercase tracking-[0.3em] whitespace-nowrap">Dashboard</h1>
             </div>
+            
+            <div className="flex-1 grid grid-cols-2 sm:flex">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => router.push(`/dashboard?tab=${tab.id}`)}
+                    className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-4 text-[9px] font-black uppercase tracking-widest border-b border-black last:border-b-0 sm:border-b-0 sm:border-r sm:border-black last:sm:border-r-0 transition-all ${
+                      isActive ? 'bg-zinc-100 text-black shadow-[inset_0px_-2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-zinc-400 hover:bg-zinc-50 hover:text-black'
+                    }`}
+                  >
+                    <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-black' : 'text-zinc-300'}`} />
+                    <span className="truncate">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <button 
               onClick={handleLogout}
-              className="text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:text-red-400 transition-colors border border-white/20 px-2 py-1 rounded-sm"
+              className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white px-6 py-4 flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all border-t border-black sm:border-t-0 sm:border-l sm:border-black"
             >
-              <LogOut className="h-2.5 w-2.5" /> Sign Out
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="sm:hidden lg:inline">Sign Out</span>
             </button>
-          </div>
-
-          {/* Compact Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => router.push(`/dashboard?tab=${tab.id}`)}
-                  className={`flex items-center justify-center gap-2 px-2 py-3.5 text-[8px] font-black uppercase tracking-widest border-r border-black last:border-r-0 transition-all ${
-                    isActive ? 'bg-green-500 text-white shadow-[inset_0px_4px_0px_0px_rgba(255,255,255,0.1)]' : 'bg-white text-black hover:bg-zinc-50'
-                  }`}
-                >
-                  <Icon className={`h-3 w-3 ${isActive ? 'text-white' : 'text-zinc-400'}`} />
-                  <span className="truncate">{tab.label}</span>
-                </button>
-              );
-            })}
           </div>
         </div>
 

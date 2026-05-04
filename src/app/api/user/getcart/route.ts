@@ -26,7 +26,17 @@ export async function GET() {
             color,
             products!inner (
               id,
-              name
+              name,
+              subcategory_id,
+              subcategories!inner (
+                id,
+                name,
+                category_id,
+                categories!inner (
+                  id,
+                  name
+                )
+              )
             ),
             product_images (
               image_url,
