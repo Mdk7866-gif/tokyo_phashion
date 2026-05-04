@@ -41,7 +41,8 @@ export async function GET(request: Request) {
           variant_sizes(original_price, discount_price, stock)
         )
       `)
-      .in('subcategory_id', subsToQuery);
+      .in('subcategory_id', subsToQuery)
+      .is('deleted_at', null);
 
     if (sort === 'newest') {
       query = query.order('created_at', { ascending: false });
@@ -73,6 +74,7 @@ export async function GET(request: Request) {
         name: p.name,
         price,
         imageUrl,
+        defaultVariantId: defaultVariant?.id || null,
         created_at: p.created_at,
         subcategory_id: p.subcategory_id
       };

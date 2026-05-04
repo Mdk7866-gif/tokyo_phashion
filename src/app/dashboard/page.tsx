@@ -3,8 +3,9 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import UserCartItemCard from "@/components/UserCartItemCard";
+import UserWishlistCard from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import { User, Heart, ShoppingCart, Package, LogOut, LayoutDashboard } from "lucide-react";
+import { User, Heart, ShoppingCart, Package, LayoutDashboard } from "lucide-react";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -12,7 +13,9 @@ function DashboardContent() {
   
   const activeTab = (searchParams.get("tab") || "profile").toLowerCase();
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   const [alert, setAlert] = useState<{
@@ -31,6 +34,9 @@ function DashboardContent() {
     fetchUser();
     if (activeTab === "my cart") {
       fetchCart();
+    }
+    if (activeTab === "my whishlist") {
+      fetchWishlist();
     }
   }, [activeTab]);
 
@@ -75,9 +81,44 @@ function DashboardContent() {
       const deleteRes = await fetch(`/api/user/crudcart?id=${id}`, { method: "DELETE" });
       if (deleteRes.ok) {
         setCartItems(prev => prev.filter(item => item.id !== id));
+        window.dispatchEvent(new Event('navbar-update'));
       } else {
         const error = await deleteRes.json();
         showAlert("Error", error.error || "Failed to remove item", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+  };
+
+  const fetchWishlist = async () => {
+    setWishlistLoading(true);
+    try {
+      const res = await fetch("/api/user/wishlist");
+      if (res.ok) {
+        const json = await res.json();
+        setWishlistItems(json.data || []);
+      } else {
+        const error = await res.json();
+        showAlert("Error", error.error || "Failed to fetch wishlist", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+    setWishlistLoading(false);
+  };
+
+  const handleRemoveWishlistItem = async (id: string) => {
+    try {
+      const deleteRes = await fetch(`/api/user/wishlist?id=${id}`, { method: "DELETE" });
+      if (deleteRes.ok) {
+        setWishlistItems(prev => prev.filter(item => item.id !== id));
+        window.dispatchEvent(new Event('navbar-update'));
+      } else {
+        const error = await deleteRes.json();
+        showAlert("Error", error.error || "Failed to remove from wishlist", "error");
       }
     } catch (e) {
       console.error(e);
@@ -197,8 +238,42 @@ function DashboardContent() {
           )}
 
           {activeTab === "my whishlist" && (
-            <div className="border border-black bg-white py-12 text-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-300 italic">Whishlist Coming Soon</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-black pb-1.5">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Heart className="h-3.5 w-3.5 text-red-500" /> Wishlist
+                </h2>
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-0.5 border border-zinc-200">{wishlistItems.length}</span>
+              </div>
+
+              {wishlistLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="aspect-[3/4] bg-zinc-100 animate-pulse border border-zinc-200" />
+                  ))}
+                </div>
+              ) : wishlistItems.length === 0 ? (
+                <div className="border border-dashed border-zinc-300 bg-white py-12 text-center">
+                  <Heart className="h-8 w-8 text-zinc-200 mx-auto mb-3" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">Your wishlist is empty</p>
+                  <button
+                    onClick={() => router.push("/")}
+                    className="mt-4 border border-black bg-black text-white px-5 py-2 text-[8px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all"
+                  >
+                    Browse Products
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                  {wishlistItems.map((item) => (
+                    <UserWishlistCard
+                      key={item.id}
+                      item={item}
+                      onRemove={handleRemoveWishlistItem}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

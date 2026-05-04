@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart } from "lucide-react";
 
 export default function DetailedProductPage() {
   const searchParams = useSearchParams();
@@ -42,12 +42,85 @@ export default function DetailedProductPage() {
     setAlert({ isOpen: true, title, message, type });
   };
 
+  // Wishlist state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
+  const [wishlistedVariantIds, setWishlistedVariantIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
   }, [id]);
 
+  // Load auth + wishlist on mount
+  useEffect(() => {
+    const checkAuthAndWishlist = async () => {
+      try {
+        const meRes = await fetch("/api/user/me");
+        const meJson = await meRes.json();
+        if (!meJson.user) return;
+        setIsLoggedIn(true);
+        const wRes = await fetch("/api/user/wishlist");
+        if (wRes.ok) {
+          const wJson = await wRes.json();
+          const ids = new Set<string>((wJson.data || []).map((item: any) => item.product_variant_id));
+          setWishlistedVariantIds(ids);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    checkAuthAndWishlist();
+  }, []);
+
+  // Update isWishlisted when variant changes
+  useEffect(() => {
+    if (selectedVariant?.id) {
+      setIsWishlisted(wishlistedVariantIds.has(selectedVariant.id));
+    }
+  }, [selectedVariant, wishlistedVariantIds]);
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const variantId = selectedVariant?.id;
+    if (!variantId) return;
+
+    if (!isLoggedIn) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+
+    setTogglingWishlist(true);
+    try {
+      if (isWishlisted) {
+        const res = await fetch(`/api/user/wishlist?variant_id=${variantId}`, { method: "DELETE" });
+        if (res.ok) {
+          setIsWishlisted(false);
+          setWishlistedVariantIds(prev => { const n = new Set(prev); n.delete(variantId); return n; });
+          window.dispatchEvent(new Event('navbar-update'));
+        }
+      } else {
+        const res = await fetch("/api/user/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_variant_id: variantId }),
+        });
+        if (res.ok) {
+          setIsWishlisted(true);
+          setWishlistedVariantIds(prev => new Set(prev).add(variantId));
+          window.dispatchEvent(new Event('navbar-update'));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showAlert("Error", "Failed to update wishlist", "error");
+    } finally {
+      setTogglingWishlist(false);
+    }
+  };
   const handleShare = () => {
     const shareableUrl = window.location.href;
     navigator.clipboard.writeText(shareableUrl);
@@ -80,7 +153,8 @@ export default function DetailedProductPage() {
       });
 
       if (res.ok) {
-        router.push("/dashboard?tab=my cart");
+        showAlert("Success", "Item added to your bag", "success");
+        window.dispatchEvent(new Event('navbar-update'));
       } else {
         const error = await res.json();
         showAlert("Error", error.error || "Failed to add to cart", "error");
@@ -229,6 +303,19 @@ export default function DetailedProductPage() {
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-black uppercase tracking-widest text-zinc-300">No Image</div>
               )}
+              {/* Wishlist Heart Overlay */}
+              <button
+                onClick={handleToggleWishlist}
+                disabled={togglingWishlist}
+                className={`absolute top-3 right-3 z-10 p-2.5 border transition-all ${
+                  isWishlisted
+                    ? "bg-red-500 border-red-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.6)]"
+                    : "bg-white border-black text-black hover:bg-red-50 hover:border-red-400 hover:text-red-500 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                } ${togglingWishlist ? "opacity-60" : ""}`}
+                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <Heart className={`h-5 w-5 ${isWishlisted ? "fill-white" : ""}`} />
+              </button>
             </div>
             
             {/* Thumbnails */}

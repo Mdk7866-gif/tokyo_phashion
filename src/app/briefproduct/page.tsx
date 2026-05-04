@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { SlidersHorizontal, ArrowRight, X, Check } from "lucide-react";
+import { SlidersHorizontal, ArrowRight, X, Check, Heart } from "lucide-react";
 
 export default function BriefProductPage() {
   const searchParams = useSearchParams();
@@ -23,12 +23,41 @@ export default function BriefProductPage() {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  // Wishlist state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [wishlistedVariantIds, setWishlistedVariantIds] = useState<Set<string>>(new Set());
+  const [togglingVariantIds, setTogglingVariantIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (category_id) {
       fetchCategories();
       fetchProducts();
     }
   }, [category_id, subcategory_ids, sort]);
+
+  // Check auth and load wishlist on mount
+  useEffect(() => {
+    const checkAuthAndWishlist = async () => {
+      try {
+        const meRes = await fetch("/api/user/me");
+        const meJson = await meRes.json();
+        if (!meJson.user) return;
+        setIsLoggedIn(true);
+
+        const wRes = await fetch("/api/user/wishlist");
+        if (wRes.ok) {
+          const wJson = await wRes.json();
+          const ids = new Set<string>(
+            (wJson.data || []).map((item: any) => item.product_variant_id)
+          );
+          setWishlistedVariantIds(ids);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    checkAuthAndWishlist();
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -63,6 +92,54 @@ export default function BriefProductPage() {
       console.error(e);
     }
     setLoading(false);
+  };
+
+  const handleToggleWishlist = async (e: React.MouseEvent, product: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const variantId = product.defaultVariantId;
+    if (!variantId) return;
+
+    if (!isLoggedIn) {
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
+
+    setTogglingVariantIds(prev => new Set(prev).add(variantId));
+    const isWishlisted = wishlistedVariantIds.has(variantId);
+
+    try {
+      if (isWishlisted) {
+        const res = await fetch(`/api/user/wishlist?variant_id=${variantId}`, { method: "DELETE" });
+        if (res.ok) {
+          setWishlistedVariantIds(prev => {
+            const next = new Set(prev);
+            next.delete(variantId);
+            return next;
+          });
+          window.dispatchEvent(new Event('navbar-update'));
+        }
+      } else {
+        const res = await fetch("/api/user/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_variant_id: variantId }),
+        });
+        if (res.ok) {
+          setWishlistedVariantIds(prev => new Set(prev).add(variantId));
+          window.dispatchEvent(new Event('navbar-update'));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    setTogglingVariantIds(prev => {
+      const next = new Set(prev);
+      next.delete(variantId);
+      return next;
+    });
   };
 
   const toggleSubcategory = (subId: string) => {
@@ -231,12 +308,10 @@ export default function BriefProductPage() {
           {/* ── Mobile Filter Drawer ── */}
           {isFilterOpen && (
             <div className="fixed inset-0 z-50 flex">
-              {/* backdrop */}
               <div
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setIsFilterOpen(false)}
               />
-              {/* drawer */}
               <div className="relative ml-auto w-72 h-full bg-white overflow-y-auto p-6 shadow-[-8px_0px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-lg font-black uppercase italic tracking-tighter">
@@ -265,7 +340,6 @@ export default function BriefProductPage() {
           {/* ── Product Grid ── */}
           <div className="flex-1 min-w-0">
             {loading ? (
-              /* Skeleton Grid */
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="border border-black animate-pulse">
@@ -294,39 +368,61 @@ export default function BriefProductPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {products.map(product => (
-                  <Link
-                    key={product.id}
-                    href={`/detailedproduct?product_id=${product.id}`}
-                    className="group flex flex-col bg-white border border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
-                  >
-                    <div className="aspect-[3/4] relative w-full overflow-hidden bg-zinc-100 border-b border-black">
-                      {product.imageUrl ? (
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-zinc-300 uppercase">
-                          No Image
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 flex flex-col justify-between flex-1 gap-3">
-                      <h3 className="text-[11px] font-black uppercase italic tracking-tight line-clamp-2 leading-tight">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-black">₹{product.price.toFixed(0)}</p>
-                        <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                {products.map(product => {
+                  const variantId = product.defaultVariantId;
+                  const isWishlisted = variantId ? wishlistedVariantIds.has(variantId) : false;
+                  const isToggling = variantId ? togglingVariantIds.has(variantId) : false;
+
+                  return (
+                    <Link
+                      key={product.id}
+                      href={`/detailedproduct?product_id=${product.id}`}
+                      className="group flex flex-col bg-white border border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all"
+                    >
+                      <div className="aspect-[3/4] relative w-full overflow-hidden bg-zinc-100 border-b border-black">
+                        {product.imageUrl ? (
+                          <Image
+                            src={product.imageUrl}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-zinc-300 uppercase">
+                            No Image
+                          </div>
+                        )}
+
+                        {/* Wishlist Heart Button */}
+                        {variantId && (
+                          <button
+                            onClick={(e) => handleToggleWishlist(e, product)}
+                            disabled={isToggling}
+                            className={`absolute top-2 right-2 z-10 p-1.5 border transition-all ${
+                              isWishlisted
+                                ? "bg-red-500 border-red-500 text-white"
+                                : "bg-white border-black text-black hover:bg-red-50 hover:border-red-400 hover:text-red-500"
+                            } shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] ${isToggling ? "opacity-60" : ""}`}
+                            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                          >
+                            <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-white" : ""}`} />
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="p-4 flex flex-col justify-between flex-1 gap-3">
+                        <h3 className="text-[11px] font-black uppercase italic tracking-tight line-clamp-2 leading-tight">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-black">₹{product.price.toFixed(0)}</p>
+                          <ArrowRight className="h-3.5 w-3.5 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
