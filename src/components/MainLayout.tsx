@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,11 +15,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const isAuthRoute = pathname === "/login";
 
   if (isAdminRoute || isAuthRoute) {
-    return <>{children}</>;
+    return (
+      <>
+        <SplashScreen />
+        {children}
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
+      <SplashScreen />
       <div className="flex flex-1">
         {/* Sidebar */}
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

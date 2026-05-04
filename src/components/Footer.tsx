@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 const socialIcons = [
   {
@@ -66,8 +67,8 @@ const Footer = () => {
         <div className="grid grid-cols-2 gap-12 md:grid-cols-4 lg:grid-cols-6">
           {/* Brand & Social */}
           <div className="col-span-2 lg:col-span-3">
-            <Link href="/" className="text-3xl font-black uppercase italic tracking-tighter">
-              Tokyo <span className="opacity-30 font-light">Fashion</span>
+            <Link href="/" className="inline-block">
+              <Logo className="h-12 w-auto" />
             </Link>
             <p className="mt-8 max-w-md text-sm leading-8 text-black/60">
               Defining the future of urban streetwear. Born in the streets of Shibuya, 

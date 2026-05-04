@@ -15,6 +15,7 @@ import {
   ShoppingBag
 } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
+import Logo from "@/components/Logo";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -88,8 +89,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between px-6 border-b border-black">
-          <Link href="/" className="text-xl font-black uppercase italic tracking-tighter">
-            Tokyo <span className="opacity-40 font-light">Fashion</span>
+          <Link href="/" className="flex items-center">
+            <Logo className="h-10 w-auto" />
           </Link>
           <button
             onClick={onClose}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingCart, Heart, Menu, Search, User } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface NavbarProps {
     onMenuClick: () => void;
@@ -55,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between gap-8">
                     {/* Left: Menu & Logo */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                         <button
                             onClick={onMenuClick}
                             className="group rounded-md p-1.5 hover:bg-black hover:text-white lg:hidden transition-all duration-200"
@@ -64,9 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                             <Menu className="h-6 w-6" />
                         </button>
                         <Link href="/" className="flex items-center">
-                            <span className="text-2xl font-black tracking-tighter uppercase italic">
-                                Tokyo <span className="opacity-50 font-light">Fashion</span>
-                            </span>
+                            <Logo className="h-11 w-auto" />
                         </Link>
                     </div>
 

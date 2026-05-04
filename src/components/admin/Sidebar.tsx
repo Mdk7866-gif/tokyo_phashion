@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmationMessagePopUp from "../ConfirmationMessagePopUp";
+import Logo from "@/components/Logo";
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -179,8 +180,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         }`}
       >
         <div className="flex h-16 items-center justify-between border-b border-black px-6">
-          <Link href="/admin" className="text-lg font-black uppercase italic tracking-tighter">
-            Tokyo <span className="font-light opacity-50">Admin</span>
+          <Link href="/admin" className="flex items-center">
+            <Logo className="h-10 w-auto" />
           </Link>
           <button onClick={onClose} className="lg:hidden p-1 hover:bg-zinc-100 rounded-md transition-colors">
             <X className="h-5 w-5" />
