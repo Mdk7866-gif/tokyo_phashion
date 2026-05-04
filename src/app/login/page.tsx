@@ -1,10 +1,19 @@
 "use client";
 
-import React from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/";
+
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('/api/user/login', { method: 'POST' });
+      const response = await fetch('/api/user/login', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ next: redirectTo })
+      });
       const data = await response.json();
 
       if (data.url) {
@@ -75,5 +84,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-import Link from "next/link";

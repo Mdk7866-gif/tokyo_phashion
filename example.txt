@@ -1,4 +1,4 @@
-npx supabase gen types typescript --project-id mjtsprbylxplijipdpjx > src/lib/supabase/database.types.ts
+npx supabase gen types typescript --project-id mjtsprbylxplijipdpjx | Out-File -Encoding utf8 src/lib/supabase/database.types.ts
 
 
 

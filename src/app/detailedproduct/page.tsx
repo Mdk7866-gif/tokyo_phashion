@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus } from "lucide-react";
 
 export default function DetailedProductPage() {
   const searchParams = useSearchParams();
@@ -21,12 +21,60 @@ export default function DetailedProductPage() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedSize, setSelectedSize] = useState<any>(null);
   const [mainImage, setMainImage] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
   }, [id]);
+
+  const handleShare = () => {
+    const shareableUrl = window.location.href;
+    navigator.clipboard.writeText(shareableUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedSize) return;
+
+    setAddingToCart(true);
+    try {
+      // Check auth via API (no client-side Supabase)
+      const meRes = await fetch("/api/user/me");
+      const meJson = await meRes.json();
+
+      if (!meJson.user) {
+        // Redirect to login with current page as redirect target
+        const currentPath = window.location.pathname + window.location.search;
+        router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
+        return;
+      }
+
+      const res = await fetch("/api/user/addtocart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variant_size_id: selectedSize.id
+        })
+      });
+
+      if (res.ok) {
+        router.push("/dashboard?tab=my cart");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to add to cart");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   const updateQueryParams = (variantId?: string, sizeId?: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -176,13 +224,28 @@ export default function DetailedProductPage() {
 
           {/* Right: Product Details */}
           <div className="flex flex-col pt-4">
-            <div className="mb-8">
-              <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl xl:text-6xl mb-4">{product.name}</h1>
-              
-              <div className="flex items-baseline gap-4">
-                <span className="text-2xl font-black">₹{displayPrice.toFixed(0)}</span>
-                {originalPrice > displayPrice && (
-                  <span className="text-sm font-bold text-zinc-400 line-through">₹{originalPrice.toFixed(0)}</span>
+            <div className="mb-8 flex justify-between items-start relative">
+              <div>
+                <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl xl:text-6xl mb-4">{product.name}</h1>
+                <div className="flex items-baseline gap-4">
+                  <span className="text-2xl font-black">₹{displayPrice.toFixed(0)}</span>
+                  {originalPrice > displayPrice && (
+                    <span className="text-sm font-bold text-zinc-400 line-through">₹{originalPrice.toFixed(0)}</span>
+                  )}
+                </div>
+              </div>
+              <div className="relative">
+                <button 
+                  onClick={handleShare}
+                  className={`p-3 border border-black transition-all ${copied ? 'bg-green-50 text-green-600' : 'bg-white text-black hover:bg-zinc-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'}`}
+                  title={copied ? "Copied!" : "Share Product"}
+                >
+                  {copied ? <Check className="h-5 w-5" /> : <Share2 className="h-5 w-5" />}
+                </button>
+                {copied && (
+                  <span className="absolute -bottom-8 right-0 bg-black text-white text-[9px] px-2 py-1 uppercase font-black tracking-widest whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                    Link Copied
+                  </span>
                 )}
               </div>
             </div>
@@ -242,18 +305,44 @@ export default function DetailedProductPage() {
               )}
             </div>
 
+            {/* Quantity */}
+            <div className="mb-8">
+               <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Quantity</h3>
+               <div className="flex items-center border border-black w-fit">
+                 <button 
+                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                   className="p-3 hover:bg-zinc-100 transition-colors border-r border-black"
+                 >
+                   <Minus className="h-3 w-3" />
+                 </button>
+                 <input 
+                   type="number" 
+                   value={quantity}
+                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                   className="w-12 text-center text-xs font-black bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                 />
+                 <button 
+                   onClick={() => setQuantity(quantity + 1)}
+                   className="p-3 hover:bg-zinc-100 transition-colors border-l border-black"
+                 >
+                   <Plus className="h-3 w-3" />
+                 </button>
+               </div>
+            </div>
+
             {/* Actions */}
             <div className="mb-12">
               <button 
-                disabled={!selectedSize}
+                onClick={handleAddToCart}
+                disabled={!selectedSize || addingToCart}
                 className={`w-full flex items-center justify-center gap-2 border border-black py-4 text-xs font-black uppercase tracking-widest transition-all ${
-                  selectedSize 
+                  selectedSize && !addingToCart
                     ? 'bg-black text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-zinc-800 active:shadow-none active:translate-x-[4px] active:translate-y-[4px]' 
                     : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                 }`}
               >
                 <ShoppingBag className="h-4 w-4" />
-                {selectedSize ? 'Add to Cart' : 'Select a Size'}
+                {addingToCart ? 'Adding...' : selectedSize ? 'Add to Cart' : 'Select a Size'}
               </button>
             </div>
 

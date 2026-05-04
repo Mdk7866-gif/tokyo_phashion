@@ -111,13 +111,20 @@ export default function ProductBriefDescriptionCard({
            </div>
            
            <div className="flex gap-1 flex-shrink-0">
-             <button 
-                onClick={handleCopyLink}
-                className={`p-1.5 transition-colors ${copied ? 'text-green-600 bg-green-50' : 'text-zinc-500 hover:text-black hover:bg-zinc-200'}`}
-                title={copied ? "Copied!" : "Copy Shareable Link"}
-             >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />} 
-             </button>
+             <div className="relative group/copy">
+               <button 
+                  onClick={handleCopyLink}
+                  className={`p-1.5 transition-colors ${copied ? 'text-green-600 bg-green-50' : 'text-zinc-500 hover:text-black hover:bg-zinc-200'}`}
+                  title={copied ? "Copied!" : "Copy Shareable Link"}
+               >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />} 
+               </button>
+               {copied && (
+                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[8px] px-2 py-1 uppercase font-bold tracking-widest whitespace-nowrap animate-in fade-in slide-in-from-bottom-1">
+                   Link Copied
+                 </span>
+               )}
+             </div>
              <button 
                 onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}&color=NEW`)}
                 className="p-1.5 text-zinc-500 hover:text-black hover:bg-zinc-200"

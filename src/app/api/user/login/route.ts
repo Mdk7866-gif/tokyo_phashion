@@ -43,10 +43,17 @@ export async function POST(request: Request) {
   const { origin } = new URL(request.url)
   const supabase = await createClient()
 
+  // Try to get next path from body
+  let next = '/';
+  try {
+    const body = await request.json();
+    next = body.next || '/';
+  } catch (e) {}
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/api/user/login`, // Points back to this same file (the GET handler)
+      redirectTo: `${origin}/api/user/login?next=${encodeURIComponent(next)}`,
       queryParams: {
         prompt: 'select_account',
         access_type: 'offline',
