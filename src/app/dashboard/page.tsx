@@ -17,6 +17,15 @@ function DashboardContent() {
   const [loading, setLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    mobile_number: "",
+    full_address: "",
+    city: "",
+    state: "",
+    pincode: ""
+  });
+  const [updatingProfile, setUpdatingProfile] = useState(false);
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -39,6 +48,19 @@ function DashboardContent() {
       fetchWishlist();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || "",
+        mobile_number: user.mobile_number || "",
+        full_address: user.address?.full_address || "",
+        city: user.address?.city || "",
+        state: user.address?.state || "",
+        pincode: user.address?.pincode || ""
+      });
+    }
+  }, [user]);
 
   const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
     setAlert({ isOpen: true, title, message, type });
@@ -126,6 +148,34 @@ function DashboardContent() {
     }
   };
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingProfile(true);
+    if (profileForm.mobile_number.length !== 10) {
+      showAlert("Error", "Mobile number must be exactly 10 digits (e.g. 8511274216)", "error");
+      setUpdatingProfile(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/user/updateuserprofile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profileForm)
+      });
+      if (res.ok) {
+        showAlert("Success", "Profile updated successfully", "success");
+        fetchUser();
+      } else {
+        const err = await res.json();
+        showAlert("Error", err.error || "Failed to update profile", "error");
+      }
+    } catch (e) {
+      showAlert("Error", "Something went wrong", "error");
+    }
+    setUpdatingProfile(false);
+  };
+
 
 
   const tabs = [
@@ -179,21 +229,120 @@ function DashboardContent() {
         {/* Content Area */}
         <main className="min-w-0">
           {activeTab === "profile" && (
-            <div className="border border-black bg-white p-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-zinc-100">
-                 <User className="h-3 w-3 text-zinc-400" />
-                 <h2 className="text-[10px] font-black uppercase tracking-widest">Account Details</h2>
+            <div className="border border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+               <div className="bg-zinc-50 border-b border-black px-5 py-3 flex items-center justify-between">
+                 <div className="flex items-center gap-2">
+                   <User className="h-3.5 w-3.5" />
+                   <h2 className="text-[10px] font-black uppercase tracking-widest">Account Settings</h2>
+                 </div>
+                 <p className="text-[9px] font-bold text-zinc-400">ID: {user?.id?.slice(0,8)}...</p>
                </div>
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-zinc-50 p-3 border border-zinc-100">
-                    <label className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-1">Authenticated Email</label>
-                    <p className="text-[10px] font-bold text-black truncate">{user?.email}</p>
-                  </div>
-                  <div className="bg-zinc-50 p-3 border border-zinc-100">
-                    <label className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-1">User Identifier</label>
-                    <p className="text-[9px] font-mono text-zinc-400 truncate">{user?.id}</p>
-                  </div>
-               </div>
+               
+               <form onSubmit={handleUpdateProfile} className="p-6 space-y-6">
+                 {/* Basic Info */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-1.5">
+                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Email Address (Read Only)</label>
+                     <input 
+                       type="text" 
+                       value={user?.email || ""} 
+                       disabled 
+                       className="w-full bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-[10px] font-bold text-zinc-400 cursor-not-allowed"
+                     />
+                   </div>
+                   <div className="space-y-1.5">
+                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Full Name</label>
+                     <input 
+                       type="text" 
+                       value={profileForm.name} 
+                       onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
+                       placeholder="Enter your name"
+                       className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                       required
+                     />
+                   </div>
+                   <div className="space-y-1.5">
+                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Mobile Number</label>
+                     <input 
+                       type="tel" 
+                       value={profileForm.mobile_number} 
+                       onChange={(e) => {
+                         const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                         setProfileForm({...profileForm, mobile_number: val});
+                       }}
+                       placeholder="8511274216"
+                       maxLength={10}
+                       className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                       required
+                     />
+                   </div>
+                 </div>
+
+                 {/* Address Info */}
+                 <div className="pt-6 border-t border-zinc-100">
+                    <h3 className="text-[9px] font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Package className="h-3 w-3 text-zinc-300" /> Shipping Address
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Full Address (Street, House No, Locality)</label>
+                        <textarea 
+                          rows={2}
+                          value={profileForm.full_address} 
+                          onChange={(e) => setProfileForm({...profileForm, full_address: e.target.value})}
+                          placeholder="e.g. 123 Shibuya Crossing, Tokyo"
+                          className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white resize-none"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">City</label>
+                          <input 
+                            type="text" 
+                            value={profileForm.city} 
+                            onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
+                            placeholder="City"
+                            className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">State</label>
+                          <input 
+                            type="text" 
+                            value={profileForm.state} 
+                            onChange={(e) => setProfileForm({...profileForm, state: e.target.value})}
+                            placeholder="State"
+                            className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Pincode</label>
+                          <input 
+                            type="text" 
+                            value={profileForm.pincode} 
+                            onChange={(e) => setProfileForm({...profileForm, pincode: e.target.value})}
+                            placeholder="XXXXXX"
+                            className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                 </div>
+
+                 <div className="pt-4">
+                   <button 
+                     type="submit" 
+                     disabled={updatingProfile}
+                     className="bg-black text-white px-10 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all disabled:bg-zinc-400 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-0.5 active:translate-y-0.5"
+                   >
+                     {updatingProfile ? "Synchronising..." : "Save Changes"}
+                   </button>
+                 </div>
+               </form>
             </div>
           )}
 
