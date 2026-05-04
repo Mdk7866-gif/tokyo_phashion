@@ -11,8 +11,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   const isAdminRoute = pathname?.startsWith("/admin");
+  const isAuthRoute = pathname === "/login";
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isAuthRoute) {
     return <>{children}</>;
   }
 

@@ -27,21 +27,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-white px-4">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
       <div className="w-full max-w-md border border-black bg-white p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
         <div className="text-center">
-          <h1 className="text-4xl font-black uppercase italic tracking-tighter">
-            Tokyo <span className="opacity-30">PH</span>
+          <h1 className="text-4xl font-black text-black uppercase italic tracking-tighter">
+            Tokyo <span className="opacity-60 text-gray-900">FASHION</span>
           </h1>
-          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-600">
             Welcome to the Club
           </p>
         </div>
 
         <div className="mt-12 space-y-6">
           <div className="text-center">
-            <h2 className="text-lg font-black uppercase tracking-widest">Sign In</h2>
-            <p className="mt-2 text-sm text-zinc-500">
+            <h2 className="text-lg font-black text-gray-500 uppercase tracking-widest">Sign In</h2>
+            <p className="mt-2 text-sm text-zinc-800 font-medium">
               Access your exclusive collections and orders.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-[10px] font-bold text-zinc-400">
+          <p className="text-[10px] font-bold text-zinc-600">
             By continuing, you agree to Tokyo Fashion's 
             <br />
             <Link href="/terms" className="text-black underline">Terms of Service</Link> and 

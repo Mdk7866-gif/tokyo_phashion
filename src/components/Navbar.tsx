@@ -90,7 +90,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
                         {/* Wishlist */}
                         <Link
-                            href="/dashboard?tab=my%20whishlist"
+                            href={user ? "/dashboard?tab=my%20whishlist" : `/login?redirectTo=${encodeURIComponent("/dashboard?tab=my%20whishlist")}`}
                             className="group relative rounded-md p-2 hover:bg-zinc-100 transition-all"
                             aria-label="Wishlist"
                         >
@@ -104,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
                         {/* Cart */}
                         <Link
-                            href="/dashboard?tab=my%20cart"
+                            href={user ? "/dashboard?tab=my%20cart" : `/login?redirectTo=${encodeURIComponent("/dashboard?tab=my%20cart")}`}
                             className="group relative rounded-md p-2 hover:bg-zinc-100 transition-all"
                             aria-label="Cart"
                         >
