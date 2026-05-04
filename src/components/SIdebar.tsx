@@ -213,7 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </Link>
 
               <a 
-                href="https://instagram.com" 
+                href="https://www.instagram.com/tokyo__fashion_hub/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex-none p-2 border border-black hover:bg-zinc-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] bg-white"
