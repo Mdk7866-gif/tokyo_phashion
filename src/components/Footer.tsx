@@ -67,7 +67,7 @@ const Footer = () => {
           {/* Brand & Social */}
           <div className="col-span-2 lg:col-span-3">
             <Link href="/" className="text-3xl font-black uppercase italic tracking-tighter">
-              Tokyo <span className="opacity-30 font-light">Phashion</span>
+              Tokyo <span className="opacity-30 font-light">Fashion</span>
             </Link>
             <p className="mt-8 max-w-md text-sm leading-8 text-black/60">
               Defining the future of urban streetwear. Born in the streets of Shibuya, 
@@ -110,7 +110,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="mt-24 border-t border-zinc-100 pt-10 flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-bold text-black/40 text-center sm:text-left">
-            &copy; {currentYear} TOKYO PHASHION LTD. ALL RIGHTS RESERVED.
+            &copy; {currentYear} TOKYO FASHION LTD. ALL RIGHTS RESERVED.
           </p>
           <div className="flex justify-center gap-10 text-[11px] font-bold text-black/40">
             <Link href="#" className="hover:text-black transition-colors">Privacy Policy</Link>

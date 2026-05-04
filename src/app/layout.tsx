@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tokyo Phashion | Urban Streetwear",
+  title: "Tokyo Fashion | Urban Streetwear",
   description: "Defining the future of urban streetwear. Born in the streets of Shibuya, worn worldwide.",
 };
 

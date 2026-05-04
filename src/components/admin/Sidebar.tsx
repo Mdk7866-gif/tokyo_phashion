@@ -49,6 +49,13 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedCatIds, setExpandedCatIds] = useState<string[]>([]);
+
+  const toggleCategory = (id: string) => {
+    setExpandedCatIds(prev => 
+      prev.includes(id) ? prev.filter(catId => catId !== id) : [...prev, id]
+    );
+  };
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -241,106 +248,118 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
                   {/* List of Categories */}
                   <div className="space-y-4 max-h-[500px] overflow-y-auto px-2">
-                    {categories.map((cat) => (
-                      <div key={cat.id} className="border-l-2 border-zinc-100 pl-3 py-1">
-                        <div className="flex items-center justify-between group">
-                          {editingId === cat.id ? (
-                            <div className="flex flex-1 gap-1">
-                              <input 
-                                autoFocus
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
-                              />
-                              <button onClick={() => handleUpdateCategory(cat.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
-                              <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
-                            </div>
-                          ) : (
-                            <>
-                              <span className="text-[11px] font-black uppercase tracking-tight flex items-center gap-2">
-                                <FolderOpen className="h-3 w-3 text-zinc-400" />
-                                {cat.name}
-                              </span>
-                              <div className="flex items-center gap-1 transition-opacity">
-                                <button onClick={() => {setEditingId(cat.id); setEditValue(cat.name);}} className="p-1 hover:bg-zinc-100 rounded">
-                                  <Pencil className="h-2.5 w-2.5 text-zinc-400" />
-                                </button>
-                                <button onClick={() => handleDeleteCategory(cat.id)} className="p-1 hover:bg-red-50 rounded">
-                                  <Trash2 className="h-2.5 w-2.5 text-red-400" />
-                                </button>
-                                <button 
-                                  onClick={() => setSelectedCatId(selectedCatId === cat.id ? null : cat.id)}
-                                  className={`p-1 rounded transition-colors ${selectedCatId === cat.id ? 'bg-black text-white' : 'hover:bg-zinc-100'}`}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </button>
+                    {categories.map((cat) => {
+                      const isExpanded = expandedCatIds.includes(cat.id);
+                      return (
+                        <div key={cat.id} className="border-l-2 border-zinc-100 pl-3 py-1">
+                          <div className="flex items-center justify-between group">
+                            {editingId === cat.id ? (
+                              <div className="flex flex-1 gap-1">
+                                <input 
+                                  autoFocus
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
+                                />
+                                <button onClick={() => handleUpdateCategory(cat.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
+                                <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
                               </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Subcategories list */}
-                        <div className="mt-2 ml-2 space-y-2">
-                          {cat.subcategories?.map((sub: any) => (
-                            <div key={sub.id} className="flex items-center justify-between group/sub">
-                              {editingId === sub.id ? (
-                                <div className="flex flex-1 gap-1">
-                                  <input 
-                                    autoFocus
-                                    value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
-                                  />
-                                  <button onClick={() => handleUpdateSubcategory(sub.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
-                                  <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
-                                </div>
-                              ) : (
-                                <>
-                                  <Link 
-                                    href={`/admin/product?category=${cat.name}&subcategory=${sub.name}&cat_id=${cat.id}&sub_id=${sub.id}`}
-                                    onClick={onClose}
-                                    className="flex flex-1 items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={() => toggleCategory(cat.id)}
+                                  className="text-[11px] font-black uppercase tracking-tight flex items-center gap-2 flex-1 text-left"
+                                >
+                                  {isExpanded ? <ChevronDown className="h-3 w-3 text-black" /> : <ChevronRight className="h-3 w-3 text-zinc-400" />}
+                                  {cat.name}
+                                </button>
+                                <div className="flex items-center gap-1 transition-opacity">
+                                  <button onClick={() => {setEditingId(cat.id); setEditValue(cat.name);}} className="p-1 hover:bg-zinc-100 rounded">
+                                    <Pencil className="h-2.5 w-2.5 text-zinc-400" />
+                                  </button>
+                                  <button onClick={() => handleDeleteCategory(cat.id)} className="p-1 hover:bg-red-50 rounded">
+                                    <Trash2 className="h-2.5 w-2.5 text-red-400" />
+                                  </button>
+                                  <button 
+                                    onClick={() => {
+                                      if (!isExpanded) toggleCategory(cat.id);
+                                      setSelectedCatId(selectedCatId === cat.id ? null : cat.id);
+                                    }}
+                                    className={`p-1 rounded transition-colors ${selectedCatId === cat.id ? 'bg-black text-white' : 'hover:bg-zinc-100'}`}
                                   >
-                                    <Tag className="h-2.5 w-2.5" />
-                                    {sub.name}
-                                  </Link>
-                                  <div className="flex items-center gap-1 transition-opacity">
-                                    <button onClick={() => {setEditingId(sub.id); setEditValue(sub.name);}} className="p-1 hover:bg-zinc-100 rounded">
-                                      <Pencil className="h-2 w-2 text-zinc-400" />
-                                    </button>
-                                    <button onClick={() => handleDeleteSubcategory(sub.id)} className="p-1 hover:bg-red-50 rounded">
-                                      <Trash2 className="h-2 w-2 text-red-400" />
+                                    <Plus className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Subcategories list */}
+                          {isExpanded && (
+                            <div className="mt-2 ml-2 space-y-2 animate-in fade-in duration-300">
+                              {cat.subcategories?.map((sub: any) => (
+                                <div key={sub.id} className="flex items-center justify-between group/sub">
+                                  {editingId === sub.id ? (
+                                    <div className="flex flex-1 gap-1">
+                                      <input 
+                                        autoFocus
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
+                                      />
+                                      <button onClick={() => handleUpdateSubcategory(sub.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
+                                      <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Link 
+                                        href={`/admin/product?category=${cat.name}&subcategory=${sub.name}&cat_id=${cat.id}&sub_id=${sub.id}`}
+                                        onClick={onClose}
+                                        className="flex flex-1 items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
+                                      >
+                                        <Tag className="h-2.5 w-2.5" />
+                                        {sub.name}
+                                      </Link>
+                                      <div className="flex items-center gap-1 transition-opacity">
+                                        <button onClick={() => {setEditingId(sub.id); setEditValue(sub.name);}} className="p-1 hover:bg-zinc-100 rounded">
+                                          <Pencil className="h-2 w-2 text-zinc-400" />
+                                        </button>
+                                        <button onClick={() => handleDeleteSubcategory(sub.id)} className="p-1 hover:bg-red-50 rounded">
+                                          <Trash2 className="h-2 w-2 text-red-400" />
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+
+                              {/* Inline Add Subcategory Form */}
+                              {selectedCatId === cat.id && (
+                                <form onSubmit={handleAddSubcategory} className="mt-3 ml-2 animate-in slide-in-from-left-2 duration-200">
+                                  <div className="flex gap-1">
+                                    <input
+                                      autoFocus
+                                      type="text"
+                                      value={newSubName}
+                                      onChange={(e) => setNewSubName(e.target.value)}
+                                      placeholder={`Sub to ${cat.name}...`}
+                                      className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-1.5 text-[10px] font-bold focus:border-black focus:outline-none"
+                                    />
+                                    <button type="submit" disabled={loading} className="bg-zinc-200 p-1.5 hover:bg-black hover:text-white transition-colors">
+                                      <Plus className="h-3 w-3" />
                                     </button>
                                   </div>
-                                </>
+                                </form>
                               )}
                             </div>
-                          ))}
+                          )}
                         </div>
-
-                        {/* Inline Add Subcategory Form */}
-                        {selectedCatId === cat.id && (
-                          <form onSubmit={handleAddSubcategory} className="mt-3 ml-2 animate-in slide-in-from-left-2 duration-200">
-                            <div className="flex gap-1">
-                              <input
-                                autoFocus
-                                type="text"
-                                value={newSubName}
-                                onChange={(e) => setNewSubName(e.target.value)}
-                                placeholder={`Sub to ${cat.name}...`}
-                                className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-1.5 text-[10px] font-bold focus:border-black focus:outline-none"
-                              />
-                              <button type="submit" disabled={loading} className="bg-zinc-200 p-1.5 hover:bg-black hover:text-white transition-colors">
-                                <Plus className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </form>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
+
             </div>
           </nav>
         </div>

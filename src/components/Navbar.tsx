@@ -52,7 +52,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                         </button>
                         <Link href="/" className="flex items-center">
                             <span className="text-2xl font-black tracking-tighter uppercase italic">
-                                Tokyo <span className="opacity-50 font-light">Phashion</span>
+                                Tokyo <span className="opacity-50 font-light">Fashion</span>
                             </span>
                         </Link>
                     </div>
