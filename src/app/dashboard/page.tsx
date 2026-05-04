@@ -85,14 +85,7 @@ function DashboardContent() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/user/logout", { method: "POST" });
-      router.push("/login");
-    } catch (e) {
-      showAlert("Error", "Failed to sign out", "error");
-    }
-  };
+
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
@@ -102,7 +95,7 @@ function DashboardContent() {
   ];
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 py-8 sm:px-6">
+    <div className="max-w-screen-xl mx-auto px-4 py-4 sm:px-6">
       <div className="flex flex-col gap-6">
         
         <AlertMessagePopUp
@@ -139,14 +132,6 @@ function DashboardContent() {
                 );
               })}
             </div>
-
-            <button 
-              onClick={handleLogout}
-              className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white px-6 py-4 flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest transition-all border-t border-black sm:border-t-0 sm:border-l sm:border-black"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="sm:hidden lg:inline">Sign Out</span>
-            </button>
           </div>
         </div>
 
@@ -198,7 +183,7 @@ function DashboardContent() {
                 </div>
               ) : (
                 /* Compact 2-per-row grid */
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                   {cartItems.map((item) => (
                     <UserCartItemCard 
                       key={item.id} 

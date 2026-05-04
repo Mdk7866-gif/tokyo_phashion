@@ -76,50 +76,52 @@ export default function UserCartItemCard({ item, onRemove }: UserCartItemCardPro
       </div>
 
       {/* Ultra-compact Content */}
-      <div className="p-2 flex flex-col gap-2">
-        <div className="min-h-[24px]">
-          <h3 className="text-[9px] font-black uppercase italic tracking-tight leading-none line-clamp-1" title={product?.name}>
-            {product?.name}
-          </h3>
-          <p className="text-[7px] font-bold uppercase tracking-widest text-zinc-400 mt-0.5">
+      <div className="p-1.5 flex flex-col gap-1.5">
+        <div className="min-h-[18px] flex flex-col justify-center">
+          {product?.name && (
+            <h3 className="text-[8.5px] font-black uppercase italic tracking-tight leading-none line-clamp-1 mb-0.5" title={product?.name}>
+              {product?.name}
+            </h3>
+          )}
+          <p className="text-[6.5px] font-bold uppercase tracking-widest text-zinc-400 leading-none">
             {variant?.color} / {size?.size}
           </p>
         </div>
 
         <div className="flex items-center justify-between gap-1">
-           <div className="text-[10px] font-black leading-none">₹{price.toFixed(0)}</div>
+           <div className="text-[9px] font-black leading-none">₹{price.toFixed(0)}</div>
            
-           {/* Quantity Controls - Fixed visibility */}
-           <div className="flex items-center border border-black h-5 bg-white">
+           {/* Quantity Controls - Even more compact */}
+           <div className="flex items-center border border-black h-4 bg-white">
              <button 
                onClick={(e) => {
                  e.stopPropagation();
                  setQuantity(Math.max(1, quantity - 1));
                }}
-               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-r border-black flex items-center justify-center"
+               className="px-1 h-full hover:bg-zinc-100 transition-colors border-r border-black flex items-center justify-center"
              >
-               <Minus className="h-2 w-2 text-black" />
+               <Minus className="h-1.5 w-1.5 text-black" />
              </button>
-             <span className="w-5 text-center text-[8px] font-black text-black">{quantity}</span>
+             <span className="w-4 text-center text-[7px] font-black text-black">{quantity}</span>
              <button 
                onClick={(e) => {
                  e.stopPropagation();
                  setQuantity(quantity + 1);
                }}
-               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-l border-black flex items-center justify-center"
+               className="px-1 h-full hover:bg-zinc-100 transition-colors border-l border-black flex items-center justify-center"
              >
-               <Plus className="h-2 w-2 text-black" />
+               <Plus className="h-1.5 w-1.5 text-black" />
              </button>
            </div>
         </div>
 
-        {/* Compact Buy Button */}
+        {/* Ultra-Compact Buy Button */}
         <button 
           disabled
           onClick={(e) => e.stopPropagation()}
-          className="w-full border border-black py-1.5 text-[8px] font-black uppercase tracking-widest bg-zinc-800 text-white opacity-60 cursor-not-allowed flex items-center justify-center gap-1.5"
+          className="w-full border border-black py-1 text-[7px] font-black uppercase tracking-widest bg-zinc-800 text-white opacity-60 cursor-not-allowed flex items-center justify-center gap-1"
         >
-          <ShoppingBag className="h-2.5 w-2.5" />
+          <ShoppingBag className="h-2 w-2" />
           Buy ₹{totalPrice.toFixed(0)}
         </button>
       </div>
