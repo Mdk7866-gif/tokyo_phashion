@@ -139,7 +139,11 @@ export default function DetailedProductPage() {
     }
   };
   const handleShare = () => {
-    const shareableUrl = window.location.href;
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedVariant) params.set("variant_id", selectedVariant.id);
+    if (selectedSize) params.set("size_id", selectedSize.id);
+    
+    const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
     navigator.clipboard.writeText(shareableUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -227,7 +231,21 @@ export default function DetailedProductPage() {
             
             if (urlSizeId && initialVariant.variant_sizes) {
               const foundSize = initialVariant.variant_sizes.find((s: any) => s.id === urlSizeId);
-              if (foundSize && foundSize.stock > 0) setSelectedSize(foundSize);
+              if (foundSize && foundSize.stock > 0) {
+                setSelectedSize(foundSize);
+              } else {
+                const availableSize = initialVariant.variant_sizes.find((s: any) => s.stock > 0);
+                if (availableSize) {
+                  setSelectedSize(availableSize);
+                  updateQueryParams(initialVariant.id, availableSize.id);
+                }
+              }
+            } else if (initialVariant.variant_sizes) {
+              const availableSize = initialVariant.variant_sizes.find((s: any) => s.stock > 0);
+              if (availableSize) {
+                setSelectedSize(availableSize);
+                updateQueryParams(initialVariant.id, availableSize.id);
+              }
             }
             
             if (initialVariant.product_images && initialVariant.product_images.length > 0) {
@@ -235,8 +253,11 @@ export default function DetailedProductPage() {
                setMainImage(sortedImages[0].image_url);
             }
 
-            if (!urlVariantId) {
-              updateQueryParams(initialVariant.id);
+            if (!urlVariantId && !urlSizeId) {
+              // Only update variant id if size auto-selection above didn't already update everything
+              if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:any) => s.stock > 0)) {
+                updateQueryParams(initialVariant.id);
+              }
             }
           }
         }
@@ -256,18 +277,30 @@ export default function DetailedProductPage() {
     newParams.set("variant_id", v.id);
     router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     
-    // Check if new variant has a size that matches current selection, else reset size
+    // Check if new variant has a size that matches current selection, else select first available
     if (selectedSize) {
-      const matchingSize = v.variant_sizes?.find((s: any) => s.size === selectedSize.size);
+      const matchingSize = v.variant_sizes?.find((s: any) => s.size === selectedSize.size && s.stock > 0);
       if (matchingSize) {
         setSelectedSize(matchingSize);
         newParams.set("size_id", matchingSize.id);
-        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
       } else {
-        setSelectedSize(null);
-        newParams.delete("size_id");
-        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+        const firstAvailable = v.variant_sizes?.find((s: any) => s.stock > 0);
+        if (firstAvailable) {
+          setSelectedSize(firstAvailable);
+          newParams.set("size_id", firstAvailable.id);
+        } else {
+          setSelectedSize(null);
+          newParams.delete("size_id");
+        }
       }
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    } else {
+      const firstAvailable = v.variant_sizes?.find((s: any) => s.stock > 0);
+      if (firstAvailable) {
+        setSelectedSize(firstAvailable);
+        newParams.set("size_id", firstAvailable.id);
+      }
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     }
   };
 

@@ -44,8 +44,8 @@ export default function AdminLoginPage() {
           <div className="mb-4 flex h-12 w-12 items-center justify-center border-2 border-black bg-black text-white">
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-black uppercase italic tracking-tighter">
-            Admin <span className="font-light opacity-50">Access</span>
+          <h1 className="text-2xl font-black text-black uppercase italic tracking-tighter">
+            Admin <span className="font-light text-gray-1000 opacity-50">Access</span>
           </h1>
           <p className="mt-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
             Restricted Area
@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest">
+            <label className="block text-[10px] font-black text-gray-900 uppercase tracking-widest">
               Passcode
             </label>
             <input

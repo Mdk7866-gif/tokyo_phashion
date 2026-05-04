@@ -199,19 +199,39 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* SECTION 3: SOCIALS */}
+          {/* SECTION 3: SOCIALS & ADMIN */}
           <div className="p-6 mt-auto border-t border-zinc-100">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">Connect</p>
-            <div className="flex gap-4 px-2">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">External</p>
+            <div className="flex items-center gap-3 px-2">
+              <Link 
+                href="/admin"
+                onClick={onClose}
+                className="flex-[2] flex items-center justify-center gap-2 border border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                Admin
+              </Link>
+
               <a 
                 href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 border border-black hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                className="flex-none p-2 border border-black hover:bg-zinc-50 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] bg-white"
               >
-                <FaInstagram className="h-4 w-4" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#f09433" />
+                      <stop offset="25%" stopColor="#e6683c" />
+                      <stop offset="50%" stopColor="#dc2743" />
+                      <stop offset="75%" stopColor="#cc2366" />
+                      <stop offset="100%" stopColor="#bc1888" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="url(#instagram-gradient)" strokeWidth="2.5" />
+                  <circle cx="12" cy="12" r="4" stroke="url(#instagram-gradient)" strokeWidth="2.5" />
+                  <circle cx="18" cy="6" r="1.5" fill="url(#instagram-gradient)" />
+                </svg>
               </a>
-              {/* Add more social buttons here later */}
             </div>
           </div>
 
