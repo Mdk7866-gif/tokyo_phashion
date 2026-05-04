@@ -22,7 +22,7 @@ export default function AdminNavbar({ onMenuClick }: AdminNavbarProps) {
   return (
     <header className="sticky top-0 z-40 h-16 w-full border-b border-black bg-white">
       <div className="mx-auto max-w-screen-2xl px-4 lg:px-8 h-full flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-0 flex-1">
           <button
             onClick={onMenuClick}
             className="rounded-md p-2 hover:bg-zinc-100 lg:hidden transition-colors"

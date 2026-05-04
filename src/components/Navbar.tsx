@@ -56,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between gap-8">
                     {/* Left: Menu & Logo */}
-                    <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="flex items-center gap-0 sm:gap-0">
                         <button
                             onClick={onMenuClick}
                             className="group rounded-md p-1.5 hover:bg-black hover:text-white lg:hidden transition-all duration-200"

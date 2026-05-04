@@ -2,25 +2,40 @@
 
 import React, { useEffect, useState } from "react";
 
-const SplashScreen = () => {
+const SplashScreen = ({ onComplete }: { onComplete?: () => void }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
+    // Check session storage on mount
     const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
+    
     if (!hasSeenSplash) {
       setShouldRender(true);
-      setIsVisible(true);
-      sessionStorage.setItem("hasSeenSplash", "true");
-      
-      const timer = setTimeout(() => {
+      // Small timeout to ensure the component is mounted before starting animation
+      const animTimer = setTimeout(() => {
+        setIsVisible(true);
+      }, 100);
+
+      const hideTimer = setTimeout(() => {
         setIsVisible(false);
-        // Wait for fade out animation before removing from DOM
-        setTimeout(() => setShouldRender(false), 1000);
-      }, 2500);
-      return () => clearTimeout(timer);
+        // Wait for fade out animation
+        setTimeout(() => {
+          setShouldRender(false);
+          if (onComplete) onComplete();
+        }, 1000);
+        // Only set after we are sure we are hiding, or simply on first show
+        sessionStorage.setItem("hasSeenSplash", "true");
+      }, 3000);
+
+      return () => {
+        clearTimeout(animTimer);
+        clearTimeout(hideTimer);
+      };
+    } else {
+       if (onComplete) onComplete();
     }
-  }, []);
+  }, [onComplete]);
 
   if (!shouldRender) return null;
 
