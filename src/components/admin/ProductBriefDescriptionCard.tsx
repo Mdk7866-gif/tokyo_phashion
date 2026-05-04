@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Pencil, Trash2, Box, Package } from "lucide-react";
+import { Pencil, Trash2, Box, Package, Share2, Check } from "lucide-react";
 import ConfirmationMessagePopUp from "../ConfirmationMessagePopUp";
 
 interface ProductBriefDescriptionCardProps {
@@ -40,6 +40,15 @@ export default function ProductBriefDescriptionCard({
       console.error(e);
     }
     setLoading(false);
+  };
+
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyLink = () => {
+    const shareableUrl = `${window.location.origin}/detailedproduct?product_id=${product.id}`;
+    navigator.clipboard.writeText(shareableUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const getThumbnail = () => {
@@ -103,6 +112,13 @@ export default function ProductBriefDescriptionCard({
            
            <div className="flex gap-1 flex-shrink-0">
              <button 
+                onClick={handleCopyLink}
+                className={`p-1.5 transition-colors ${copied ? 'text-green-600 bg-green-50' : 'text-zinc-500 hover:text-black hover:bg-zinc-200'}`}
+                title={copied ? "Copied!" : "Copy Shareable Link"}
+             >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />} 
+             </button>
+             <button 
                 onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}&color=NEW`)}
                 className="p-1.5 text-zinc-500 hover:text-black hover:bg-zinc-200"
                 title="Edit Product Details"
@@ -112,6 +128,7 @@ export default function ProductBriefDescriptionCard({
              <button 
                 onClick={() => setShowConfirm(true)}
                 className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50"
+                title="Delete Product"
              >
                 <Trash2 className="h-3.5 w-3.5" />
              </button>
