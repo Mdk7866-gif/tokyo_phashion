@@ -55,7 +55,10 @@ export default function ProductBriefDescriptionCard({
   return (
     <>
       <div className="group border border-black bg-white flex flex-col transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex h-32 border-b border-black">
+        <div 
+          className="flex h-32 border-b border-black cursor-pointer"
+          onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}`)}
+        >
            <div className="w-1/3 border-r border-black relative bg-zinc-50 flex items-center justify-center overflow-hidden">
              {thumbnail ? (
                 <Image src={thumbnail} alt={product.name} fill className="object-cover" sizes="33vw" />
@@ -95,13 +98,7 @@ export default function ProductBriefDescriptionCard({
                   {v.color}
                 </button>
               ))}
-              <button
-                onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}&color=NEW`)}
-                className="px-2 py-1 text-[9px] font-bold uppercase tracking-widest bg-zinc-200 border border-zinc-300 hover:bg-black hover:text-white hover:border-black transition-colors flex-shrink-0"
-                title="Add new color variant"
-              >
-                + COLOR
-              </button>
+          
            </div>
            
            <div className="flex gap-1 flex-shrink-0">
