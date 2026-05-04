@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus } from "lucide-react";
 
 export default function DetailedProductPage() {
@@ -24,6 +25,22 @@ export default function DetailedProductPage() {
   const [copied, setCopied] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
+
+  const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+    setAlert({ isOpen: true, title, message, type });
+  };
 
   useEffect(() => {
     if (id) {
@@ -66,11 +83,11 @@ export default function DetailedProductPage() {
         router.push("/dashboard?tab=my cart");
       } else {
         const error = await res.json();
-        alert(error.error || "Failed to add to cart");
+        showAlert("Error", error.error || "Failed to add to cart", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      showAlert("Error", "An unexpected error occurred", "error");
     } finally {
       setAddingToCart(false);
     }
@@ -135,6 +152,7 @@ export default function DetailedProductPage() {
       }
     } catch (err) {
       console.error(err);
+      showAlert("Error", "Failed to fetch product details", "error");
     }
     setLoading(false);
   };
@@ -183,6 +201,13 @@ export default function DetailedProductPage() {
 
   return (
     <div className="bg-white min-h-screen text-black pb-24">
+      <AlertMessagePopUp
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+        title={alert.title}
+        message={alert.message}
+        type={alert.type}
+      />
       {/* Breadcrumb */}
       <div className="border-b border-black">
         <div className="mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 lg:px-8">
