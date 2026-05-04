@@ -152,7 +152,7 @@ export default function DetailedProductPage() {
           <div className="space-y-4">
             <div className="aspect-[3/4] relative border border-black bg-zinc-50 overflow-hidden group">
               {mainImage ? (
-                <Image src={mainImage} alt={product.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image src={mainImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" priority className="object-cover transition-transform duration-700 group-hover:scale-105" />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-black uppercase tracking-widest text-zinc-300">No Image</div>
               )}
@@ -167,7 +167,7 @@ export default function DetailedProductPage() {
                     onClick={() => setMainImage(img.image_url)}
                     className={`aspect-[3/4] relative border cursor-pointer transition-all ${mainImage === img.image_url ? 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-transparent hover:border-black/30'}`}
                   >
-                    <Image src={img.image_url} alt="Thumbnail" fill className="object-cover" />
+                    <Image src={img.image_url} alt="Thumbnail" fill sizes="15vw" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -180,9 +180,9 @@ export default function DetailedProductPage() {
               <h1 className="text-4xl font-black uppercase italic tracking-tighter sm:text-5xl xl:text-6xl mb-4">{product.name}</h1>
               
               <div className="flex items-baseline gap-4">
-                <span className="text-2xl font-black">${displayPrice.toFixed(2)}</span>
+                <span className="text-2xl font-black">₹{displayPrice.toFixed(0)}</span>
                 {originalPrice > displayPrice && (
-                  <span className="text-sm font-bold text-zinc-400 line-through">${originalPrice.toFixed(2)}</span>
+                  <span className="text-sm font-bold text-zinc-400 line-through">₹{originalPrice.toFixed(0)}</span>
                 )}
               </div>
             </div>

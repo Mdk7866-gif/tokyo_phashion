@@ -13,9 +13,19 @@ export const uploadToCloudinary = async (fileUri: string, fileName: string) => {
   try {
     const res = await cloudinary.uploader.upload(fileUri, {
       invalidate: true,
-      resource_type: "auto",
+      resource_type: "image",
       public_id: fileName,
-      folder: "tokyofashion", // Storing in the requested folder
+      folder: "tokyofashion",
+      // Auto quality & format for fastest delivery (serves WebP/AVIF automatically)
+      quality: "auto:good",
+      fetch_format: "auto",
+      // Pre-generate an optimised version eagerly — non-blocking
+      eager: [
+        { width: 900, crop: "limit", quality: "auto:good", fetch_format: "webp" },
+      ],
+      eager_async: true,
+      // Strip EXIF / colour profiles to reduce size
+      flags: "strip_profile",
     });
     return res;
   } catch (error) {
