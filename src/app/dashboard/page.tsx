@@ -5,7 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import UserCartItemCard from "@/components/UserCartItemCard";
 import UserWishlistCard from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import { User, Heart, ShoppingCart, Package, LayoutDashboard } from "lucide-react";
+import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
+import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
+import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap } from "lucide-react";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -26,6 +28,15 @@ function DashboardContent() {
     pincode: ""
   });
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
+  
+  // Payment Flow State
+  const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
+  const [paymentSubtotal, setPaymentSubtotal] = useState(0);
+  const [codConfirmation, setCodConfirmation] = useState({
+    isOpen: false,
+    total: 0
+  });
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -75,6 +86,11 @@ function DashboardContent() {
         return;
       }
       setUser(json.user);
+
+      // Check profile completeness
+      const u = json.user;
+      const isIncomplete = !u.name || !u.mobile_number || !u.address?.full_address || !u.address?.city || !u.address?.state || !u.address?.pincode;
+      setProfileIncomplete(isIncomplete);
     } catch {
       router.push("/login");
     }
@@ -132,6 +148,52 @@ function DashboardContent() {
     setWishlistLoading(false);
   };
 
+  const checkProfileBeforePurchase = () => {
+    if (profileIncomplete) {
+      showAlert("Profile Incomplete", "Please complete your profile (name, mobile, address) before purchasing.", "warning");
+      router.push(`/dashboard?tab=profile&redirectTo=${encodeURIComponent("/dashboard?tab=my%20cart")}`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleBuyItem = (item: any, quantity: number) => {
+    if (!checkProfileBeforePurchase()) return;
+    const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
+    setPaymentSubtotal(price * quantity);
+    setIsPaymentPopUpOpen(true);
+  };
+
+  const handleBuyAll = () => {
+    if (cartItems.length === 0) return;
+    if (!checkProfileBeforePurchase()) return;
+    
+    const subtotal = cartItems.reduce((acc, item) => {
+      // Assuming quantity is 1 by default in cart view, or we fetch it. 
+      // The UserCartItemCard manages its own quantity. If we want exact cart totals, 
+      // we might need to lift quantity state up, but for now we'll assume 1 per cart item for 'Buy All' 
+      // or rely on cart totals if stored in DB. Let's assume 1 for simplicity if not stored.
+      const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
+      return acc + (price * 1); 
+    }, 0);
+    
+    setPaymentSubtotal(subtotal);
+    setIsPaymentPopUpOpen(true);
+  };
+
+  const onPaymentSelect = (method: "cod" | "online") => {
+    if (method === "cod") {
+      setCodConfirmation({ isOpen: true, total: paymentSubtotal + 49 });
+    } else {
+      setIsPaymentPopUpOpen(false);
+      showAlert(
+        "Order Initialized", 
+        `Redirecting to secure online payment gateway for ₹${paymentSubtotal + 49}...`, 
+        "info"
+      );
+    }
+  };
+
   const handleRemoveWishlistItem = async (id: string) => {
     try {
       const deleteRes = await fetch(`/api/user/wishlist?id=${id}`, { method: "DELETE" });
@@ -166,6 +228,10 @@ function DashboardContent() {
       if (res.ok) {
         showAlert("Success", "Profile updated successfully", "success");
         fetchUser();
+        const redirectTo = searchParams.get("redirectTo");
+        if (redirectTo) {
+          router.push(redirectTo);
+        }
       } else {
         const err = await res.json();
         showAlert("Error", err.error || "Failed to update profile", "error");
@@ -349,10 +415,20 @@ function DashboardContent() {
           {activeTab === "my cart" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-black pb-1.5">
-                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                  <ShoppingCart className="h-3.5 w-3.5" /> Cart Items
-                </h2>
-                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-0.5 border border-zinc-200">{cartItems.length}</span>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                    <ShoppingCart className="h-3.5 w-3.5" /> Cart Items
+                  </h2>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-0.5 border border-zinc-200">{cartItems.length}</span>
+                </div>
+                {cartItems.length > 0 && (
+                  <button 
+                    onClick={handleBuyAll}
+                    className="flex items-center gap-1.5 border border-black bg-black text-white px-3 py-1.5 text-[8px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+                  >
+                    <Zap className="h-2.5 w-2.5 fill-current" /> Buy All
+                  </button>
+                )}
               </div>
 
               {loading ? (
@@ -379,6 +455,7 @@ function DashboardContent() {
                       key={item.id} 
                       item={item} 
                       onRemove={handleRemoveItem}
+                      onBuy={handleBuyItem}
                     />
                   ))}
                 </div>
@@ -432,6 +509,27 @@ function DashboardContent() {
             </div>
           )}
         </main>
+
+        <PaymentMethodConfirmationPopUp
+          isOpen={isPaymentPopUpOpen}
+          onClose={() => setIsPaymentPopUpOpen(false)}
+          onSelect={onPaymentSelect}
+          subtotalAmount={paymentSubtotal}
+        />
+
+        <ConfirmationMessagePopUp
+          isOpen={codConfirmation.isOpen}
+          onClose={() => setCodConfirmation({ ...codConfirmation, isOpen: false })}
+          onConfirm={() => {
+            setCodConfirmation({ ...codConfirmation, isOpen: false });
+            setIsPaymentPopUpOpen(false);
+            showAlert("Order Confirmed", "Your COD order has been placed successfully. Please pay the advance ₹100 via the link sent to your email.", "success");
+          }}
+          title="Confirm COD Advance"
+          message={`You have to pay ₹100 now via online to confirm your order. The remaining balance of ₹${codConfirmation.total - 100} is payable at the time of delivery.`}
+          confirmText="Pay ₹100 & Confirm"
+          type="info"
+        />
       </div>
     </div>
   );

@@ -45,7 +45,7 @@ const ConfirmationMessagePopUp: React.FC<ConfirmationMessagePopUpProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-end justify-center transition-all duration-300 lg:items-center lg:p-4 ${
+      className={`fixed inset-0 z-[110] flex items-end justify-center transition-all duration-300 lg:items-center lg:p-4 ${
         isOpen ? "bg-black/20" : "bg-transparent pointer-events-none"
       }`}
       onClick={onClose}
@@ -77,7 +77,7 @@ const ConfirmationMessagePopUp: React.FC<ConfirmationMessagePopUpProps> = ({
           <div className="flex w-full gap-2">
             <button
               onClick={onClose}
-              className="flex-1 border border-black bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-zinc-100 active:translate-y-1 lg:py-3 lg:text-xs"
+              className="flex-1 border border-black bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-zinc-100 active:translate-y-1 lg:py-3 lg:text-xs"
             >
               {cancelText}
             </button>

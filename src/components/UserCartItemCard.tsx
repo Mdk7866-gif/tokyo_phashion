@@ -8,9 +8,10 @@ import { X, Plus, Minus, ShoppingBag } from "lucide-react";
 interface UserCartItemCardProps {
   item: any;
   onRemove: (id: string) => void;
+  onBuy?: (item: any, quantity: number) => void;
 }
 
-export default function UserCartItemCard({ item, onRemove }: UserCartItemCardProps) {
+export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItemCardProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   
@@ -76,52 +77,55 @@ export default function UserCartItemCard({ item, onRemove }: UserCartItemCardPro
       </div>
 
       {/* Ultra-compact Content */}
-      <div className="p-1.5 flex flex-col gap-1.5">
-        <div className="min-h-[18px] flex flex-col justify-center">
+      <div className="p-2 flex flex-col gap-2 flex-1">
+        <div>
           {product?.name && (
-            <h3 className="text-[8.5px] font-black uppercase italic tracking-tight leading-none line-clamp-1 mb-0.5" title={product?.name}>
+            <h3 className="text-[9px] font-black uppercase italic tracking-tight leading-none line-clamp-1 mb-1" title={product?.name}>
               {product?.name}
             </h3>
           )}
-          <p className="text-[6.5px] font-bold uppercase tracking-widest text-zinc-400 leading-none">
-            {variant?.color} / {size?.size}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[7px] font-bold uppercase tracking-widest text-zinc-400 leading-none">
+              {variant?.color} / {size?.size}
+            </p>
+            <div className="text-[9px] font-black leading-none">₹{price.toFixed(0)}</div>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between gap-1">
-           <div className="text-[9px] font-black leading-none">₹{price.toFixed(0)}</div>
-           
+        <div className="flex items-center justify-between gap-1 mt-auto">
            {/* Quantity Controls - Even more compact */}
-           <div className="flex items-center border border-black h-4 bg-white">
+           <div className="flex items-center border border-black h-5 bg-white">
              <button 
                onClick={(e) => {
                  e.stopPropagation();
                  setQuantity(Math.max(1, quantity - 1));
                }}
-               className="px-1 h-full hover:bg-zinc-100 transition-colors border-r border-black flex items-center justify-center"
+               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-r border-black flex items-center justify-center"
              >
-               <Minus className="h-1.5 w-1.5 text-black" />
+               <Minus className="h-2 w-2 text-black" />
              </button>
-             <span className="w-4 text-center text-[7px] font-black text-black">{quantity}</span>
+             <span className="w-5 text-center text-[8px] font-black text-black">{quantity}</span>
              <button 
                onClick={(e) => {
                  e.stopPropagation();
                  setQuantity(quantity + 1);
                }}
-               className="px-1 h-full hover:bg-zinc-100 transition-colors border-l border-black flex items-center justify-center"
+               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-l border-black flex items-center justify-center"
              >
-               <Plus className="h-1.5 w-1.5 text-black" />
+               <Plus className="h-2 w-2 text-black" />
              </button>
            </div>
         </div>
 
-        {/* Ultra-Compact Buy Button */}
+        {/* Compact Buy Button */}
         <button 
-          disabled
-          onClick={(e) => e.stopPropagation()}
-          className="w-full border border-black py-1 text-[7px] font-black uppercase tracking-widest bg-zinc-800 text-white opacity-60 cursor-not-allowed flex items-center justify-center gap-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onBuy) onBuy(item, quantity);
+          }}
+          className="w-full border border-black py-2.5 text-[8px] font-black uppercase tracking-widest bg-black text-white flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-zinc-800 transition-all"
         >
-          <ShoppingBag className="h-2 w-2" />
+          <ShoppingBag className="h-2.5 w-2.5" />
           Buy ₹{totalPrice.toFixed(0)}
         </button>
       </div>

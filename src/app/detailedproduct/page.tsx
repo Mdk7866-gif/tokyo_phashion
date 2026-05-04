@@ -5,7 +5,9 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart } from "lucide-react";
+import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
+import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
+import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart, Zap } from "lucide-react";
 
 export default function DetailedProductPage() {
   const searchParams = useSearchParams();
@@ -47,6 +49,13 @@ export default function DetailedProductPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [togglingWishlist, setTogglingWishlist] = useState(false);
   const [wishlistedVariantIds, setWishlistedVariantIds] = useState<Set<string>>(new Set());
+  const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [codConfirmation, setCodConfirmation] = useState({
+    isOpen: false,
+    total: 0
+  });
 
   useEffect(() => {
     if (id) {
@@ -60,16 +69,24 @@ export default function DetailedProductPage() {
       try {
         const meRes = await fetch("/api/user/me");
         const meJson = await meRes.json();
-        if (!meJson.user) return;
-        setIsLoggedIn(true);
-        const wRes = await fetch("/api/user/wishlist");
-        if (wRes.ok) {
-          const wJson = await wRes.json();
-          const ids = new Set<string>((wJson.data || []).map((item: any) => item.product_variant_id));
-          setWishlistedVariantIds(ids);
+        if (meJson.user) {
+          setIsLoggedIn(true);
+          setUserProfile(meJson.user);
+          
+          // Check if profile is incomplete
+          const u = meJson.user;
+          const isIncomplete = !u.name || !u.mobile_number || !u.address?.full_address || !u.address?.city || !u.address?.state || !u.address?.pincode;
+          setProfileIncomplete(isIncomplete);
+
+          const wishRes = await fetch("/api/user/wishlist");
+          if (wishRes.ok) {
+            const wishData = await wishRes.json();
+            const ids = new Set<string>((wishData.data || []).map((item: any) => item.product_variant_id));
+            setWishlistedVariantIds(ids);
+          }
         }
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error("Auth check error:", err);
       }
     };
     checkAuthAndWishlist();
@@ -233,12 +250,24 @@ export default function DetailedProductPage() {
 
   const handleVariantChange = (v: any) => {
     setSelectedVariant(v);
-    setSelectedSize(null);
-    updateQueryParams(v.id, null);
+    setMainImage(v.product_images?.[0]?.image_url || "");
+    // Update URL without reloading
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set("variant_id", v.id);
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     
-    if (v.product_images && v.product_images.length > 0) {
-       const sortedImages = [...v.product_images].sort((a:any, b:any) => a.sort_order - b.sort_order);
-       setMainImage(sortedImages[0].image_url);
+    // Check if new variant has a size that matches current selection, else reset size
+    if (selectedSize) {
+      const matchingSize = v.variant_sizes?.find((s: any) => s.size === selectedSize.size);
+      if (matchingSize) {
+        setSelectedSize(matchingSize);
+        newParams.set("size_id", matchingSize.id);
+        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+      } else {
+        setSelectedSize(null);
+        newParams.delete("size_id");
+        router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+      }
     }
   };
 
@@ -246,6 +275,39 @@ export default function DetailedProductPage() {
     setSelectedSize(s);
     if (selectedVariant) {
       updateQueryParams(selectedVariant.id, s.id);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+    
+    if (profileIncomplete) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/dashboard?tab=profile&redirectTo=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+    
+    setIsPaymentPopUpOpen(true);
+  };
+
+  const onPaymentSelect = (method: "cod" | "online") => {
+    // For now, we show a success message as the order system is pending
+    const subtotal = (selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity;
+    const total = subtotal + 49;
+
+    if (method === "cod") {
+      setCodConfirmation({ isOpen: true, total });
+    } else {
+      setIsPaymentPopUpOpen(false);
+      showAlert(
+        "Order Initialized", 
+        `Redirecting to secure online payment gateway for ₹${total}...`, 
+        "info"
+      );
     }
   };
 
@@ -282,6 +344,28 @@ export default function DetailedProductPage() {
         message={alert.message}
         type={alert.type}
       />
+
+      <PaymentMethodConfirmationPopUp
+        isOpen={isPaymentPopUpOpen}
+        onClose={() => setIsPaymentPopUpOpen(false)}
+        onSelect={onPaymentSelect}
+        subtotalAmount={(selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity}
+      />
+
+      <ConfirmationMessagePopUp
+        isOpen={codConfirmation.isOpen}
+        onClose={() => setCodConfirmation({ ...codConfirmation, isOpen: false })}
+        onConfirm={() => {
+          setCodConfirmation({ ...codConfirmation, isOpen: false });
+          setIsPaymentPopUpOpen(false);
+          showAlert("Order Confirmed", "Your COD order has been placed successfully. Please pay the advance ₹100 via the link sent to your email.", "success");
+        }}
+        title="Confirm COD Advance"
+        message={`You have to pay ₹100 now via online to confirm your order. The remaining balance of ₹${codConfirmation.total - 100} is payable at the time of delivery.`}
+        confirmText="Pay ₹100 & Confirm"
+        type="info"
+      />
+
       {/* Breadcrumb */}
       <div className="border-b border-black">
         <div className="mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 lg:px-8">
@@ -443,18 +527,31 @@ export default function DetailedProductPage() {
             </div>
 
             {/* Actions */}
-            <div className="mb-12">
+            <div className="mb-12 space-y-3">
               <button 
                 onClick={handleAddToCart}
                 disabled={!selectedSize || addingToCart}
                 className={`w-full flex items-center justify-center gap-2 border border-black py-4 text-xs font-black uppercase tracking-widest transition-all ${
-                  selectedSize && !addingToCart
-                    ? 'bg-black text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-zinc-800 active:shadow-none active:translate-x-[4px] active:translate-y-[4px]' 
-                    : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
+                  !selectedSize || addingToCart
+                    ? 'opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400' 
+                    : 'bg-white text-black hover:bg-zinc-100 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1'
                 }`}
               >
                 <ShoppingBag className="h-4 w-4" />
-                {addingToCart ? 'Adding...' : selectedSize ? 'Add to Cart' : 'Select a Size'}
+                {addingToCart ? "Adding..." : "Add to Bag"}
+              </button>
+
+              <button 
+                onClick={handleBuyNow}
+                disabled={!selectedSize}
+                className={`w-full flex items-center justify-center gap-2 border border-black py-4 text-xs font-black uppercase tracking-widest transition-all ${
+                  !selectedSize
+                    ? 'opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400' 
+                    : 'bg-black text-white hover:bg-zinc-800 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1'
+                }`}
+              >
+                <Zap className="h-4 w-4 fill-current" />
+                Buy Now
               </button>
             </div>
 
