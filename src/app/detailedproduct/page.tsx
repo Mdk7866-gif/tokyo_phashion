@@ -1,14 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler } from "lucide-react";
 
-export default function ProductPage() {
+export default function DetailedProductPage() {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const id = searchParams.get("id") || searchParams.get("product_id");
+  const urlVariantId = searchParams.get("variant_id");
+  const urlSizeId = searchParams.get("size_id");
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +28,29 @@ export default function ProductPage() {
     }
   }, [id]);
 
+  const updateQueryParams = (variantId?: string, sizeId?: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (product) {
+      if (product.subcategories?.categories?.name) params.set("category", product.subcategories.categories.name.toLowerCase());
+      if (product.subcategories?.name) params.set("subcategory", product.subcategories.name.toLowerCase());
+      if (product.subcategories?.category_id) params.set("category_id", product.subcategories.category_id);
+      if (product.subcategory_id) params.set("subcategory_id", product.subcategory_id);
+    }
+    
+    if (variantId) {
+      params.set("variant_id", variantId);
+    }
+    
+    if (sizeId) {
+      params.set("size_id", sizeId);
+    } else if (sizeId === null) {
+      params.delete("size_id");
+    }
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const fetchProduct = async () => {
     setLoading(true);
     try {
@@ -32,15 +60,27 @@ export default function ProductPage() {
         const data = json.data;
         if (data) {
           setProduct(data);
-          // Auto select first variant and size
+          
           if (data.product_variants && data.product_variants.length > 0) {
-            const initialVariant = data.product_variants[0];
+            let initialVariant = data.product_variants[0];
+            if (urlVariantId) {
+              const found = data.product_variants.find((v: any) => v.id === urlVariantId);
+              if (found) initialVariant = found;
+            }
             setSelectedVariant(initialVariant);
             
+            if (urlSizeId && initialVariant.variant_sizes) {
+              const foundSize = initialVariant.variant_sizes.find((s: any) => s.id === urlSizeId);
+              if (foundSize && foundSize.stock > 0) setSelectedSize(foundSize);
+            }
+            
             if (initialVariant.product_images && initialVariant.product_images.length > 0) {
-               // Sort images by order
-               const sortedImages = [...initialVariant.product_images].sort((a,b) => a.sort_order - b.sort_order);
+               const sortedImages = [...initialVariant.product_images].sort((a:any,b:any) => a.sort_order - b.sort_order);
                setMainImage(sortedImages[0].image_url);
+            }
+
+            if (!urlVariantId) {
+              updateQueryParams(initialVariant.id);
             }
           }
         }
@@ -51,13 +91,21 @@ export default function ProductPage() {
     setLoading(false);
   };
 
-  // Change variant logic
   const handleVariantChange = (v: any) => {
     setSelectedVariant(v);
     setSelectedSize(null);
+    updateQueryParams(v.id, null);
+    
     if (v.product_images && v.product_images.length > 0) {
        const sortedImages = [...v.product_images].sort((a:any, b:any) => a.sort_order - b.sort_order);
        setMainImage(sortedImages[0].image_url);
+    }
+  };
+
+  const handleSizeChange = (s: any) => {
+    setSelectedSize(s);
+    if (selectedVariant) {
+      updateQueryParams(selectedVariant.id, s.id);
     }
   };
 
@@ -69,10 +117,9 @@ export default function ProductPage() {
     return <div className="min-h-screen flex items-center justify-center font-black uppercase italic tracking-tighter text-2xl text-zinc-300">Product Not Found</div>;
   }
 
-  const categoryName = product.categories?.parent?.name || "Category";
-  const subcategoryName = product.categories?.name || "Subcategory";
+  const categoryName = product.subcategories?.categories?.name || "Category";
+  const subcategoryName = product.subcategories?.name || "Subcategory";
 
-  // Calculate prices based on selected size, or just show a range if no size selected
   let displayPrice = 0;
   let originalPrice = 0;
   
@@ -80,7 +127,6 @@ export default function ProductPage() {
      displayPrice = selectedSize.discount_price || selectedSize.original_price;
      originalPrice = selectedSize.original_price;
   } else if (selectedVariant && selectedVariant.variant_sizes && selectedVariant.variant_sizes.length > 0) {
-     // Show price of first size as default
      displayPrice = selectedVariant.variant_sizes[0].discount_price || selectedVariant.variant_sizes[0].original_price;
      originalPrice = selectedVariant.variant_sizes[0].original_price;
   }
@@ -92,7 +138,7 @@ export default function ProductPage() {
       {/* Breadcrumb */}
       <div className="border-b border-black">
         <div className="mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 lg:px-8">
-          <Link href={`/shop?category=${product.subcategory_id}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
+          <Link href={`/briefproduct?category_id=${product.subcategories?.category_id}&subcategory_id=${product.subcategory_id}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
             <ArrowLeft className="h-3 w-3" />
             {categoryName} / {subcategoryName}
           </Link>
@@ -175,7 +221,7 @@ export default function ProductPage() {
                   return (
                     <button
                       key={s.id}
-                      onClick={() => !isOutOfStock && setSelectedSize(s)}
+                      onClick={() => !isOutOfStock && handleSizeChange(s)}
                       disabled={isOutOfStock}
                       className={`
                         py-3 text-[10px] font-black uppercase tracking-widest transition-all border border-black

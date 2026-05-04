@@ -16,7 +16,7 @@ export default function HomePageThumbnailCard({ id, name, imageUrl }: HomePageTh
 
   return (
     <Link
-      href={`/shop?category=${id}`}
+      href={`/briefproduct?category_id=${id}`}
       className="group relative flex flex-col overflow-hidden bg-white border border-black transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
     >
       <div className="aspect-[4/5] relative w-full overflow-hidden bg-zinc-100">

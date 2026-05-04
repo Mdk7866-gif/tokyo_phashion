@@ -188,10 +188,7 @@ export default function ProductDetailedDescriptionCard({
       return;
     }
 
-    if (!description.trim()) {
-      showAlert("Invalid Input", "Please enter a product description.", "warning");
-      return;
-    }
+    // Description is now optional, no validation needed here.
 
     if (variants.length === 0) {
       showAlert("Invalid Input", "Please add at least one variant.", "warning");

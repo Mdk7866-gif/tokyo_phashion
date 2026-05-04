@@ -183,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                           {cat.subcategories?.map((sub: any) => (
                             <Link
                               key={sub.id}
-                              href={`/shop?category=${cat.id}&sub=${sub.id}`}
+                              href={`/briefproduct?category_id=${cat.id}&subcategory_id=${sub.id}`}
                               onClick={onClose}
                               className="block px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
                             >

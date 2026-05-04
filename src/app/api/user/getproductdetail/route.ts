@@ -14,11 +14,11 @@ export async function GET(request: Request) {
       .from('products')
       .select(`
         *,
-        categories:subcategory_id (
+        subcategories (
           id,
           name,
-          parent_id,
-          parent:parent_id (
+          category_id,
+          categories (
             id,
             name
           )
