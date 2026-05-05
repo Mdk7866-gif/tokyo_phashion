@@ -180,7 +180,8 @@ function DetailedProductContent() {
     if (id) {
       requestAnimationFrame(() => fetchProduct());
     }
-  }, [id, fetchProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Load auth + wishlist on mount
   useEffect(() => {
