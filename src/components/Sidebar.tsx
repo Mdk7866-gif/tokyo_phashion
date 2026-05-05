@@ -213,7 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* SECTION 3: SOCIALS & ADMIN */}
-          <div className="p-6 mt-auto border-t border-zinc-100">
+          <div className="p-6 border-t border-zinc-100">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">External</p>
             <div className="flex items-center gap-3 px-2">
               <Link 
