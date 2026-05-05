@@ -11,15 +11,18 @@ interface OrderItem {
 }
 
 export async function POST(request: NextRequest) {
+  let step = 'init';
   try {
     // --- Auth ---
+    step = 'auth';
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized. Please log in and try again.' }, { status: 401 });
     }
 
     // --- Parse & validate body ---
+    step = 'parse_body';
     const body = await request.json();
     const { payment_method, items }: { payment_method: 'cod' | 'online'; items: OrderItem[] } = body;
 
@@ -36,6 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Fetch user's default address ---
+    step = 'fetch_address';
     const { data: addressData, error: addressError } = await supabaseAdmin
       .from('addresses')
       .select('*')
@@ -46,12 +50,13 @@ export async function POST(request: NextRequest) {
 
     if (addressError || !addressData) {
       return NextResponse.json(
-        { error: 'No default address found. Please add a delivery address in your profile.' },
+        { error: 'No default address found. Please add a delivery address in your profile first.' },
         { status: 400 }
       );
     }
 
     // --- Fetch variant sizes (validate + get prices) ---
+    step = 'fetch_variant_sizes';
     const variantSizeIds = items.map(i => i.variant_size_id);
     const { data: variantSizes, error: vsError } = await supabaseAdmin
       .from('variant_sizes')
@@ -65,11 +70,16 @@ export async function POST(request: NextRequest) {
       .in('id', variantSizeIds)
       .is('deleted_at', null);
 
-    if (vsError || !variantSizes || variantSizes.length !== variantSizeIds.length) {
+    if (vsError) {
+      console.error('variant_sizes fetch error:', vsError);
+      return NextResponse.json({ error: `Failed to fetch product details: ${vsError.message}` }, { status: 500 });
+    }
+    if (!variantSizes || variantSizes.length !== variantSizeIds.length) {
       return NextResponse.json({ error: 'One or more items are invalid or unavailable' }, { status: 400 });
     }
 
     // --- Check stock ---
+    step = 'check_stock';
     for (const item of items) {
       const vs = variantSizes.find(v => v.id === item.variant_size_id);
       if (!vs) return NextResponse.json({ error: `Item not found: ${item.variant_size_id}` }, { status: 400 });
@@ -83,6 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Calculate totals ---
+    step = 'calculate_totals';
     let subtotal = 0;
     for (const item of items) {
       const vs = variantSizes.find(v => v.id === item.variant_size_id)!;
@@ -91,9 +102,6 @@ export async function POST(request: NextRequest) {
     }
     const totalAmount = subtotal + DELIVERY_CHARGE;
 
-    // Amount to charge NOW via Razorpay (in paise):
-    // - Online: full total
-    // - COD: min(₹100, total) → advance
     let razorpayAmountPaise: number;
     if (payment_method === 'online') {
       razorpayAmountPaise = Math.round(totalAmount * 100);
@@ -101,19 +109,31 @@ export async function POST(request: NextRequest) {
       const advanceRs = Math.min(totalAmount, COD_ADVANCE);
       razorpayAmountPaise = Math.round(advanceRs * 100);
     }
-    // Razorpay minimum is ₹1 (100 paise)
     if (razorpayAmountPaise < 100) razorpayAmountPaise = 100;
 
     // --- Create Razorpay order ---
+    step = 'create_razorpay_order';
     const receipt = `rcpt_${Date.now()}_${user.id.slice(0, 8)}`;
-    const rzpOrder = await razorpay.orders.create({
-      amount: razorpayAmountPaise,
-      currency: 'INR',
-      receipt,
-      notes: { user_id: user.id, payment_method },
-    });
+    let rzpOrder;
+    try {
+      rzpOrder = await razorpay.orders.create({
+        amount: razorpayAmountPaise,
+        currency: 'INR',
+        receipt,
+        notes: { user_id: user.id, payment_method },
+      });
+    } catch (rzpErr: unknown) {
+      const rzpError = rzpErr as { error?: { description?: string }; message?: string };
+      const rzpMsg = rzpError?.error?.description || rzpError?.message || String(rzpErr);
+      console.error('Razorpay order creation failed:', rzpMsg);
+      return NextResponse.json(
+        { error: `Payment gateway error: ${rzpMsg}` },
+        { status: 502 }
+      );
+    }
 
     // --- Create order record in Supabase ---
+    step = 'insert_order';
     const { data: dbOrder, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
@@ -132,10 +152,14 @@ export async function POST(request: NextRequest) {
 
     if (orderError || !dbOrder) {
       console.error('Order DB insert error:', orderError);
-      return NextResponse.json({ error: 'Failed to create order record' }, { status: 500 });
+      return NextResponse.json(
+        { error: `Failed to create order: ${orderError?.message || 'unknown db error'}` },
+        { status: 500 }
+      );
     }
 
     // --- Create order_items ---
+    step = 'insert_order_items';
     const orderItemsPayload = items.map(item => {
       const vs = variantSizes.find(v => v.id === item.variant_size_id)!;
       const pv = vs.product_variants as { id: string; color: string; products: { id: string; name: string } } | null;
@@ -155,12 +179,15 @@ export async function POST(request: NextRequest) {
     const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItemsPayload);
     if (itemsError) {
       console.error('Order items insert error:', itemsError);
-      // Rollback order
       await supabaseAdmin.from('orders').delete().eq('id', dbOrder.id);
-      return NextResponse.json({ error: 'Failed to create order items' }, { status: 500 });
+      return NextResponse.json(
+        { error: `Failed to save order items: ${itemsError.message}` },
+        { status: 500 }
+      );
     }
 
     // --- Create payment record ---
+    step = 'insert_payment';
     const { error: paymentError } = await supabaseAdmin.from('payments').insert({
       order_id: dbOrder.id,
       razorpay_order_id: rzpOrder.id,
@@ -178,8 +205,13 @@ export async function POST(request: NextRequest) {
       currency: 'INR',
       our_order_id: dbOrder.id,
     });
-  } catch (err) {
-    console.error('create-order error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+
+  } catch (err: unknown) {
+    const error = err as { message?: string };
+    console.error(`create-order CRASH at step [${step}]:`, err);
+    return NextResponse.json(
+      { error: `Order failed at step "${step}": ${error?.message || 'Unknown error'}` },
+      { status: 500 }
+    );
   }
 }
