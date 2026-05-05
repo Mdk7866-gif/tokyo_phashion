@@ -2,11 +2,8 @@
 
 import { useCallback } from "react";
 
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
-  }
-}
+// NOTE: Window.Razorpay global is declared in checkout/page.tsx to avoid duplicate declarations.
+// This component uses it via the shared global scope.
 
 interface RazorpayOptions {
   key: string;
@@ -25,6 +22,9 @@ interface RazorpayInstance {
   open(): void;
   on(event: string, handler: () => void): void;
 }
+
+// Extend the global Window type locally without redeclaring it
+type RzpWindow = Window & { Razorpay: new (options: RazorpayOptions) => RazorpayInstance };
 
 export interface RazorpaySuccessResponse {
   razorpay_payment_id: string;
@@ -50,7 +50,7 @@ export interface RazorpayPayButtonProps {
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise(resolve => {
-    if (typeof window !== "undefined" && window.Razorpay) {
+    if (typeof window !== "undefined" && (window as unknown as RzpWindow).Razorpay) {
       resolve(true);
       return;
     }
@@ -90,6 +90,7 @@ export default function RazorpayPayButton({
       return;
     }
 
+    const rzpWin = window as unknown as RzpWindow;
     const options: RazorpayOptions = {
       key: rzpKey,
       amount: amountPaise,
@@ -100,25 +101,15 @@ export default function RazorpayPayButton({
       handler: (response: RazorpaySuccessResponse) => {
         onSuccess(response, ourOrderId);
       },
-      prefill: {
-        name: userName,
-        email: userEmail,
-        contact: userPhone,
-      },
+      prefill: { name: userName, email: userEmail, contact: userPhone },
       theme: { color: "#000000" },
-      modal: {
-        ondismiss: () => {
-          onDismiss?.();
-        },
-      },
+      modal: { ondismiss: () => { onDismiss?.(); } },
     };
 
-    const rzp = new window.Razorpay(options);
-
+    const rzp = new rzpWin.Razorpay(options);
     rzp.on("payment.failed", () => {
       onError("Payment failed. Please try again or use a different payment method.");
     });
-
     rzp.open();
   }, [razorpayOrderId, amountPaise, currency, ourOrderId, userEmail, userName, userPhone, onSuccess, onError, onDismiss]);
 
