@@ -28,8 +28,8 @@ export async function POST(request: Request) {
     if (insertError) throw insertError;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Add to cart error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

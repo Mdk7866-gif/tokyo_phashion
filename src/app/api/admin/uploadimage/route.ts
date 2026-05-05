@@ -42,8 +42,8 @@ export async function POST(request: Request) {
       url: uploadRes.secure_url, // raw (stored in DB)
       optimisedUrl,              // for preview (if needed)
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[uploadimage]', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

@@ -44,8 +44,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ error: "Missing sub_id or product_id" }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
         // 3. Create Sizes
         if (variant.sizes && variant.sizes.length > 0) {
-          const sizesData = variant.sizes.map((s: any) => ({
+          const sizesData = variant.sizes.map((s: { size: string; original_price: number; discount_price: number; stock: number }) => ({
             product_variant_id: prodVar.id,
             size: s.size,
             original_price: s.original_price,
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
 
         // 4. Create Images
         if (variant.images && variant.images.length > 0) {
-          const imagesData = variant.images.map((img: any, idx: number) => ({
+          const imagesData = variant.images.map((img: { url: string }, idx: number) => ({
             product_variant_id: prodVar.id,
             image_url: img.url,
             sort_order: idx
@@ -100,8 +100,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, data: product });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -144,7 +144,7 @@ export async function PATCH(request: Request) {
         if (variant.sizes) {
            await supabaseAdmin.from('variant_sizes').delete().eq('product_variant_id', variantId);
            if (variant.sizes.length > 0) {
-             const sizesData = variant.sizes.map((s: any) => ({
+             const sizesData = variant.sizes.map((s: { size: string; original_price: number; discount_price: number; stock: number }) => ({
                product_variant_id: variantId,
                size: s.size,
                original_price: s.original_price,
@@ -160,7 +160,7 @@ export async function PATCH(request: Request) {
         if (variant.images) {
            await supabaseAdmin.from('product_images').delete().eq('product_variant_id', variantId);
            if (variant.images.length > 0) {
-             const imagesData = variant.images.map((img: any, idx: number) => ({
+             const imagesData = variant.images.map((img: { url: string }, idx: number) => ({
                product_variant_id: variantId,
                image_url: img.url,
                sort_order: idx
@@ -173,8 +173,8 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -192,7 +192,7 @@ export async function DELETE(request: Request) {
 
     if (error) throw error;
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

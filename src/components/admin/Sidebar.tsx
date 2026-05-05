@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -43,23 +43,22 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCatSection, setShowCatSection] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [expandedCatIds, setExpandedCatIds] = useState<string[]>([]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     const { data } = await supabase
       .from('categories')
       .select('*, subcategories(*)')
       .order('name');
-    if (data) setCategories(data);
-  };
+    if (data) setCategories(data as unknown as Category[]);
+  }, [supabase]);
 
   // Fetch categories on mount
   useEffect(() => {
     fetchCategories();
-  }, []);
-
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const [expandedCatIds, setExpandedCatIds] = useState<string[]>([]);
+  }, [fetchCategories]);
 
   const toggleCategory = (id: string) => {
     setExpandedCatIds(prev => 

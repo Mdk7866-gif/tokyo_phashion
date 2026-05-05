@@ -50,22 +50,23 @@ export async function GET(request: Request) {
 
     const { data: products, error } = await query;
     if (error) throw error;
+    if (!products) return NextResponse.json({ data: [] });
 
     // Format products for listing
-    let formattedProducts = products.map((p: any) => {
+    const formattedProducts = products.map((p) => {
       // Find default variant (first one with stock, or just first one)
-      let defaultVariant = p.product_variants[0];
+      const defaultVariant = p.product_variants[0];
       
       // Calculate price (lowest price among sizes in default variant)
       let price = 0;
       if (defaultVariant && defaultVariant.variant_sizes.length > 0) {
-        price = Math.min(...defaultVariant.variant_sizes.map((s: any) => s.discount_price || s.original_price));
+        price = Math.min(...defaultVariant.variant_sizes.map((s) => s.discount_price || s.original_price));
       }
 
       // Get main image
       let imageUrl = "";
       if (defaultVariant && defaultVariant.product_images.length > 0) {
-        const sortedImages = defaultVariant.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order);
+        const sortedImages = [...defaultVariant.product_images].sort((a, b) => a.sort_order - b.sort_order);
         imageUrl = sortedImages[0].image_url;
       }
 
@@ -87,11 +88,15 @@ export async function GET(request: Request) {
       formattedProducts.sort((a, b) => b.price - a.price);
     } else if (!sort || sort === 'newest') {
       // already handled by DB or fallback
-      formattedProducts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      formattedProducts.sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeB - timeA;
+      });
     }
 
     return NextResponse.json({ data: formattedProducts });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

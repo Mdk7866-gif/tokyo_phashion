@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: false, message: 'Invalid password' }, { status: 401 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, message: 'An error occurred' }, { status: 500 });
   }
 }

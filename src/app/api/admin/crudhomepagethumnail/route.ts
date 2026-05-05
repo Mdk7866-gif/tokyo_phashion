@@ -12,8 +12,8 @@ export async function GET() {
 
     if (error) throw error;
     return NextResponse.json({ data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -46,8 +46,8 @@ export async function POST(request: Request) {
 
     if (error) throw error;
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -62,7 +62,7 @@ export async function DELETE(request: Request) {
 
     if (error) throw error;
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

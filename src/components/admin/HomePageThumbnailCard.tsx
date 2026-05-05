@@ -33,9 +33,18 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
     type: "info"
   });
 
+  const [displayImage, setDisplayImage] = useState<string | null>(null);
+
   const thumbnail = category.category_thumbnails;
   const currentImage = Array.isArray(thumbnail) ? thumbnail[0]?.image_url : thumbnail?.image_url;
-  const displayImage = currentImage ? `${currentImage}?t=${Date.now()}` : null;
+
+  React.useEffect(() => {
+    if (currentImage) {
+      setDisplayImage(`${currentImage}?t=${Date.now()}`);
+    } else {
+      setDisplayImage(null);
+    }
+  }, [currentImage]);
 
   const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "error") => {
     setAlert({ isOpen: true, title, message, type });

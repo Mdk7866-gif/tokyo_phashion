@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Save, Loader2, Plus } from "lucide-react";
 import ProductDetailedDescriptionVariantCard from "./ProductDetailedDescriptionVariantCard";
 import AlertMessagePopUp from "../AlertMessagePopUp";
@@ -64,13 +64,8 @@ export default function ProductDetailedDescriptionCard({
     setAlertInfo({ isOpen: true, title, message, type });
   };
 
-  useEffect(() => {
-    if (product_id) {
-      fetchProductData();
-    }
-  }, [product_id]);
-
-  const fetchProductData = async () => {
+  const fetchProductData = useCallback(async () => {
+    if (!product_id) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/crudproduct?product_id=${product_id}`);
@@ -82,16 +77,29 @@ export default function ProductDetailedDescriptionCard({
           setDescription(data.description || "");
           
           if (data.product_variants && data.product_variants.length > 0) {
-            const mappedVariants: VariantData[] = data.product_variants.map((v: any) => ({
+            const mappedVariants: VariantData[] = data.product_variants.map((v: {
+              id: string;
+              color: string;
+              variant_sizes: {
+                size: string;
+                stock: number;
+                original_price: number;
+                discount_price: number;
+              }[];
+              product_images: {
+                image_url: string;
+                sort_order: number;
+              }[];
+            }) => ({
               id: v.id,
               color: v.color,
-              sizes: v.variant_sizes ? v.variant_sizes.map((s: any) => ({
+              sizes: v.variant_sizes ? v.variant_sizes.map((s) => ({
                 size: s.size,
                 stock: s.stock,
                 original_price: s.original_price,
                 discount_price: s.discount_price
               })) : [],
-              images: v.product_images ? v.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order).map((img: any) => ({
+              images: v.product_images ? [...v.product_images].sort((a, b) => a.sort_order - b.sort_order).map((img) => ({
                 url: img.image_url
               })) : []
             }));
@@ -113,7 +121,11 @@ export default function ProductDetailedDescriptionCard({
       console.error(e);
     }
     setLoading(false);
-  };
+  }, [product_id, color]);
+
+  useEffect(() => {
+    fetchProductData();
+  }, [fetchProductData]);
 
   // Variant Handlers
   const handleAddVariant = () => {
