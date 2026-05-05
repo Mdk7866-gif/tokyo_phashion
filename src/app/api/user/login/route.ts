@@ -2,9 +2,20 @@ import { NextResponse } from 'next/server'
 import { createClient } from '../../../../lib/supabase/server'
 import { supabaseAdmin } from '../../../../lib/supabase/admin'
 
+// Helper to get the base URL
+function getBaseUrl(request: Request) {
+  const { origin } = new URL(request.url);
+  // If we have a domain name set in env, use it for non-localhost environments
+  if (process.env.DOMAIN_NAME && !origin.includes('localhost')) {
+    return `https://${process.env.DOMAIN_NAME}`;
+  }
+  return origin;
+}
+
 // 1. GET HANDLER: Handles the Google Callback
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
+  const baseUrl = getBaseUrl(request)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
@@ -16,7 +27,6 @@ export async function GET(request: Request) {
       const user = data.user
       
       // Sync user to public.users table
-      // 1. Check if user already exists to preserve their name if they've updated it in the dashboard
       if (user.email) {
         const { data: existingUser } = await supabaseAdmin
           .from('users')
@@ -24,7 +34,6 @@ export async function GET(request: Request) {
           .eq('email', user.email)
           .single();
 
-        // 2. Determine the name: Existing > Google Metadata > Empty
         const nameToSet = existingUser?.name || (user.user_metadata?.full_name as string) || '';
 
         const { error: syncError } = await supabaseAdmin
@@ -43,16 +52,16 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${baseUrl}${next}`)
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+  return NextResponse.redirect(`${baseUrl}/login?error=auth_failed`)
 }
 
 // 2. POST HANDLER: Initiates the Google Login flow
 export async function POST(request: Request) {
-  const { origin } = new URL(request.url)
+  const baseUrl = getBaseUrl(request)
   const supabase = await createClient()
 
   // Try to get next path from body
@@ -65,7 +74,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/api/user/login?next=${encodeURIComponent(next)}`,
+      redirectTo: `${baseUrl}/api/user/login?next=${encodeURIComponent(next)}`,
       queryParams: {
         prompt: 'select_account',
         access_type: 'offline',
