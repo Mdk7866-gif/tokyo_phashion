@@ -29,7 +29,7 @@ const socialIcons = [
 ];
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  
 
   return (
     <footer className="w-full border-t-2 border-black bg-zinc-50 text-black">

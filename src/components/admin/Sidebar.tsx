@@ -11,7 +11,6 @@ import {
   Plus,
   ChevronDown,
   ChevronRight,
-  FolderOpen,
   Tag,
   Image as ImageIcon
 } from "lucide-react";

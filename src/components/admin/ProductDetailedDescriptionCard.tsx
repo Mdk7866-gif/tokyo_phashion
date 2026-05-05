@@ -32,7 +32,6 @@ interface ProductDetailedDescriptionCardProps {
 export default function ProductDetailedDescriptionCard({
   category,
   subcategory,
-  cat_id,
   sub_id,
   product_id,
   color,

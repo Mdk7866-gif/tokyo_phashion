@@ -21,7 +21,6 @@ interface AddProductSimpleFormProps {
 export default function AddProductSimpleForm({
   category,
   subcategory,
-  cat_id,
   sub_id,
   onBack
 }: AddProductSimpleFormProps) {

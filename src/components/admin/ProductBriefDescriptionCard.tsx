@@ -6,8 +6,30 @@ import Image from "next/image";
 import { Pencil, Trash2, Box, Package, Share2, Check } from "lucide-react";
 import ConfirmationMessagePopUp from "../ConfirmationMessagePopUp";
 
+interface ProductSize {
+  stock?: number;
+}
+
+interface ProductImage {
+  image_url: string;
+}
+
+interface ProductVariant {
+  id: string;
+  color: string;
+  product_images?: ProductImage[];
+  variant_sizes?: ProductSize[];
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  product_variants?: ProductVariant[];
+}
+
 interface ProductBriefDescriptionCardProps {
-  product: any;
+  product: Product;
   category: string;
   subcategory: string;
   cat_id: string;
@@ -25,10 +47,8 @@ export default function ProductBriefDescriptionCard({
 }: ProductBriefDescriptionCardProps) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
 
   const handleDelete = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`/api/admin/crudproduct?id=${product.id}`, {
         method: "DELETE"
@@ -39,7 +59,6 @@ export default function ProductBriefDescriptionCard({
     } catch (e) {
       console.error(e);
     }
-    setLoading(false);
   };
 
   const [copied, setCopied] = React.useState(false);
@@ -57,8 +76,8 @@ export default function ProductBriefDescriptionCard({
   };
 
   const thumbnail = getThumbnail();
-  const totalStock = product.product_variants?.reduce((sum: number, v: any) => {
-    return sum + (v.variant_sizes?.reduce((s: number, vs: any) => s + (vs.stock || 0), 0) || 0);
+  const totalStock = product.product_variants?.reduce((sum: number, v: ProductVariant) => {
+    return sum + (v.variant_sizes?.reduce((s: number, vs: ProductSize) => s + (vs.stock || 0), 0) || 0);
   }, 0) || 0;
 
   return (
@@ -98,7 +117,7 @@ export default function ProductBriefDescriptionCard({
         
         <div className="p-2 bg-zinc-50 flex flex-wrap gap-2 justify-between items-center">
            <div className="flex gap-1 overflow-x-auto custom-scrollbar flex-1 mr-2">
-              {product.product_variants?.map((v: any) => (
+              {product.product_variants?.map((v: ProductVariant) => (
                 <button
                   key={v.id}
                   onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}&color=${v.color}`)}

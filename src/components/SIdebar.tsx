@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   ShoppingBag
 } from "lucide-react";
-import { FaInstagram } from "react-icons/fa";
 import Logo from "@/components/Logo";
 
 interface SidebarProps {
