@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import UserCartItemCard from "@/components/UserCartItemCard";
-import UserWishlistCard from "@/components/UserWishlistCard";
+import UserCartItemCard, { CartItem } from "@/components/UserCartItemCard";
+import UserWishlistCard, { WishlistItem } from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
@@ -13,12 +13,25 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  interface UserProfile {
+    id: string;
+    email: string;
+    name: string;
+    mobile_number: string;
+    address: {
+      full_address: string;
+      city: string;
+      state: string;
+      pincode: string;
+    } | null;
+  }
+
   const activeTab = (searchParams.get("tab") || "profile").toLowerCase();
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -51,34 +64,11 @@ function DashboardContent() {
     type: "info",
   });
 
-  useEffect(() => {
-    fetchUser();
-    if (activeTab === "my cart") {
-      fetchCart();
-    }
-    if (activeTab === "my whishlist") {
-      fetchWishlist();
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (user) {
-      setProfileForm({
-        name: user.name || "",
-        mobile_number: user.mobile_number || "",
-        full_address: user.address?.full_address || "",
-        city: user.address?.city || "",
-        state: user.address?.state || "",
-        pincode: user.address?.pincode || ""
-      });
-    }
-  }, [user]);
-
-  const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+  const showAlert = useCallback((title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
     setAlert({ isOpen: true, title, message, type });
-  };
+  }, []);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     setUserLoading(true);
     try {
       const res = await fetch("/api/user/me");
@@ -98,9 +88,9 @@ function DashboardContent() {
     } finally {
       setUserLoading(false);
     }
-  };
+  }, [router]);
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/user/getcart");
@@ -116,6 +106,58 @@ function DashboardContent() {
       showAlert("Error", "An unexpected error occurred", "error");
     }
     setLoading(false);
+  }, [showAlert]);
+
+  const fetchWishlist = useCallback(async () => {
+    setWishlistLoading(true);
+    try {
+      const res = await fetch("/api/user/wishlist");
+      if (res.ok) {
+        const json = await res.json();
+        setWishlistItems(json.data || []);
+      } else {
+        const error = await res.json();
+        showAlert("Error", error.error || "Failed to fetch wishlist", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+    setWishlistLoading(false);
+  }, [showAlert]);
+
+  useEffect(() => {
+    fetchUser();
+    if (activeTab === "my cart") {
+      fetchCart();
+    }
+    if (activeTab === "my whishlist") {
+      fetchWishlist();
+    }
+  }, [activeTab, fetchUser, fetchCart, fetchWishlist]);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || "",
+        mobile_number: user.mobile_number || "",
+        full_address: user.address?.full_address || "",
+        city: user.address?.city || "",
+        state: user.address?.state || "",
+        pincode: user.address?.pincode || ""
+      });
+    }
+  }, [user]);
+
+
+
+  const checkProfileBeforePurchase = () => {
+    if (profileIncomplete) {
+      showAlert("Profile Incomplete", "Please complete your profile (name, mobile, address) before purchasing.", "warning");
+      router.push(`/dashboard?tab=profile&redirectTo=${encodeURIComponent("/dashboard?tab=my%20cart")}`);
+      return false;
+    }
+    return true;
   };
 
   const handleRemoveItem = async (id: string) => {
@@ -134,34 +176,7 @@ function DashboardContent() {
     }
   };
 
-  const fetchWishlist = async () => {
-    setWishlistLoading(true);
-    try {
-      const res = await fetch("/api/user/wishlist");
-      if (res.ok) {
-        const json = await res.json();
-        setWishlistItems(json.data || []);
-      } else {
-        const error = await res.json();
-        showAlert("Error", error.error || "Failed to fetch wishlist", "error");
-      }
-    } catch (e) {
-      console.error(e);
-      showAlert("Error", "An unexpected error occurred", "error");
-    }
-    setWishlistLoading(false);
-  };
-
-  const checkProfileBeforePurchase = () => {
-    if (profileIncomplete) {
-      showAlert("Profile Incomplete", "Please complete your profile (name, mobile, address) before purchasing.", "warning");
-      router.push(`/dashboard?tab=profile&redirectTo=${encodeURIComponent("/dashboard?tab=my%20cart")}`);
-      return false;
-    }
-    return true;
-  };
-
-  const handleBuyItem = (item: any, quantity: number) => {
+  const handleBuyItem = (item: CartItem, quantity: number) => {
     if (!checkProfileBeforePurchase()) return;
     const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
     setPaymentSubtotal(price * quantity);

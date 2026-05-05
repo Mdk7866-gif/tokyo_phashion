@@ -5,10 +5,52 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { X, Plus, Minus, ShoppingBag } from "lucide-react";
 
+interface Category {
+  name: string;
+}
+
+interface Subcategory {
+  name: string;
+  category_id: string;
+  categories: Category;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  subcategory_id: string;
+  subcategories: Subcategory;
+}
+
+interface ProductImage {
+  image_url: string;
+  sort_order: number;
+}
+
+interface ProductVariant {
+  id: string;
+  color: string;
+  product_images: ProductImage[];
+  products: Product;
+}
+
+export interface VariantSize {
+  id: string;
+  size: string;
+  discount_price: number | null;
+  original_price: number;
+  product_variants: ProductVariant;
+}
+
+export interface CartItem {
+  id: string;
+  variant_sizes: VariantSize;
+}
+
 interface UserCartItemCardProps {
-  item: any;
+  item: CartItem;
   onRemove: (id: string) => void;
-  onBuy?: (item: any, quantity: number) => void;
+  onBuy?: (item: CartItem, quantity: number) => void;
 }
 
 export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItemCardProps) {
@@ -23,7 +65,7 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
   
   // Explicitly find the images for THIS specific variant
   const variantImages = variant?.product_images || [];
-  const thumbnail = variantImages.sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+  const thumbnail = variantImages.sort((a: ProductImage, b: ProductImage) => a.sort_order - b.sort_order)[0]?.image_url;
 
   const price = size?.discount_price || size?.original_price || 0;
   const totalPrice = price * quantity;

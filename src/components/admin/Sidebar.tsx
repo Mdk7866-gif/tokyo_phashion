@@ -27,17 +27,22 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const supabase = createClient();
   
-  const [categories, setCategories] = useState<any[]>([]);
+  interface Subcategory {
+    id: string;
+    name: string;
+  }
+  interface Category {
+    id: string;
+    name: string;
+    subcategories: Subcategory[];
+  }
+
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCatName, setNewCatName] = useState("");
   const [newSubName, setNewSubName] = useState("");
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCatSection, setShowCatSection] = useState(true);
-
-  // Fetch categories on mount
-  useEffect(() => {
-    fetchCategories();
-  }, []);
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -46,6 +51,11 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       .order('name');
     if (data) setCategories(data);
   };
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -297,7 +307,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                           {/* Subcategories list */}
                           {isExpanded && (
                             <div className="mt-2 ml-2 space-y-2 animate-in fade-in duration-300">
-                              {cat.subcategories?.map((sub: any) => (
+                              {cat.subcategories?.map((sub: Subcategory) => (
                                 <div key={sub.id} className="flex items-center justify-between group/sub">
                                   {editingId === sub.id ? (
                                     <div className="flex flex-1 gap-1">

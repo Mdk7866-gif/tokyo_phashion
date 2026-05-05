@@ -74,7 +74,7 @@ export default function LoginPage() {
 
         <div className="mt-12 text-center">
           <p className="text-[10px] font-bold text-zinc-600">
-            By continuing, you agree to Tokyo Fashion's 
+            By continuing, you agree to Tokyo Fashion&apos;s 
             <br />
             <Link href="/terms" className="text-black underline">Terms of Service</Link> and 
             <Link href="/privacy" className="ml-1 text-black underline">Privacy Policy</Link>.

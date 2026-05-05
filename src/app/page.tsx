@@ -3,8 +3,16 @@
 import React, { useEffect, useState } from "react";
 import HomePageThumbnailCard from "@/components/HomePageThumbnailCard";
 
+interface Category {
+  id: string;
+  name: string;
+  category_thumbnails: {
+    image_url: string;
+  } | null;
+}
+
 export default function Home() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,7 +22,7 @@ export default function Home() {
         if (res.ok) {
           const json = await res.json();
           // Filter to only categories that have a thumbnail
-          const validCategories = (json.data || []).filter((c: any) => c.category_thumbnails && c.category_thumbnails.image_url);
+          const validCategories = (json.data || []).filter((c: Category) => c.category_thumbnails && c.category_thumbnails.image_url);
           setCategories(validCategories);
         }
       } catch (err) {
@@ -53,7 +61,7 @@ export default function Home() {
                 key={cat.id}
                 id={cat.id}
                 name={cat.name}
-                imageUrl={cat.category_thumbnails.image_url}
+                imageUrl={cat.category_thumbnails?.image_url || ""}
               />
             ))}
           </div>

@@ -5,8 +5,42 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { X, Heart } from "lucide-react";
 
+interface Category {
+  name: string;
+}
+
+interface Subcategory {
+  name: string;
+  category_id: string;
+  categories: Category;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  subcategory_id: string;
+  subcategories: Subcategory;
+}
+
+interface ProductImage {
+  image_url: string;
+  sort_order: number;
+}
+
+interface ProductVariant {
+  id: string;
+  color: string;
+  product_images: ProductImage[];
+  products: Product;
+}
+
+export interface WishlistItem {
+  id: string;
+  product_variants: ProductVariant;
+}
+
 interface UserWishlistCardProps {
-  item: any;
+  item: WishlistItem;
   onRemove: (id: string) => void;
 }
 
@@ -19,7 +53,7 @@ export default function UserWishlistCard({ item, onRemove }: UserWishlistCardPro
   const category = subcategory?.categories;
 
   const variantImages = variant?.product_images || [];
-  const thumbnail = [...variantImages].sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.image_url;
+  const thumbnail = [...variantImages].sort((a: ProductImage, b: ProductImage) => a.sort_order - b.sort_order)[0]?.image_url;
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;

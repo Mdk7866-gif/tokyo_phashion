@@ -9,6 +9,56 @@ import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
 import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart, Zap } from "lucide-react";
 
+interface Size {
+  id: string;
+  size: string;
+  stock: number;
+  original_price: number;
+  discount_price: number | null;
+}
+
+interface ProductImage {
+  id: string;
+  image_url: string;
+  sort_order: number;
+}
+
+interface ProductVariant {
+  id: string;
+  color: string;
+  variant_sizes: Size[];
+  product_images: ProductImage[];
+}
+
+interface Subcategory {
+  id: string;
+  name: string;
+  category_id: string;
+  categories: {
+    name: string;
+  };
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  subcategory_id: string;
+  subcategories: Subcategory;
+  product_variants: ProductVariant[];
+}
+
+interface UserProfile {
+  name: string | null;
+  mobile_number: string | null;
+  address: {
+    full_address: string | null;
+    city: string | null;
+    state: string | null;
+    pincode: string | null;
+  } | null;
+}
+
 export default function DetailedProductPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -18,11 +68,11 @@ export default function DetailedProductPage() {
   const urlVariantId = searchParams.get("variant_id");
   const urlSizeId = searchParams.get("size_id");
 
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [selectedVariant, setSelectedVariant] = useState<any>(null);
-  const [selectedSize, setSelectedSize] = useState<any>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedSize, setSelectedSize] = useState<Size | null>(null);
   const [mainImage, setMainImage] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -46,12 +96,12 @@ export default function DetailedProductPage() {
 
   // Wishlist state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [togglingWishlist, setTogglingWishlist] = useState(false);
   const [wishlistedVariantIds, setWishlistedVariantIds] = useState<Set<string>>(new Set());
+  const isWishlisted = selectedVariant?.id ? wishlistedVariantIds.has(selectedVariant.id) : false;
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [codConfirmation, setCodConfirmation] = useState({
     isOpen: false,
     total: 0
@@ -81,7 +131,7 @@ export default function DetailedProductPage() {
           const wishRes = await fetch("/api/user/wishlist");
           if (wishRes.ok) {
             const wishData = await wishRes.json();
-            const ids = new Set<string>((wishData.data || []).map((item: any) => item.product_variant_id));
+            const ids = new Set<string>((wishData.data || []).map((item: { product_variant_id: string }) => item.product_variant_id));
             setWishlistedVariantIds(ids);
           }
         }
@@ -93,11 +143,7 @@ export default function DetailedProductPage() {
   }, []);
 
   // Update isWishlisted when variant changes
-  useEffect(() => {
-    if (selectedVariant?.id) {
-      setIsWishlisted(wishlistedVariantIds.has(selectedVariant.id));
-    }
-  }, [selectedVariant, wishlistedVariantIds]);
+  // Removed useEffect for isWishlisted as it's now a derived state
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -115,7 +161,6 @@ export default function DetailedProductPage() {
       if (isWishlisted) {
         const res = await fetch(`/api/user/wishlist?variant_id=${variantId}`, { method: "DELETE" });
         if (res.ok) {
-          setIsWishlisted(false);
           setWishlistedVariantIds(prev => { const n = new Set(prev); n.delete(variantId); return n; });
           window.dispatchEvent(new Event('navbar-update'));
         }
@@ -126,7 +171,6 @@ export default function DetailedProductPage() {
           body: JSON.stringify({ product_variant_id: variantId }),
         });
         if (res.ok) {
-          setIsWishlisted(true);
           setWishlistedVariantIds(prev => new Set(prev).add(variantId));
           window.dispatchEvent(new Event('navbar-update'));
         }
@@ -224,24 +268,24 @@ export default function DetailedProductPage() {
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
             if (urlVariantId) {
-              const found = data.product_variants.find((v: any) => v.id === urlVariantId);
+              const found = data.product_variants.find((v: ProductVariant) => v.id === urlVariantId);
               if (found) initialVariant = found;
             }
             setSelectedVariant(initialVariant);
             
             if (urlSizeId && initialVariant.variant_sizes) {
-              const foundSize = initialVariant.variant_sizes.find((s: any) => s.id === urlSizeId);
+              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === urlSizeId);
               if (foundSize && foundSize.stock > 0) {
                 setSelectedSize(foundSize);
               } else {
-                const availableSize = initialVariant.variant_sizes.find((s: any) => s.stock > 0);
+                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
                 if (availableSize) {
                   setSelectedSize(availableSize);
                   updateQueryParams(initialVariant.id, availableSize.id);
                 }
               }
             } else if (initialVariant.variant_sizes) {
-              const availableSize = initialVariant.variant_sizes.find((s: any) => s.stock > 0);
+              const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
               if (availableSize) {
                 setSelectedSize(availableSize);
                 updateQueryParams(initialVariant.id, availableSize.id);
@@ -249,13 +293,13 @@ export default function DetailedProductPage() {
             }
             
             if (initialVariant.product_images && initialVariant.product_images.length > 0) {
-               const sortedImages = [...initialVariant.product_images].sort((a:any,b:any) => a.sort_order - b.sort_order);
+               const sortedImages = [...initialVariant.product_images].sort((a:ProductImage, b:ProductImage) => a.sort_order - b.sort_order);
                setMainImage(sortedImages[0].image_url);
             }
 
             if (!urlVariantId && !urlSizeId) {
               // Only update variant id if size auto-selection above didn't already update everything
-              if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:any) => s.stock > 0)) {
+              if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
                 updateQueryParams(initialVariant.id);
               }
             }
@@ -269,7 +313,7 @@ export default function DetailedProductPage() {
     setLoading(false);
   };
 
-  const handleVariantChange = (v: any) => {
+  const handleVariantChange = (v: ProductVariant) => {
     setSelectedVariant(v);
     setMainImage(v.product_images?.[0]?.image_url || "");
     // Update URL without reloading
@@ -279,12 +323,12 @@ export default function DetailedProductPage() {
     
     // Check if new variant has a size that matches current selection, else select first available
     if (selectedSize) {
-      const matchingSize = v.variant_sizes?.find((s: any) => s.size === selectedSize.size && s.stock > 0);
+      const matchingSize = v.variant_sizes?.find((s: Size) => s.size === selectedSize.size && s.stock > 0);
       if (matchingSize) {
         setSelectedSize(matchingSize);
         newParams.set("size_id", matchingSize.id);
       } else {
-        const firstAvailable = v.variant_sizes?.find((s: any) => s.stock > 0);
+        const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0);
         if (firstAvailable) {
           setSelectedSize(firstAvailable);
           newParams.set("size_id", firstAvailable.id);
@@ -295,7 +339,7 @@ export default function DetailedProductPage() {
       }
       router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     } else {
-      const firstAvailable = v.variant_sizes?.find((s: any) => s.stock > 0);
+      const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0);
       if (firstAvailable) {
         setSelectedSize(firstAvailable);
         newParams.set("size_id", firstAvailable.id);
@@ -304,7 +348,7 @@ export default function DetailedProductPage() {
     }
   };
 
-  const handleSizeChange = (s: any) => {
+  const handleSizeChange = (s: Size) => {
     setSelectedSize(s);
     if (selectedVariant) {
       updateQueryParams(selectedVariant.id, s.id);
@@ -366,7 +410,7 @@ export default function DetailedProductPage() {
      originalPrice = selectedVariant.variant_sizes[0].original_price;
   }
 
-  const sortedImages = selectedVariant?.product_images ? [...selectedVariant.product_images].sort((a:any, b:any) => a.sort_order - b.sort_order) : [];
+  const sortedImages = selectedVariant?.product_images ? [...selectedVariant.product_images].sort((a:ProductImage, b:ProductImage) => a.sort_order - b.sort_order) : [];
 
   return (
     <div className="bg-white min-h-screen text-black pb-24">
@@ -438,7 +482,7 @@ export default function DetailedProductPage() {
             {/* Thumbnails */}
             {sortedImages.length > 1 && (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                {sortedImages.map((img: any) => (
+                {sortedImages.map((img: ProductImage) => (
                   <button 
                     key={img.id}
                     onClick={() => setMainImage(img.image_url)}
@@ -483,7 +527,7 @@ export default function DetailedProductPage() {
             <div className="mb-8">
               <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Color: <span className="text-zinc-500">{selectedVariant?.color}</span></h3>
               <div className="flex flex-wrap gap-2">
-                {product.product_variants?.map((v: any) => (
+                {product.product_variants?.map((v: ProductVariant) => (
                   <button
                     key={v.id}
                     onClick={() => handleVariantChange(v)}
@@ -508,7 +552,7 @@ export default function DetailedProductPage() {
                 </button>
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {selectedVariant?.variant_sizes?.map((s: any) => {
+                {selectedVariant?.variant_sizes?.map((s: Size) => {
                   const isOutOfStock = s.stock <= 0;
                   return (
                     <button
@@ -529,7 +573,7 @@ export default function DetailedProductPage() {
                   );
                 })}
               </div>
-              {selectedSize?.stock > 0 && selectedSize?.stock <= 5 && (
+              {selectedSize && selectedSize.stock > 0 && selectedSize.stock <= 5 && (
                  <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-red-500">Only {selectedSize.stock} left in stock!</p>
               )}
             </div>

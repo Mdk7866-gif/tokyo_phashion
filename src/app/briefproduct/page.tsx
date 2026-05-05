@@ -1,10 +1,116 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { SlidersHorizontal, ArrowRight, X, Check, Heart } from "lucide-react";
+
+interface BriefSubcategory {
+  id: string;
+  name: string;
+}
+
+interface BriefProduct {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  price: number;
+  defaultVariantId: string | null;
+}
+
+interface FilterPanelProps {
+  sort: string;
+  handleSortChange: (newSort: string) => void;
+  availableSubs: BriefSubcategory[];
+  activeSubIds: string[];
+  toggleSubcategory: (subId: string) => void;
+  updateUrl: (subs: string, newSort: string) => void;
+}
+
+const sortOptions = [
+  { id: "newest", label: "Newest First" },
+  { id: "price_low", label: "Price: Low to High" },
+  { id: "price_high", label: "Price: High to Low" },
+];
+
+function FilterPanel({
+  sort,
+  handleSortChange,
+  availableSubs,
+  activeSubIds,
+  toggleSubcategory,
+  updateUrl,
+}: FilterPanelProps) {
+  return (
+    <div className="space-y-10">
+      {/* Sort By */}
+      <div>
+        <h3 className="text-[9px] font-black uppercase tracking-[0.25em] mb-5 text-zinc-400">
+          Sort By
+        </h3>
+        <div className="space-y-1">
+          {sortOptions.map(option => {
+            const isActive = sort === option.id;
+            return (
+              <button
+                key={option.id}
+                onClick={() => handleSortChange(option.id)}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all group rounded-sm ${
+                  isActive ? "bg-black text-white" : "hover:bg-zinc-100 text-black"
+                }`}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest">
+                  {option.label}
+                </span>
+                {isActive && <Check className="h-3 w-3 flex-shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Subcategories */}
+      {availableSubs.length > 0 && (
+        <div>
+          <h3 className="text-[9px] font-black uppercase tracking-[0.25em] mb-5 text-zinc-400">
+            Filter by Type
+          </h3>
+          <div className="space-y-1">
+            {availableSubs.map(sub => {
+              const isActive = activeSubIds.includes(sub.id);
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => toggleSubcategory(sub.id)}
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all border ${
+                    isActive
+                      ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
+                      : "border-transparent hover:border-black hover:bg-zinc-50 text-black"
+                  }`}
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                    {sub.name}
+                  </span>
+                  {isActive && <Check className="h-3 w-3 flex-shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeSubIds.length > 0 && (
+            <button
+              onClick={() => updateUrl("", sort)}
+              className="mt-4 text-[9px] font-bold uppercase tracking-widest text-zinc-400 hover:text-black underline transition-colors"
+            >
+              Clear type filters
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BriefProductPage() {
   const searchParams = useSearchParams();
@@ -15,11 +121,11 @@ export default function BriefProductPage() {
   const subcategory_ids = searchParams.get("subcategory_ids") || "";
   const sort = searchParams.get("sort") || "newest";
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<BriefProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [categoryName, setCategoryName] = useState("");
-  const [availableSubs, setAvailableSubs] = useState<any[]>([]);
+  const [availableSubs, setAvailableSubs] = useState<BriefSubcategory[]>([]);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -28,12 +134,47 @@ export default function BriefProductPage() {
   const [wishlistedVariantIds, setWishlistedVariantIds] = useState<Set<string>>(new Set());
   const [togglingVariantIds, setTogglingVariantIds] = useState<Set<string>>(new Set());
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await fetch('/api/user/getsidebarcategoryandsubcategory');
+      if (res.ok) {
+        const json = await res.json();
+        const cat = json.data?.find((c: { id: string, name: string, subcategories: BriefSubcategory[] }) => c.id === category_id);
+        if (cat) {
+          setCategoryName(cat.name);
+          setAvailableSubs(cat.subcategories || []);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [category_id]);
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const query = new URLSearchParams();
+      if (category_id) query.set("category_id", category_id);
+      if (subcategory_ids) query.set("subcategory_ids", subcategory_ids);
+      query.set("sort", sort);
+
+      const res = await fetch(`/api/user/getbriefproducts?${query.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        setProducts(json.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  }, [category_id, subcategory_ids, sort]);
+
   useEffect(() => {
     if (category_id) {
       fetchCategories();
       fetchProducts();
     }
-  }, [category_id, subcategory_ids, sort]);
+  }, [category_id, fetchCategories, fetchProducts]);
 
   // Check auth and load wishlist on mount
   useEffect(() => {
@@ -48,7 +189,7 @@ export default function BriefProductPage() {
         if (wRes.ok) {
           const wJson = await wRes.json();
           const ids = new Set<string>(
-            (wJson.data || []).map((item: any) => item.product_variant_id)
+            (wJson.data || []).map((item: { product_variant_id: string }) => item.product_variant_id)
           );
           setWishlistedVariantIds(ids);
         }
@@ -59,42 +200,7 @@ export default function BriefProductPage() {
     checkAuthAndWishlist();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/user/getsidebarcategoryandsubcategory');
-      if (res.ok) {
-        const json = await res.json();
-        const cat = json.data?.find((c: any) => c.id === category_id);
-        if (cat) {
-          setCategoryName(cat.name);
-          setAvailableSubs(cat.subcategories || []);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const query = new URLSearchParams();
-      query.set("category_id", category_id!);
-      if (subcategory_ids) query.set("subcategory_ids", subcategory_ids);
-      query.set("sort", sort);
-
-      const res = await fetch(`/api/user/getbriefproducts?${query.toString()}`);
-      if (res.ok) {
-        const json = await res.json();
-        setProducts(json.data || []);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
-  };
-
-  const handleToggleWishlist = async (e: React.MouseEvent, product: any) => {
+  const handleToggleWishlist = async (e: React.MouseEvent, product: BriefProduct) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -165,80 +271,7 @@ export default function BriefProductPage() {
   const activeSubIds = subcategory_ids ? subcategory_ids.split(",") : [];
   const activeFilterCount = activeSubIds.length + (sort !== "newest" ? 1 : 0);
 
-  const sortOptions = [
-    { id: "newest", label: "Newest First" },
-    { id: "price_low", label: "Price: Low to High" },
-    { id: "price_high", label: "Price: High to Low" },
-  ];
 
-  const FilterPanel = () => (
-    <div className="space-y-10">
-      {/* Sort By */}
-      <div>
-        <h3 className="text-[9px] font-black uppercase tracking-[0.25em] mb-5 text-zinc-400">
-          Sort By
-        </h3>
-        <div className="space-y-1">
-          {sortOptions.map(option => {
-            const isActive = sort === option.id;
-            return (
-              <button
-                key={option.id}
-                onClick={() => handleSortChange(option.id)}
-                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all group rounded-sm ${
-                  isActive ? "bg-black text-white" : "hover:bg-zinc-100 text-black"
-                }`}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-widest">
-                  {option.label}
-                </span>
-                {isActive && <Check className="h-3 w-3 flex-shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Subcategories */}
-      {availableSubs.length > 0 && (
-        <div>
-          <h3 className="text-[9px] font-black uppercase tracking-[0.25em] mb-5 text-zinc-400">
-            Filter by Type
-          </h3>
-          <div className="space-y-1">
-            {availableSubs.map(sub => {
-              const isActive = activeSubIds.includes(sub.id);
-              return (
-                <button
-                  key={sub.id}
-                  onClick={() => toggleSubcategory(sub.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all border ${
-                    isActive
-                      ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                      : "border-transparent hover:border-black hover:bg-zinc-50 text-black"
-                  }`}
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    {sub.name}
-                  </span>
-                  {isActive && <Check className="h-3 w-3 flex-shrink-0" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {activeSubIds.length > 0 && (
-            <button
-              onClick={() => updateUrl("", sort)}
-              className="mt-4 text-[9px] font-bold uppercase tracking-widest text-zinc-400 hover:text-black underline transition-colors"
-            >
-              Clear type filters
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-white text-black pb-24">
@@ -302,7 +335,14 @@ export default function BriefProductPage() {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* ── Desktop Sidebar ── */}
           <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-24 self-start">
-            <FilterPanel />
+            <FilterPanel 
+              sort={sort}
+              handleSortChange={handleSortChange}
+              availableSubs={availableSubs}
+              activeSubIds={activeSubIds}
+              toggleSubcategory={toggleSubcategory}
+              updateUrl={updateUrl}
+            />
           </aside>
 
           {/* ── Mobile Filter Drawer ── */}
@@ -324,7 +364,14 @@ export default function BriefProductPage() {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <FilterPanel />
+                <FilterPanel 
+                  sort={sort}
+                  handleSortChange={handleSortChange}
+                  availableSubs={availableSubs}
+                  activeSubIds={activeSubIds}
+                  toggleSubcategory={toggleSubcategory}
+                  updateUrl={updateUrl}
+                />
                 <div className="mt-12">
                   <button
                     onClick={() => setIsFilterOpen(false)}
