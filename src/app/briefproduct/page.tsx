@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -112,7 +112,7 @@ function FilterPanel({
   );
 }
 
-export default function BriefProductPage() {
+function BriefProductContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -170,10 +170,12 @@ export default function BriefProductPage() {
   }, [category_id, subcategory_ids, sort]);
 
   useEffect(() => {
-    if (category_id) {
-      fetchCategories();
-      fetchProducts();
-    }
+    const loadData = async () => {
+      if (category_id) {
+        await Promise.all([fetchCategories(), fetchProducts()]);
+      }
+    };
+    loadData();
   }, [category_id, fetchCategories, fetchProducts]);
 
   // Check auth and load wishlist on mount
@@ -476,5 +478,17 @@ export default function BriefProductPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BriefProductPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Loading collection...</p>
+      </div>
+    }>
+      <BriefProductContent />
+    </Suspense>
   );
 }

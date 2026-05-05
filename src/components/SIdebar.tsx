@@ -23,17 +23,25 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
-  const [user, setUser] = useState<any | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  interface Subcategory {
+    id: string;
+    name: string;
+  }
+  interface Category {
+    id: string;
+    name: string;
+    subcategories?: Subcategory[];
+  }
+  interface UserType {
+    email: string;
+  }
+
+  const [user, setUser] = useState<UserType | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [expandedCatIds, setExpandedCatIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Removed unused loading state
 
-  useEffect(() => {
-    getUser();
-    fetchCategories();
-  }, []);
-
-  const getUser = async () => {
+  const getUser = React.useCallback(async () => {
     try {
       const response = await fetch('/api/user/me');
       const data = await response.json();
@@ -41,10 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error("Error fetching user session:", error);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
-    setLoading(true);
+  const fetchCategories = React.useCallback(async () => {
     try {
       const res = await fetch('/api/user/getsidebarcategoryandsubcategory');
       if (res.ok) {
@@ -54,8 +61,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     } catch (err) {
       console.error(err);
     }
-    setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      getUser();
+      fetchCategories();
+    });
+  }, [getUser, fetchCategories]);
 
   const handleLogout = async () => {
     const response = await fetch('/api/user/logout', { method: 'POST' });
@@ -180,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       
                       {isExpanded && (
                         <div className="ml-8 space-y-1 animate-in fade-in slide-in-from-left-2 duration-300">
-                          {cat.subcategories?.map((sub: any) => (
+                          {cat.subcategories?.map((sub: Subcategory) => (
                             <Link
                               key={sub.id}
                               href={`/briefproduct?category_id=${cat.id}&subcategory_id=${sub.id}`}

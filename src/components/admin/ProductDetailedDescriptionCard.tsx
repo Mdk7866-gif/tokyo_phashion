@@ -124,7 +124,10 @@ export default function ProductDetailedDescriptionCard({
   }, [product_id, color]);
 
   useEffect(() => {
-    fetchProductData();
+    const load = async () => {
+      await fetchProductData();
+    };
+    load();
   }, [fetchProductData]);
 
   // Variant Handlers

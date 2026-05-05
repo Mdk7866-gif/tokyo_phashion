@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ShoppingCart, Heart, Menu, Search, User } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -9,13 +9,19 @@ interface NavbarProps {
     onMenuClick: () => void;
 }
 
+interface UserType {
+    id: string;
+    email: string;
+    // add other fields if needed
+}
+
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<UserType | null>(null);
     const [mounted, setMounted] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [wishlistCount, setWishlistCount] = useState(0);
 
-    const fetchCounts = async () => {
+    const fetchCounts = useCallback(async () => {
         try {
             const response = await fetch('/api/user/navbarcounts');
             const data = await response.json();
@@ -24,10 +30,11 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
         } catch (error) {
             console.error("Error fetching navbar counts:", error);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        setMounted(true);
+        requestAnimationFrame(() => setMounted(true));
+        
         const init = async () => {
             try {
                 const meRes = await fetch('/api/user/me');
@@ -42,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
         window.addEventListener('navbar-update', fetchCounts);
         return () => window.removeEventListener('navbar-update', fetchCounts);
-    }, []);
+    }, [fetchCounts]);
 
     const handleLogout = async () => {
         const response = await fetch('/api/user/logout', { method: 'POST' });

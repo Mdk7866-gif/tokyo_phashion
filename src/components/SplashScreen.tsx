@@ -11,7 +11,10 @@ const SplashScreen = ({ onComplete }: { onComplete?: () => void }) => {
     const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
     
     if (!hasSeenSplash) {
-      setShouldRender(true);
+      // Use requestAnimationFrame to avoid sync setState in effect
+      requestAnimationFrame(() => {
+        setShouldRender(true);
+      });
       // Small timeout to ensure the component is mounted before starting animation
       const animTimer = setTimeout(() => {
         setIsVisible(true);

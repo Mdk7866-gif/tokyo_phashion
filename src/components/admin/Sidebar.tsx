@@ -57,7 +57,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   // Fetch categories on mount
   useEffect(() => {
-    fetchCategories();
+    const loadData = async () => {
+      await fetchCategories();
+    };
+    loadData();
   }, [fetchCategories]);
 
   const toggleCategory = (id: string) => {

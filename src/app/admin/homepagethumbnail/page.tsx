@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import HomePageThumbnailCard from "@/components/admin/HomePageThumbnailCard";
-import { Image as ImageIcon, LayoutGrid } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 
+interface CategoryThumbnail {
+  image_url: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  category_thumbnails?: CategoryThumbnail | CategoryThumbnail[] | null;
+}
+
 export default function HomePageThumbnailPage() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState<{ isOpen: boolean; title: string; message: string; type: "success" | "error" | "warning" | "info" }>({
     isOpen: false,
@@ -15,7 +25,7 @@ export default function HomePageThumbnailPage() {
     type: "info"
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/crudhomepagethumnail');
       if (res.ok) {
@@ -40,11 +50,13 @@ export default function HomePageThumbnailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    requestAnimationFrame(() => {
+      fetchData();
+    });
+  }, [fetchData]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">

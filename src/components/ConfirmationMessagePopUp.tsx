@@ -27,7 +27,9 @@ const ConfirmationMessagePopUp: React.FC<ConfirmationMessagePopUpProps> = ({
   const [shouldRender, setShouldRender] = useState(isOpen);
 
   useEffect(() => {
-    if (isOpen) setShouldRender(true);
+    if (isOpen) {
+      requestAnimationFrame(() => setShouldRender(true));
+    }
   }, [isOpen]);
 
   const handleAnimationEnd = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -48,18 +48,7 @@ interface Product {
   product_variants: ProductVariant[];
 }
 
-interface UserProfile {
-  name: string | null;
-  mobile_number: string | null;
-  address: {
-    full_address: string | null;
-    city: string | null;
-    state: string | null;
-    pincode: string | null;
-  } | null;
-}
-
-export default function DetailedProductPage() {
+function DetailedProductContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -90,9 +79,9 @@ export default function DetailedProductPage() {
     type: "info",
   });
 
-  const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
+  const showAlert = React.useCallback((title: string, message: string, type: "success" | "error" | "warning" | "info" = "info") => {
     setAlert({ isOpen: true, title, message, type });
-  };
+  }, []);
 
   // Wishlist state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -101,17 +90,97 @@ export default function DetailedProductPage() {
   const isWishlisted = selectedVariant?.id ? wishlistedVariantIds.has(selectedVariant.id) : false;
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [codConfirmation, setCodConfirmation] = useState({
     isOpen: false,
     total: 0
   });
 
+  const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (product) {
+      if (product.subcategories?.categories?.name) params.set("category", product.subcategories.categories.name.toLowerCase());
+      if (product.subcategories?.name) params.set("subcategory", product.subcategories.name.toLowerCase());
+      if (product.subcategories?.category_id) params.set("category_id", product.subcategories.category_id);
+      if (product.subcategory_id) params.set("subcategory_id", product.subcategory_id);
+    }
+    
+    if (variantId) {
+      params.set("variant_id", variantId);
+    }
+    
+    if (sizeId) {
+      params.set("size_id", sizeId);
+    } else if (sizeId === null) {
+      params.delete("size_id");
+    }
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [product, pathname, router, searchParams]);
+
+  const fetchProduct = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/user/getproductdetail?product_id=${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data;
+        if (data) {
+          setProduct(data);
+          
+          if (data.product_variants && data.product_variants.length > 0) {
+            let initialVariant = data.product_variants[0];
+            if (urlVariantId) {
+              const found = data.product_variants.find((v: ProductVariant) => v.id === urlVariantId);
+              if (found) initialVariant = found;
+            }
+            setSelectedVariant(initialVariant);
+            
+            if (urlSizeId && initialVariant.variant_sizes) {
+              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === urlSizeId);
+              if (foundSize && foundSize.stock > 0) {
+                setSelectedSize(foundSize);
+              } else {
+                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
+                if (availableSize) {
+                  setSelectedSize(availableSize);
+                  updateQueryParams(initialVariant.id, availableSize.id);
+                }
+              }
+            } else if (initialVariant.variant_sizes) {
+              const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
+              if (availableSize) {
+                setSelectedSize(availableSize);
+                updateQueryParams(initialVariant.id, availableSize.id);
+              }
+            }
+            
+            if (initialVariant.product_images && initialVariant.product_images.length > 0) {
+               const sortedImages = [...initialVariant.product_images].sort((a:ProductImage, b:ProductImage) => a.sort_order - b.sort_order);
+               setMainImage(sortedImages[0].image_url);
+            }
+
+            if (!urlVariantId && !urlSizeId) {
+              // Only update variant id if size auto-selection above didn't already update everything
+              if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
+                updateQueryParams(initialVariant.id);
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showAlert("Error", "Failed to fetch product details", "error");
+    }
+    setLoading(false);
+  }, [id, urlVariantId, urlSizeId, updateQueryParams, showAlert]);
+
   useEffect(() => {
     if (id) {
-      fetchProduct();
+      requestAnimationFrame(() => fetchProduct());
     }
-  }, [id]);
+  }, [id, fetchProduct]);
 
   // Load auth + wishlist on mount
   useEffect(() => {
@@ -121,7 +190,7 @@ export default function DetailedProductPage() {
         const meJson = await meRes.json();
         if (meJson.user) {
           setIsLoggedIn(true);
-          setUserProfile(meJson.user);
+          // setUserProfile removed as unused
           
           // Check if profile is incomplete
           const u = meJson.user;
@@ -232,86 +301,9 @@ export default function DetailedProductPage() {
     }
   };
 
-  const updateQueryParams = (variantId?: string, sizeId?: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-    
-    if (product) {
-      if (product.subcategories?.categories?.name) params.set("category", product.subcategories.categories.name.toLowerCase());
-      if (product.subcategories?.name) params.set("subcategory", product.subcategories.name.toLowerCase());
-      if (product.subcategories?.category_id) params.set("category_id", product.subcategories.category_id);
-      if (product.subcategory_id) params.set("subcategory_id", product.subcategory_id);
-    }
-    
-    if (variantId) {
-      params.set("variant_id", variantId);
-    }
-    
-    if (sizeId) {
-      params.set("size_id", sizeId);
-    } else if (sizeId === null) {
-      params.delete("size_id");
-    }
+  // Removed updateQueryParams from here as it was moved up
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const fetchProduct = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/user/getproductdetail?product_id=${id}`);
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.data;
-        if (data) {
-          setProduct(data);
-          
-          if (data.product_variants && data.product_variants.length > 0) {
-            let initialVariant = data.product_variants[0];
-            if (urlVariantId) {
-              const found = data.product_variants.find((v: ProductVariant) => v.id === urlVariantId);
-              if (found) initialVariant = found;
-            }
-            setSelectedVariant(initialVariant);
-            
-            if (urlSizeId && initialVariant.variant_sizes) {
-              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === urlSizeId);
-              if (foundSize && foundSize.stock > 0) {
-                setSelectedSize(foundSize);
-              } else {
-                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
-                if (availableSize) {
-                  setSelectedSize(availableSize);
-                  updateQueryParams(initialVariant.id, availableSize.id);
-                }
-              }
-            } else if (initialVariant.variant_sizes) {
-              const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
-              if (availableSize) {
-                setSelectedSize(availableSize);
-                updateQueryParams(initialVariant.id, availableSize.id);
-              }
-            }
-            
-            if (initialVariant.product_images && initialVariant.product_images.length > 0) {
-               const sortedImages = [...initialVariant.product_images].sort((a:ProductImage, b:ProductImage) => a.sort_order - b.sort_order);
-               setMainImage(sortedImages[0].image_url);
-            }
-
-            if (!urlVariantId && !urlSizeId) {
-              // Only update variant id if size auto-selection above didn't already update everything
-              if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
-                updateQueryParams(initialVariant.id);
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      showAlert("Error", "Failed to fetch product details", "error");
-    }
-    setLoading(false);
-  };
+  // Removed fetchProduct from here as it was moved up
 
   const handleVariantChange = (v: ProductVariant) => {
     setSelectedVariant(v);
@@ -658,5 +650,17 @@ export default function DetailedProductPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DetailedProductPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center font-black uppercase italic tracking-tighter text-2xl text-zinc-300">
+        Loading Product...
+      </div>
+    }>
+      <DetailedProductContent />
+    </Suspense>
   );
 }

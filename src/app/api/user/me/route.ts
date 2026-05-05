@@ -37,7 +37,11 @@ export async function GET() {
   }
 
   // Find default address
-  const defaultAddress = userData.addresses?.find((a: any) => a.is_default && !a.deleted_at);
+  interface Address {
+    is_default: boolean | null;
+    deleted_at: string | null;
+  }
+  const defaultAddress = userData.addresses?.find((a: Address) => a.is_default && !a.deleted_at);
 
   return NextResponse.json({
     user: {

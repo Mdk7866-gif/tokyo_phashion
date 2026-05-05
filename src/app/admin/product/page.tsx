@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductDetailedDescriptionCard from "@/components/admin/ProductDetailedDescriptionCard";
 import ProductBriefDescriptionCard from "@/components/admin/ProductBriefDescriptionCard";
@@ -18,11 +18,33 @@ function ProductContent() {
   const product_id = searchParams.get("product_id");
   const color = searchParams.get("color");
 
-  const [products, setProducts] = useState<any[]>([]);
+  interface ProductSize {
+    stock?: number;
+  }
+
+  interface ProductImage {
+    image_url: string;
+  }
+
+  interface ProductVariant {
+    id: string;
+    color: string;
+    product_images?: ProductImage[];
+    variant_sizes?: ProductSize[];
+  }
+
+  interface Product {
+    id: string;
+    name: string;
+    description: string | null;
+    product_variants?: ProductVariant[];
+  }
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [formMode, setFormMode] = useState<"basic" | "advanced">("basic");
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     if (!sub_id) return;
     setLoading(true);
     try {
@@ -35,13 +57,15 @@ function ProductContent() {
       console.error(e);
     }
     setLoading(false);
-  };
+  }, [sub_id]);
 
   useEffect(() => {
-    if (sub_id && !product_id) {
-      fetchProducts();
-    }
-  }, [sub_id, product_id]);
+    requestAnimationFrame(() => {
+      if (sub_id && !product_id) {
+        fetchProducts();
+      }
+    });
+  }, [sub_id, product_id, fetchProducts]);
 
   if (!category || !subcategory || !cat_id || !sub_id) {
     return (
@@ -161,7 +185,7 @@ function ProductContent() {
           {products.length === 0 && (
              <div className="col-span-full py-12 text-center text-zinc-400 border border-dashed border-zinc-200">
                <p className="text-xs font-black uppercase tracking-widest">No Products</p>
-               <p className="mt-1 text-[10px] font-bold">Click "Add Product" to create one.</p>
+               <p className="mt-1 text-[10px] font-bold">Click &quot;Add Product&quot; to create one.</p>
              </div>
           )}
         </div>

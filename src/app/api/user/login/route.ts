@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     next = body.next || '/';
-  } catch (e) {}
+  } catch {}
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

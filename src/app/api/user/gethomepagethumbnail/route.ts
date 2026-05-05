@@ -12,7 +12,8 @@ export async function GET() {
     
     // We only want to return categories that have a thumbnail for the home page (or maybe all, but the user requested thumbnail categories)
     return NextResponse.json({ data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

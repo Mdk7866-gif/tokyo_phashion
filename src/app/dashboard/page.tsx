@@ -127,24 +127,28 @@ function DashboardContent() {
   }, [showAlert]);
 
   useEffect(() => {
-    fetchUser();
-    if (activeTab === "my cart") {
-      fetchCart();
-    }
-    if (activeTab === "my whishlist") {
-      fetchWishlist();
-    }
+    requestAnimationFrame(() => {
+      fetchUser();
+      if (activeTab === "my cart") {
+        fetchCart();
+      }
+      if (activeTab === "my whishlist") {
+        fetchWishlist();
+      }
+    });
   }, [activeTab, fetchUser, fetchCart, fetchWishlist]);
 
   useEffect(() => {
     if (user) {
-      setProfileForm({
-        name: user.name || "",
-        mobile_number: user.mobile_number || "",
-        full_address: user.address?.full_address || "",
-        city: user.address?.city || "",
-        state: user.address?.state || "",
-        pincode: user.address?.pincode || ""
+      requestAnimationFrame(() => {
+        setProfileForm({
+          name: user.name || "",
+          mobile_number: user.mobile_number || "",
+          full_address: user.address?.full_address || "",
+          city: user.address?.city || "",
+          state: user.address?.state || "",
+          pincode: user.address?.pincode || ""
+        });
       });
     }
   }, [user]);
@@ -251,7 +255,7 @@ function DashboardContent() {
         const err = await res.json();
         showAlert("Error", err.error || "Failed to update profile", "error");
       }
-    } catch (e) {
+    } catch {
       showAlert("Error", "Something went wrong", "error");
     }
     setUpdatingProfile(false);

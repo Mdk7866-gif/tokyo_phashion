@@ -79,8 +79,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: "Profile updated successfully" });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Update profile error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

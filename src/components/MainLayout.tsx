@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
@@ -12,20 +12,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [isSplashChecking, setIsSplashChecking] = useState(true);
   const pathname = usePathname();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
     if (hasSeenSplash) {
-      setIsSplashChecking(false);
+      requestAnimationFrame(() => setIsSplashChecking(false));
     }
   }, []);
 
   const isAdminRoute = pathname?.startsWith("/admin");
   const isAuthRoute = pathname === "/login";
-
-  // If we are showing the splash, we wait for it to signal completion or just hide content
-  // We'll pass a callback to SplashScreen or just use a shared logic.
-  // For now, let's just make sure the main content doesn't flash.
-
 
   if (isAdminRoute || isAuthRoute) {
     return (
@@ -59,5 +54,3 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     </>
   );
 }
-
-

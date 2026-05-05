@@ -21,8 +21,9 @@ export async function POST(request: Request) {
       .insert([{ category_id: category.id, image_url: null }]);
 
     return NextResponse.json({ success: true, data: category });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -33,8 +34,9 @@ export async function PATCH(request: Request) {
     const { data, error } = await supabaseAdmin.from('categories').update({ name: name.toLowerCase() }).eq('id', id).select().single();
     if (error) throw error;
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -45,7 +47,8 @@ export async function DELETE(request: Request) {
     const { error } = await supabaseAdmin.from('categories').delete().eq('id', id);
     if (error) throw error;
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

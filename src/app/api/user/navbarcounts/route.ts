@@ -26,7 +26,7 @@ export async function GET() {
       cartCount: cartRes.count ?? 0,
       wishlistCount: wishlistRes.count ?? 0,
     });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ cartCount: 0, wishlistCount: 0 });
   }
 }
