@@ -5,10 +5,17 @@ import { supabaseAdmin } from '../../../../lib/supabase/admin'
 // Helper to get the base URL
 function getBaseUrl(request: Request) {
   const { origin } = new URL(request.url);
-  // If we have a domain name set in env, use it for non-localhost environments
-  if (process.env.DOMAIN_NAME && !origin.includes('localhost')) {
+  
+  // Always use the local origin during development (e.g., localhost or 127.0.0.1)
+  if (process.env.NODE_ENV === 'development') {
+    return origin;
+  }
+  
+  // In production, force the use of the configured DOMAIN_NAME if available
+  if (process.env.DOMAIN_NAME) {
     return `https://${process.env.DOMAIN_NAME}`;
   }
+  
   return origin;
 }
 
