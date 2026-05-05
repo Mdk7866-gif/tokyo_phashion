@@ -210,7 +210,7 @@ function BriefProductContent() {
     if (!variantId) return;
 
     if (!isLoggedIn) {
-      router.push(`/login?redirectTo=${encodeURIComponent(window.location.href)}`);
+      router.push(`/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
 

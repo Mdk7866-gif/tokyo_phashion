@@ -52,7 +52,18 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${baseUrl}${next}`)
+      // Sanitize the 'next' path to ensure it's relative
+      let redirectPath = next
+      if (next.startsWith('http')) {
+        try {
+          const nextUrl = new URL(next)
+          redirectPath = nextUrl.pathname + nextUrl.search
+        } catch {
+          redirectPath = '/'
+        }
+      }
+
+      return NextResponse.redirect(`${baseUrl}${redirectPath}`)
     }
   }
 
