@@ -608,7 +608,7 @@ function DetailedProductContent() {
                 }`}
               >
                 <ShoppingBag className="h-4 w-4" />
-                {addingToCart ? "Adding..." : "Add to Bag"}
+                {addingToCart ? "Adding..." : "Add to Cart"}
               </button>
 
               <button 
