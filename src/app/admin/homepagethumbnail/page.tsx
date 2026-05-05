@@ -3,19 +3,40 @@
 import React, { useEffect, useState } from "react";
 import HomePageThumbnailCard from "@/components/admin/HomePageThumbnailCard";
 import { Image as ImageIcon, LayoutGrid } from "lucide-react";
+import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 
 export default function HomePageThumbnailPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<{ isOpen: boolean; title: string; message: string; type: "success" | "error" | "warning" | "info" }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
+
   const fetchData = async () => {
     try {
       const res = await fetch('/api/admin/crudhomepagethumnail');
       if (res.ok) {
         const result = await res.json();
         setCategories(result.data || []);
+      } else {
+        setAlert({
+          isOpen: true,
+          title: "Fetch Error",
+          message: "Failed to load category thumbnails. Please refresh the page.",
+          type: "error"
+        });
       }
     } catch (error) {
       console.error("Failed to fetch categories", error);
+      setAlert({
+        isOpen: true,
+        title: "Network Error",
+        message: "Check your connection and try again.",
+        type: "error"
+      });
     } finally {
       setLoading(false);
     }
@@ -63,6 +84,14 @@ export default function HomePageThumbnailPage() {
           <p className="mt-1 text-[10px] font-bold">Add categories in the sidebar first</p>
         </div>
       )}
+
+      <AlertMessagePopUp
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+        title={alert.title}
+        message={alert.message}
+        type={alert.type}
+      />
     </div>
   );
 }

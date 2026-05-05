@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload, ImageIcon, Loader2, Trash2 } from "lucide-react";
+import { Upload, ImageIcon, Loader2, Trash2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import ConfirmationMessagePopUp from "../ConfirmationMessagePopUp";
+import AlertMessagePopUp from "../AlertMessagePopUp";
 
 interface Category {
   id: string;
@@ -23,9 +24,22 @@ interface HomePageThumbnailCardProps {
 export default function HomePageThumbnailCard({ category, onUpdate }: HomePageThumbnailCardProps) {
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [alert, setAlert] = useState<{ isOpen: boolean; title: string; message: string; type: "success" | "error" | "warning" | "info" }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
+
   const thumbnail = category.category_thumbnails;
   const currentImage = Array.isArray(thumbnail) ? thumbnail[0]?.image_url : thumbnail?.image_url;
   const displayImage = currentImage ? `${currentImage}?t=${Date.now()}` : null;
+
+  const showAlert = (title: string, message: string, type: "success" | "error" | "warning" | "info" = "error") => {
+    setAlert({ isOpen: true, title, message, type });
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,10 +56,17 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
         body: formData,
       });
       if (res.ok) {
+        showAlert("Success", "Category thumbnail updated successfully", "success");
+        setImageLoading(true);
+        setImageError(false);
         onUpdate();
+      } else {
+        const err = await res.json();
+        showAlert("Upload Failed", err.error || "Failed to upload image", "error");
       }
     } catch (error) {
       console.error("Upload failed", error);
+      showAlert("Upload Failed", "An unexpected error occurred during upload", "error");
     } finally {
       setUploading(false);
     }
@@ -64,10 +85,15 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
         body: JSON.stringify({ category_id: category.id }),
       });
       if (res.ok) {
+        showAlert("Success", "Thumbnail removed successfully", "success");
         onUpdate();
+      } else {
+        const err = await res.json();
+        showAlert("Delete Failed", err.error || "Failed to remove thumbnail", "error");
       }
     } catch (error) {
       console.error("Delete failed", error);
+      showAlert("Delete Failed", "An unexpected error occurred", "error");
     } finally {
       setUploading(false);
     }
@@ -75,19 +101,40 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
 
   return (
     <div className="group relative border border-black bg-white p-4 transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-      <div className="mb-4 aspect-[4/5] relative w-full overflow-hidden border border-zinc-100 bg-zinc-50 flex items-center justify-center">
-        {displayImage ? (
-          <Image
-            src={displayImage}
-            alt={category.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+      <div className="mb-4 aspect-[4/5] relative w-full overflow-hidden border border-zinc-100 bg-zinc-50 flex items-center justify-center group-hover:border-black transition-colors">
+        {displayImage && !imageError ? (
+          <>
+            <Image
+              src={displayImage}
+              alt={category.name}
+              fill
+              className={`object-cover transition-all duration-500 ${imageLoading ? 'scale-110 blur-sm grayscale' : 'scale-100 blur-0 grayscale-0'}`}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onLoadingComplete={() => setImageLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setImageLoading(false);
+              }}
+            />
+            {imageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-50/50">
+                <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
+               </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col items-center gap-2 text-zinc-300">
-            <ImageIcon className="h-12 w-12" />
-            <span className="text-[10px] font-black uppercase tracking-widest">No Thumbnail</span>
+            {imageError ? (
+               <>
+                 <AlertCircle className="h-10 w-10 text-red-200" />
+                 <span className="text-[8px] font-black uppercase tracking-widest text-red-300">Load Failed</span>
+               </>
+            ) : (
+               <>
+                 <ImageIcon className="h-10 w-10" />
+                 <span className="text-[8px] font-black uppercase tracking-widest">Empty</span>
+               </>
+            )}
           </div>
         )}
         
@@ -131,6 +178,14 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
         message={`Are you sure you want to remove the thumbnail for ${category.name}?`}
         confirmText="Remove"
         type="warning"
+      />
+
+      <AlertMessagePopUp
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+        title={alert.title}
+        message={alert.message}
+        type={alert.type}
       />
     </div>
   );
