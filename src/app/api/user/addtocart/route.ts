@@ -17,15 +17,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing variant_size_id" }, { status: 400 });
     }
 
-    // Just a simple insert. If it exists, the UNIQUE constraint handles it.
+    // 1. Check if item already exists in cart to provide a friendly message
+    const { data: existingItem } = await supabase
+      .from("cart_items")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("variant_size_id", variant_size_id)
+      .single();
+
+    if (existingItem) {
+      return NextResponse.json({ error: "You already added this item in cart" }, { status: 400 });
+    }
+
+    // 2. Perform the insert
     const { error: insertError } = await supabase
       .from("cart_items")
-      .upsert({
+      .insert({
         user_id: user.id,
         variant_size_id
-      }, { onConflict: 'user_id, variant_size_id' });
+      });
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return NextResponse.json({ error: "Could not add item to bag. Please try again." }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
