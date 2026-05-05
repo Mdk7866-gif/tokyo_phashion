@@ -115,7 +115,7 @@ const Footer = () => {
               &copy; {new Date().getFullYear()} TOKYO FASHION. ALL RIGHTS RESERVED.
             </p>
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 text-center sm:text-left">
-              Managed by <span className="text-zinc-700">Mujahid Khan</span> <span className="mx-2 opacity-30 text-gray-400">|</span> <a href="tel:8511274216" className="hover:text-black transition-colors text-gray-400">8511274216</a>
+              Managed by <span className="text-zinc-700">Mujahid Khan</span> <span className="mx-2 opacity-30 text-gray-400">|</span> <a href="tel:8511274216" className="hover:text-black transition-colors text-gray-500">8511274216</a>
             </p>
           </div>
           <div className="flex justify-center gap-6 text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
