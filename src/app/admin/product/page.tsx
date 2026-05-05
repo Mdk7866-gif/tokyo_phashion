@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductDetailedDescriptionCard from "@/components/admin/ProductDetailedDescriptionCard";
 import ProductBriefDescriptionCard from "@/components/admin/ProductBriefDescriptionCard";
+import AddProductSimpleForm from "@/components/admin/AddProductSimpleForm";
 import { Plus, Package } from "lucide-react";
 
 function ProductContent() {
@@ -19,6 +20,7 @@ function ProductContent() {
 
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [formMode, setFormMode] = useState<"basic" | "advanced">("basic");
 
   const fetchProducts = async () => {
     if (!sub_id) return;
@@ -53,14 +55,63 @@ function ProductContent() {
 
   // If adding or editing a product
   if (product_id) {
+    if (product_id === "NEW") {
+      return (
+        <div className="space-y-6">
+          <div className="flex justify-end">
+            <div className="inline-flex rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-black overflow-hidden" role="group">
+              <button
+                type="button"
+                onClick={() => setFormMode("basic")}
+                className={`px-4 py-2 text-xs font-black uppercase tracking-widest ${formMode === "basic" ? "bg-black text-white" : "bg-white text-zinc-500 hover:bg-zinc-50 hover:text-black"}`}
+              >
+                Basic Mode
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormMode("advanced")}
+                className={`px-4 py-2 text-xs font-black uppercase tracking-widest border-l border-black ${formMode === "advanced" ? "bg-black text-white" : "bg-white text-zinc-500 hover:bg-zinc-50 hover:text-black"}`}
+              >
+                Advanced Mode
+              </button>
+            </div>
+          </div>
+          {formMode === "basic" ? (
+            <AddProductSimpleForm
+              category={category}
+              subcategory={subcategory}
+              cat_id={cat_id}
+              sub_id={sub_id}
+              onBack={() => {
+                router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}`);
+              }}
+            />
+          ) : (
+            <ProductDetailedDescriptionCard 
+              category={category} 
+              subcategory={subcategory} 
+              cat_id={cat_id}
+              sub_id={sub_id}
+              product_id={null} 
+              color={color === "NEW" ? null : color}
+              onBack={() => {
+                router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}`);
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Editing existing product
     return (
       <ProductDetailedDescriptionCard 
         category={category} 
         subcategory={subcategory} 
         cat_id={cat_id}
         sub_id={sub_id}
-        product_id={product_id === "NEW" ? null : product_id} 
-        color={color === "NEW" ? null : color}
+        product_id={product_id} 
+        color={color}
         onBack={() => {
           router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}`);
         }}
