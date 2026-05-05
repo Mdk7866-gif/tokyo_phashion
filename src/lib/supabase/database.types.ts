@@ -143,6 +143,180 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          color_snapshot: string
+          created_at: string | null
+          id: string
+          order_id: string
+          price_snapshot: number
+          product_id: string
+          product_name_snapshot: string
+          product_variant_id: string
+          quantity: number
+          size_snapshot: string
+          variant_size_id: string
+        }
+        Insert: {
+          color_snapshot: string
+          created_at?: string | null
+          id?: string
+          order_id: string
+          price_snapshot: number
+          product_id: string
+          product_name_snapshot: string
+          product_variant_id: string
+          quantity?: number
+          size_snapshot: string
+          variant_size_id: string
+        }
+        Update: {
+          color_snapshot?: string
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          price_snapshot?: number
+          product_id?: string
+          product_name_snapshot?: string
+          product_variant_id?: string
+          quantity?: number
+          size_snapshot?: string
+          variant_size_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_size_id_fkey"
+            columns: ["variant_size_id"]
+            isOneToOne: false
+            referencedRelation: "variant_sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          delivery_status: Database["public"]["Enums"]["delivery_status_enum"]
+          id: string
+          parcel_image_url: string | null
+          payment_method: Database["public"]["Enums"]["payment_method_enum"]
+          payment_status: Database["public"]["Enums"]["payment_status_enum"]
+          snapshot_order_city: string
+          snapshot_order_full_address: string
+          snapshot_order_pincode: string
+          snapshot_order_state: string
+          total_amount: number
+          tracking_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
+          id?: string
+          parcel_image_url?: string | null
+          payment_method: Database["public"]["Enums"]["payment_method_enum"]
+          payment_status?: Database["public"]["Enums"]["payment_status_enum"]
+          snapshot_order_city: string
+          snapshot_order_full_address: string
+          snapshot_order_pincode: string
+          snapshot_order_state: string
+          total_amount: number
+          tracking_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
+          id?: string
+          parcel_image_url?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method_enum"]
+          payment_status?: Database["public"]["Enums"]["payment_status_enum"]
+          snapshot_order_city?: string
+          snapshot_order_full_address?: string
+          snapshot_order_pincode?: string
+          snapshot_order_state?: string
+          total_amount?: number
+          tracking_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          order_id: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          status: Database["public"]["Enums"]["payment_status_enum"]
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          order_id: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: Database["public"]["Enums"]["payment_status_enum"]
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: Database["public"]["Enums"]["payment_status_enum"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           created_at: string | null
@@ -401,7 +575,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      delivery_status_enum: "pending" | "cancelled" | "delivered"
+      payment_method_enum: "cod" | "online"
+      payment_status_enum: "pending" | "paid" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -528,6 +704,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      delivery_status_enum: ["pending", "cancelled", "delivered"],
+      payment_method_enum: ["cod", "online"],
+      payment_status_enum: ["pending", "paid", "failed"],
+    },
   },
 } as const

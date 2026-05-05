@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
+// ConfirmationMessagePopUp no longer needed — COD flow handled on /checkout
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
 import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart, Zap } from "lucide-react";
 
@@ -90,10 +90,7 @@ function DetailedProductContent() {
   const isWishlisted = selectedVariant?.id ? wishlistedVariantIds.has(selectedVariant.id) : false;
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [codConfirmation, setCodConfirmation] = useState({
-    isOpen: false,
-    total: 0
-  });
+  // codConfirmation removed — flow now redirects to /checkout
 
   const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -365,20 +362,16 @@ function DetailedProductContent() {
   };
 
   const onPaymentSelect = (method: "cod" | "online") => {
-    // For now, we show a success message as the order system is pending
-    const subtotal = (selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity;
-    const total = subtotal + 49;
-
-    if (method === "cod") {
-      setCodConfirmation({ isOpen: true, total });
-    } else {
-      setIsPaymentPopUpOpen(false);
-      showAlert(
-        "Order Initialized", 
-        `Redirecting to secure online payment gateway for ₹${total}...`, 
-        "info"
-      );
-    }
+    if (!selectedSize || !selectedVariant || !product) return;
+    setIsPaymentPopUpOpen(false);
+    const params = new URLSearchParams({
+      variant_size_id: selectedSize.id,
+      product_id: product.id,
+      product_variant_id: selectedVariant.id,
+      quantity: quantity.toString(),
+      payment_method: method,
+    });
+    router.push(`/checkout?${params.toString()}`);
   };
 
   if (loading) {
@@ -422,19 +415,7 @@ function DetailedProductContent() {
         subtotalAmount={(selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity}
       />
 
-      <ConfirmationMessagePopUp
-        isOpen={codConfirmation.isOpen}
-        onClose={() => setCodConfirmation({ ...codConfirmation, isOpen: false })}
-        onConfirm={() => {
-          setCodConfirmation({ ...codConfirmation, isOpen: false });
-          setIsPaymentPopUpOpen(false);
-          showAlert("Order Confirmed", "Your COD order has been placed successfully. Please pay the advance ₹100 via the link sent to your email.", "success");
-        }}
-        title="Confirm COD Advance"
-        message={`You have to pay ₹100 now via online to confirm your order. The remaining balance of ₹${codConfirmation.total - 100} is payable at the time of delivery.`}
-        confirmText="Pay ₹100 & Confirm"
-        type="info"
-      />
+      {/* COD confirmation popup removed — handled on /checkout page */}
 
       {/* Breadcrumb */}
       <div className="border-b border-black">
