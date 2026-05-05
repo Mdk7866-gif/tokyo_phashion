@@ -19,6 +19,7 @@ function DashboardContent() {
   const [loading, setLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
   const [profileForm, setProfileForm] = useState({
     name: "",
     mobile_number: "",
@@ -78,6 +79,7 @@ function DashboardContent() {
   };
 
   const fetchUser = async () => {
+    setUserLoading(true);
     try {
       const res = await fetch("/api/user/me");
       const json = await res.json();
@@ -93,6 +95,8 @@ function DashboardContent() {
       setProfileIncomplete(isIncomplete);
     } catch {
       router.push("/login");
+    } finally {
+      setUserLoading(false);
     }
   };
 
@@ -169,10 +173,6 @@ function DashboardContent() {
     if (!checkProfileBeforePurchase()) return;
     
     const subtotal = cartItems.reduce((acc, item) => {
-      // Assuming quantity is 1 by default in cart view, or we fetch it. 
-      // The UserCartItemCard manages its own quantity. If we want exact cart totals, 
-      // we might need to lift quantity state up, but for now we'll assume 1 per cart item for 'Buy All' 
-      // or rely on cart totals if stored in DB. Let's assume 1 for simplicity if not stored.
       const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
       return acc + (price * 1); 
     }, 0);
@@ -295,6 +295,11 @@ function DashboardContent() {
         {/* Content Area */}
         <main className="min-w-0">
           {activeTab === "profile" && (
+            userLoading ? (
+              <div className="border border-black bg-white p-12 text-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-300 animate-pulse">Synchronising Profile...</p>
+              </div>
+            ) : (
             <div className="border border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                <div className="bg-zinc-50 border-b border-black px-5 py-3 flex items-center justify-between">
                  <div className="flex items-center gap-2">
@@ -410,6 +415,7 @@ function DashboardContent() {
                  </div>
                </form>
             </div>
+            )
           )}
 
           {activeTab === "my cart" && (

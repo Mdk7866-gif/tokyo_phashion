@@ -16,19 +16,31 @@ export async function GET(request: Request) {
       const user = data.user
       
       // Sync user to public.users table
-      const { error: syncError } = await supabaseAdmin
-        .from('users')
-        .upsert({
-          id: user.id,
-          name: '', 
-          email: user.email,
-          google_id: user.id,
-          profile_image: user.user_metadata.avatar_url,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'email' })
+      // 1. Check if user already exists to preserve their name if they've updated it in the dashboard
+      if (user.email) {
+        const { data: existingUser } = await supabaseAdmin
+          .from('users')
+          .select('name')
+          .eq('email', user.email)
+          .single();
 
-      if (syncError) {
-        console.error('Error syncing user to public.users:', syncError)
+        // 2. Determine the name: Existing > Google Metadata > Empty
+        const nameToSet = existingUser?.name || (user.user_metadata?.full_name as string) || '';
+
+        const { error: syncError } = await supabaseAdmin
+          .from('users')
+          .upsert({
+            id: user.id,
+            name: nameToSet, 
+            email: user.email,
+            google_id: user.id,
+            profile_image: user.user_metadata?.avatar_url as string,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'email' })
+
+        if (syncError) {
+          console.error('Error syncing user to public.users:', syncError)
+        }
       }
 
       return NextResponse.redirect(`${origin}${next}`)
