@@ -48,8 +48,9 @@ function CheckoutContent() {
   const productId         = searchParams.get("product_id") ?? "";
   const productVariantId  = searchParams.get("product_variant_id") ?? "";
   const quantity          = Math.max(1, parseInt(searchParams.get("quantity") ?? "1", 10) || 1);
-  const paymentMethod     = (searchParams.get("payment_method") ?? "online") as "cod" | "online";
+  const initialMethod     = (searchParams.get("payment_method") === "cod" ? "cod" : "online");
 
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">(initialMethod);
   const [step, setStep]               = useState<Step>("review");
   const [loadingData, setLoadingData] = useState(true);
   const [checkoutItems, setCheckoutItems] = useState<{ variantSize: VariantSize, quantity: number }[]>([]);
@@ -328,8 +329,30 @@ function CheckoutContent() {
             </div>
 
             {/* Method */}
-            <div className="border border-black p-4 flex items-center gap-3">
-              {paymentMethod === "online" ? <><Zap className="h-4 w-4 fill-current" /><div><p className="text-[10px] font-black uppercase tracking-widest">Pay Online</p><p className="text-[9px] text-zinc-500">Full amount ₹{total} via Razorpay</p></div></> : <><ShoppingBag className="h-4 w-4" /><div><p className="text-[10px] font-black uppercase tracking-widest">Cash on Delivery</p><p className="text-[9px] text-zinc-500">₹{amountNow} advance · ₹{(total - amountNow).toFixed(0)} at delivery</p></div></>}
+            <div className="border border-black p-4 space-y-3">
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Select Payment Method</h2>
+              
+              <button 
+                onClick={() => setPaymentMethod("online")}
+                className={`w-full flex items-center gap-3 p-3 border-2 transition-all text-left ${paymentMethod === 'online' ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+              >
+                <Zap className={`h-4 w-4 ${paymentMethod === 'online' ? 'fill-black' : 'text-zinc-400'}`} />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black">Pay Online</p>
+                  <p className="text-[9px] text-zinc-500">Full amount ₹{total} via Razorpay</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => setPaymentMethod("cod")}
+                className={`w-full flex items-center gap-3 p-3 border-2 transition-all text-left ${paymentMethod === 'cod' ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+              >
+                <ShoppingBag className={`h-4 w-4 ${paymentMethod === 'cod' ? 'text-black' : 'text-zinc-400'}`} />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black">Cash on Delivery</p>
+                  <p className="text-[9px] text-zinc-500">₹{amountNow} advance · ₹{(total - amountNow).toFixed(0)} at delivery</p>
+                </div>
+              </button>
             </div>
           </div>
 

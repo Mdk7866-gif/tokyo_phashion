@@ -178,42 +178,21 @@ function DashboardContent() {
 
   const handleBuyItem = (item: CartItem, quantity: number) => {
     if (!checkProfileBeforePurchase()) return;
-    const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
-    setPaymentSubtotal(price * quantity);
-    setSelectedItemForPurchase({ item, quantity });
-    setIsPaymentPopUpOpen(true);
+    const params = new URLSearchParams({
+      variant_size_id: item.variant_sizes.id,
+      product_id: item.variant_sizes.product_variants.products.id,
+      product_variant_id: item.variant_sizes.product_variants.id,
+      quantity: quantity.toString(),
+    });
+    router.push(`/checkout?${params.toString()}`);
   };
 
   const handleBuyAll = () => {
     if (cartItems.length === 0) return;
     if (!checkProfileBeforePurchase()) return;
-    
-    const subtotal = cartItems.reduce((acc, item) => {
-      const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
-      return acc + (price * 1); 
-    }, 0);
-    
-    setPaymentSubtotal(subtotal);
-    setSelectedItemForPurchase('all');
-    setIsPaymentPopUpOpen(true);
+    router.push(`/checkout?cart_checkout=true`);
   };
 
-  const onPaymentSelect = (method: "cod" | "online") => {
-    setIsPaymentPopUpOpen(false);
-    if (selectedItemForPurchase === 'all') {
-      router.push(`/checkout?cart_checkout=true&payment_method=${method}`);
-    } else if (selectedItemForPurchase) {
-      const { item, quantity } = selectedItemForPurchase;
-      const params = new URLSearchParams({
-        variant_size_id: item.variant_sizes.id,
-        product_id: item.variant_sizes.product_variants.products.id,
-        product_variant_id: item.variant_sizes.product_variants.id,
-        quantity: quantity.toString(),
-        payment_method: method,
-      });
-      router.push(`/checkout?${params.toString()}`);
-    }
-  };
 
   const handleRemoveWishlistItem = async (id: string) => {
     try {
@@ -537,12 +516,7 @@ function DashboardContent() {
           )}
         </main>
 
-        <PaymentMethodConfirmationPopUp
-          isOpen={isPaymentPopUpOpen}
-          onClose={() => setIsPaymentPopUpOpen(false)}
-          onSelect={onPaymentSelect}
-          subtotalAmount={paymentSubtotal}
-        />
+
       </div>
     </div>
   );
