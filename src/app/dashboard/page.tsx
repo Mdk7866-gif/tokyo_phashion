@@ -7,7 +7,7 @@ import UserWishlistCard, { WishlistItem } from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
-import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap } from "lucide-react";
+import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap, Clock, CheckCircle, XCircle, AlertTriangle, MessageSquare, Star, Loader2 } from "lucide-react";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -31,6 +31,11 @@ function DashboardContent() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [reviewingItem, setReviewingItem] = useState<any>(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [submittingReview, setSubmittingReview] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [profileForm, setProfileForm] = useState({
@@ -131,6 +136,9 @@ function DashboardContent() {
       if (activeTab === "my whishlist") {
         fetchWishlist();
       }
+      if (activeTab === "my orders") {
+        fetchOrders();
+      }
     });
   }, [activeTab, fetchUser, fetchCart, fetchWishlist]);
 
@@ -158,6 +166,74 @@ function DashboardContent() {
       return false;
     }
     return true;
+  };
+
+  const fetchOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const res = await fetch("/api/user/orders");
+      if (res.ok) {
+        const json = await res.json();
+        setOrders(json.data || []);
+      } else {
+        const err = await res.json();
+        showAlert("Error", err.error || "Failed to fetch orders", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+    setOrdersLoading(false);
+  }, [showAlert]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to cancel this order? No refund will be issued if payment was made.")) return;
+    try {
+      const res = await fetch("/api/user/orders", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId })
+      });
+      if (res.ok) {
+        showAlert("Order Cancelled", "Your order has been cancelled.", "success");
+        fetchOrders();
+      } else {
+        const err = await res.json();
+        showAlert("Error", err.error || "Failed to cancel order", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewingItem) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch("/api/user/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: reviewingItem.orderId,
+          product_id: reviewingItem.productId,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment
+        })
+      });
+      if (res.ok) {
+        showAlert("Review Submitted", "Thank you for your feedback!", "success");
+        setReviewingItem(null);
+        setReviewForm({ rating: 5, comment: "" });
+      } else {
+        const err = await res.json();
+        showAlert("Error", err.error || "Failed to submit review", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+    setSubmittingReview(false);
   };
 
   const handleRemoveItem = async (id: string) => {
@@ -531,8 +607,167 @@ function DashboardContent() {
           )}
 
           {activeTab === "my orders" && (
-            <div className="border border-black bg-white py-12 text-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-300 italic">No previous orders</p>
+            <div className="space-y-4">
+              {ordersLoading ? (
+                <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-black border-t-transparent" /></div>
+              ) : orders.length === 0 ? (
+                <div className="border border-black bg-white py-12 text-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <Package className="h-8 w-8 mx-auto mb-4 text-zinc-300" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No Orders Yet</p>
+                  <button onClick={() => router.push("/")} className="mt-4 border border-black bg-black text-white px-6 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors">Start Shopping</button>
+                </div>
+              ) : (
+                orders.map((order) => (
+                  <div key={order.id} className="bg-white border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row">
+                    <div className="flex-1 p-4 sm:p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-100 gap-2">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Order #{order.id.slice(0,8)}</p>
+                          <p className="text-[10px] text-zinc-600 font-bold">{new Date(order.created_at).toLocaleDateString("en-IN", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border ${
+                            order.delivery_status === 'delivered' ? 'border-green-500 text-green-600 bg-green-50' : 
+                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-600 bg-red-50' : 
+                            'border-amber-500 text-amber-600 bg-amber-50'
+                          }`}>
+                            {order.delivery_status === 'delivered' ? <CheckCircle className="h-3 w-3" /> : 
+                             order.delivery_status === 'cancelled' ? <XCircle className="h-3 w-3" /> : 
+                             <Clock className="h-3 w-3" />}
+                            {order.delivery_status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 mb-4">
+                        {order.order_items.map((item: any) => (
+                          <div key={item.id} className="flex justify-between items-start">
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-tight">{item.product_name_snapshot}</p>
+                              <p className="text-[9px] text-zinc-500 font-bold mt-0.5 uppercase tracking-widest">{item.color_snapshot} · Size {item.size_snapshot} · Qty {item.quantity}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-black">₹{item.price_snapshot * item.quantity}</p>
+                              {order.delivery_status === "delivered" && (
+                                <button 
+                                  onClick={() => setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot })}
+                                  className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
+                                >
+                                  <Star className="h-2.5 w-2.5" /> Rate & Review
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Tracking / Address info */}
+                      <div className="bg-zinc-50 border border-zinc-200 p-3 flex flex-col sm:flex-row gap-4 justify-between mt-auto">
+                         <div className="flex-1">
+                           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1 flex items-center gap-1">Shipping To</p>
+                           <p className="text-[10px] text-zinc-600 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
+                         </div>
+                         <div className="flex-1 sm:text-right">
+                           {order.delivery_status === "pending" ? (
+                             <div>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Status</p>
+                                <p className="text-[10px] text-amber-600 font-bold">Waiting for admin to process order.</p>
+                             </div>
+                           ) : order.delivery_status === "cancelled" ? (
+                             <div>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Cancellation details</p>
+                                <p className="text-[10px] text-red-600 font-bold">Cancelled by {order.cancelled_by}. {order.cancellation_note ? `Reason: ${order.cancellation_note}` : ''}</p>
+                             </div>
+                           ) : (
+                             <div>
+                               <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Tracking ID</p>
+                               <p className="text-[10px] font-black">{order.tracking_id || "Not available"}</p>
+                             </div>
+                           )}
+                         </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Panel */}
+                    <div className="bg-zinc-100 border-t sm:border-t-0 sm:border-l border-zinc-200 w-full sm:w-48 p-4 flex flex-col justify-between">
+                      <div>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Payment summary</p>
+                        <div className="flex justify-between items-center mb-1">
+                           <span className="text-[10px] text-zinc-600 font-bold">Method</span>
+                           <span className="text-[10px] font-black uppercase">{order.payment_method}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-3">
+                           <span className="text-[10px] text-zinc-600 font-bold">Status</span>
+                           <span className={`text-[10px] font-black uppercase ${order.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>{order.payment_status}</span>
+                        </div>
+                        <div className="flex justify-between items-end border-t border-zinc-200 pt-2 mt-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
+                          <span className="text-lg font-black tracking-tighter leading-none">₹{order.total_amount}</span>
+                        </div>
+                      </div>
+                      
+                      {order.delivery_status === "pending" && (
+                        <div className="mt-4 pt-4 border-t border-zinc-200 text-center">
+                          <p className="text-[8px] font-bold text-zinc-500 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
+                          <button 
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2 text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <AlertTriangle className="h-3 w-3" /> Cancel Order
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Review Modal */}
+          {reviewingItem && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+              <div className="bg-white border-2 border-black p-6 w-full max-w-md shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative">
+                <button 
+                  onClick={() => setReviewingItem(null)}
+                  className="absolute top-4 right-4 text-zinc-400 hover:text-black"
+                >
+                  <XCircle className="h-5 w-5" />
+                </button>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-1">Rate Product</h3>
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">{reviewingItem.productName}</p>
+                
+                <div className="mb-6 flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      key={star} 
+                      onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                      className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Star className={`h-10 w-10 ${reviewForm.rating >= star ? "fill-amber-400 text-amber-400" : "text-zinc-200"}`} />
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="mb-6">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Write a review (optional)</label>
+                  <textarea 
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                    placeholder="Tell others what you think about this product..."
+                    className="w-full border border-black p-3 text-sm focus:outline-none focus:ring-1 focus:ring-black h-24 resize-none"
+                  />
+                </div>
+                
+                <button 
+                  onClick={handleSubmitReview}
+                  disabled={submittingReview}
+                  className="w-full border border-black bg-black text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"
+                >
+                  {submittingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                  Submit Review
+                </button>
+              </div>
             </div>
           )}
         </main>
