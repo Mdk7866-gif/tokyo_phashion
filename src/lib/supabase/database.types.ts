@@ -216,9 +216,12 @@ export type Database = {
       }
       orders: {
         Row: {
+          cancellation_note: string | null
+          cancelled_by: string | null
           created_at: string | null
           delivery_status: Database["public"]["Enums"]["delivery_status_enum"]
           id: string
+          parcel_image: string | null
           parcel_image_url: string | null
           payment_method: Database["public"]["Enums"]["payment_method_enum"]
           payment_status: Database["public"]["Enums"]["payment_status_enum"]
@@ -232,9 +235,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancellation_note?: string | null
+          cancelled_by?: string | null
           created_at?: string | null
           delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
           id?: string
+          parcel_image?: string | null
           parcel_image_url?: string | null
           payment_method: Database["public"]["Enums"]["payment_method_enum"]
           payment_status?: Database["public"]["Enums"]["payment_status_enum"]
@@ -248,9 +254,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancellation_note?: string | null
+          cancelled_by?: string | null
           created_at?: string | null
           delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
           id?: string
+          parcel_image?: string | null
           parcel_image_url?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method_enum"]
           payment_status?: Database["public"]["Enums"]["payment_status_enum"]
@@ -418,6 +427,64 @@ export type Database = {
             columns: ["subcategory_id"]
             isOneToOne: false
             referencedRelation: "subcategories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          order_id: string
+          product_id: string
+          rating: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          order_id: string
+          product_id: string
+          rating: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          order_id?: string
+          product_id?: string
+          rating?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
