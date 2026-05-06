@@ -44,13 +44,9 @@ function DashboardContent() {
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   
-  // Payment Flow State
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [paymentSubtotal, setPaymentSubtotal] = useState(0);
-  const [codConfirmation, setCodConfirmation] = useState({
-    isOpen: false,
-    total: 0
-  });
+  const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -184,6 +180,7 @@ function DashboardContent() {
     if (!checkProfileBeforePurchase()) return;
     const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
     setPaymentSubtotal(price * quantity);
+    setSelectedItemForPurchase({ item, quantity });
     setIsPaymentPopUpOpen(true);
   };
 
@@ -197,19 +194,24 @@ function DashboardContent() {
     }, 0);
     
     setPaymentSubtotal(subtotal);
+    setSelectedItemForPurchase('all');
     setIsPaymentPopUpOpen(true);
   };
 
   const onPaymentSelect = (method: "cod" | "online") => {
-    if (method === "cod") {
-      setCodConfirmation({ isOpen: true, total: paymentSubtotal + 49 });
-    } else {
-      setIsPaymentPopUpOpen(false);
-      showAlert(
-        "Order Initialized", 
-        `Redirecting to secure online payment gateway for ₹${paymentSubtotal + 49}...`, 
-        "info"
-      );
+    setIsPaymentPopUpOpen(false);
+    if (selectedItemForPurchase === 'all') {
+      router.push(`/checkout?cart_checkout=true&payment_method=${method}`);
+    } else if (selectedItemForPurchase) {
+      const { item, quantity } = selectedItemForPurchase;
+      const params = new URLSearchParams({
+        variant_size_id: item.variant_sizes.id,
+        product_id: item.variant_sizes.product_variants.products.id,
+        product_variant_id: item.variant_sizes.product_variants.id,
+        quantity: quantity.toString(),
+        payment_method: method,
+      });
+      router.push(`/checkout?${params.toString()}`);
     }
   };
 
@@ -540,20 +542,6 @@ function DashboardContent() {
           onClose={() => setIsPaymentPopUpOpen(false)}
           onSelect={onPaymentSelect}
           subtotalAmount={paymentSubtotal}
-        />
-
-        <ConfirmationMessagePopUp
-          isOpen={codConfirmation.isOpen}
-          onClose={() => setCodConfirmation({ ...codConfirmation, isOpen: false })}
-          onConfirm={() => {
-            setCodConfirmation({ ...codConfirmation, isOpen: false });
-            setIsPaymentPopUpOpen(false);
-            showAlert("Order Confirmed", "Your COD order has been placed successfully. Please pay the advance ₹100 via the link sent to your email.", "success");
-          }}
-          title="Confirm COD Advance"
-          message={`You have to pay ₹100 now via online to confirm your order. The remaining balance of ₹${codConfirmation.total - 100} is payable at the time of delivery.`}
-          confirmText="Pay ₹100 & Confirm"
-          type="info"
         />
       </div>
     </div>

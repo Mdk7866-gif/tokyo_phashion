@@ -43,6 +43,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const isCartCheckout    = searchParams.get("cart_checkout") === "true";
   const variantSizeId     = searchParams.get("variant_size_id") ?? "";
   const productId         = searchParams.get("product_id") ?? "";
   const productVariantId  = searchParams.get("product_variant_id") ?? "";
@@ -51,7 +52,7 @@ function CheckoutContent() {
 
   const [step, setStep]               = useState<Step>("review");
   const [loadingData, setLoadingData] = useState(true);
-  const [variantSize, setVariantSize] = useState<VariantSize | null>(null);
+  const [checkoutItems, setCheckoutItems] = useState<{ variantSize: VariantSize, quantity: number }[]>([]);
   const [user, setUser]               = useState<UserProfile | null>(null);
   const [successMsg, setSuccessMsg]   = useState("");
   const [alert, setAlert]             = useState<{ isOpen: boolean; title: string; message: string; type: "success"|"error"|"info"|"warning" }>({ isOpen: false, title: "", message: "", type: "info" });
@@ -64,28 +65,54 @@ function CheckoutContent() {
     setAlert({ isOpen: true, title, message, type });
   }, []);
 
-  // Load user + product
+  // Load user + products
   useEffect(() => {
-    if (!variantSizeId || !productId || !productVariantId) { router.replace("/"); return; }
+    if (!isCartCheckout && (!variantSizeId || !productId || !productVariantId)) { router.replace("/"); return; }
     (async () => {
       try {
-        const [meRes, vsRes] = await Promise.all([
-          fetch("/api/user/me"),
-          fetch(`/api/user/getvariantsize?id=${variantSizeId}`),
-        ]);
+        const fetchPromises: Promise<any>[] = [fetch("/api/user/me")];
+        if (isCartCheckout) {
+          fetchPromises.push(fetch("/api/user/getcart"));
+        } else {
+          fetchPromises.push(fetch(`/api/user/getvariantsize?id=${variantSizeId}`));
+        }
+        const [meRes, dataRes] = await Promise.all(fetchPromises);
         const meJson = await meRes.json();
         if (!meJson.user) { router.replace(`/login?redirectTo=${encodeURIComponent(window.location.href)}`); return; }
         setUser(meJson.user);
-        if (vsRes.ok) { const vsJson = await vsRes.json(); setVariantSize(vsJson.data); }
+        if (dataRes.ok) { 
+          const dataJson = await dataRes.json(); 
+          if (isCartCheckout) {
+            // Map cart items
+            const items = (dataJson.data || []).map((ci: any) => ({
+              quantity: 1, // Currently cart doesn't have quantity, defaults to 1
+              variantSize: {
+                id: ci.variant_sizes.id,
+                size: ci.variant_sizes.size,
+                discount_price: ci.variant_sizes.discount_price,
+                original_price: ci.variant_sizes.original_price,
+                stock: ci.variant_sizes.stock,
+                product_variants: {
+                  id: ci.product_variants.id,
+                  color: ci.product_variants.color,
+                  product_images: ci.product_variants.product_images,
+                  products: { id: ci.product_variants.product_id, name: ci.product_variants.products.name }
+                }
+              }
+            }));
+            setCheckoutItems(items);
+          } else {
+            setCheckoutItems([{ variantSize: dataJson.data, quantity }]);
+          }
+        }
       } catch (e) { console.error(e); showAlert("Error", "Failed to load checkout data.", "error"); }
       finally { setLoadingData(false); }
     })();
-  }, [variantSizeId, productId, productVariantId, router, showAlert]);
+  }, [isCartCheckout, variantSizeId, productId, productVariantId, quantity, router, showAlert]);
 
-  const price         = variantSize ? (variantSize.discount_price ?? variantSize.original_price) : 0;
-  const subtotal      = price * quantity;
-  const total         = subtotal + DELIVERY_CHARGE;
-  const amountNow     = paymentMethod === "cod" ? Math.min(total, COD_ADVANCE) : total;
+  const subtotal = checkoutItems.reduce((acc, item) => acc + (item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity, 0);
+  const total = subtotal + DELIVERY_CHARGE;
+  const amountNow = paymentMethod === "cod" ? Math.min(total, COD_ADVANCE) : total;
   const amountNowPaise = Math.max(Math.round(amountNow * 100), 100);
 
   // Open the Razorpay modal with given data
@@ -166,10 +193,16 @@ function CheckoutContent() {
 
     setStep("processing");
     try {
+      const payloadItems = checkoutItems.map(i => ({
+        variant_size_id: i.variantSize.id,
+        product_id: i.variantSize.product_variants.products.id,
+        product_variant_id: i.variantSize.product_variants.id,
+        quantity: i.quantity
+      }));
       const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_method: paymentMethod, items: [{ variant_size_id: variantSizeId, product_id: productId, product_variant_id: productVariantId, quantity }] }),
+        body: JSON.stringify({ payment_method: paymentMethod, items: payloadItems }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -186,14 +219,9 @@ function CheckoutContent() {
       setStep("review");
       showAlert("Error", "An unexpected error occurred. Please try again.", "error");
     }
-  }, [user, paymentMethod, variantSizeId, productId, productVariantId, quantity, openRazorpayModal, showAlert]);
+  }, [user, paymentMethod, checkoutItems, openRazorpayModal, showAlert]);
 
-  const productName  = variantSize?.product_variants?.products?.name ?? "Product";
-  const color        = variantSize?.product_variants?.color ?? "";
-  const size         = variantSize?.size ?? "";
-  const images       = variantSize?.product_variants?.product_images ?? [];
-  const thumbUrl     = [...images].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ?? null;
-  const isRetry      = !!rzpDataRef.current;
+  const isRetry = !!rzpDataRef.current;
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
 
@@ -241,22 +269,30 @@ function CheckoutContent() {
             {/* Product */}
             <div>
               <h2 className="text-[10px] font-black uppercase tracking-widest mb-4 text-zinc-400">Your Order</h2>
-              <div className="border border-black p-4 flex gap-4">
-                {thumbUrl ? (
-                  <div className="relative h-24 w-20 shrink-0 border border-zinc-200 overflow-hidden">
-                    <Image src={thumbUrl} alt={productName} fill sizes="80px" className="object-cover" />
-                  </div>
-                ) : (
-                  <div className="h-24 w-20 shrink-0 border border-zinc-200 bg-zinc-50 flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-zinc-300" /></div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-black uppercase italic tracking-tighter text-lg leading-tight">{productName}</p>
-                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{color} · Size {size}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Qty: {quantity}</span>
-                    <span className="font-black text-sm">₹{(price * quantity).toFixed(0)}</span>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                {checkoutItems.map((item, idx) => {
+                  const images = item.variantSize.product_variants.product_images ?? [];
+                  const thumbUrl = [...images].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ?? null;
+                  return (
+                    <div key={idx} className="border border-black p-4 flex gap-4">
+                      {thumbUrl ? (
+                        <div className="relative h-24 w-20 shrink-0 border border-zinc-200 overflow-hidden">
+                          <Image src={thumbUrl} alt={item.variantSize.product_variants.products.name} fill sizes="80px" className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="h-24 w-20 shrink-0 border border-zinc-200 bg-zinc-50 flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-zinc-300" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-black uppercase italic tracking-tighter text-lg leading-tight">{item.variantSize.product_variants.products.name}</p>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">{item.variantSize.product_variants.color} · Size {item.variantSize.size}</p>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Qty: {item.quantity}</span>
+                          <span className="font-black text-sm">₹{((item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity).toFixed(0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
