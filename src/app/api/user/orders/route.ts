@@ -52,6 +52,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Order already cancelled" }, { status: 400 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await ((admin as any).from("orders"))
     .update({ delivery_status: "cancelled", cancelled_by: "user", updated_at: new Date().toISOString() })
     .eq("id", order_id);

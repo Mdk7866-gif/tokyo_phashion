@@ -103,7 +103,7 @@ function DeliveredCard({ order }: { order: Order }) {
                           <StarRating rating={r.rating} />
                           <span className="text-[9px] text-zinc-400">{r.users?.name}</span>
                         </div>
-                        {r.comment && <p className="text-[10px] text-zinc-600 mt-1">"{r.comment}"</p>}
+                        {r.comment && <p className="text-[10px] text-zinc-600 mt-1">&quot;{r.comment}&quot;</p>}
                       </div>
                     ))}
                   </div>

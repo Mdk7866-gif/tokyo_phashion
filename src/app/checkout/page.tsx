@@ -56,6 +56,7 @@ function CheckoutContent() {
   const [user, setUser]               = useState<UserProfile | null>(null);
   const [successMsg, setSuccessMsg]   = useState("");
   const [alert, setAlert]             = useState<{ isOpen: boolean; title: string; message: string; type: "success"|"error"|"info"|"warning" }>({ isOpen: false, title: "", message: "", type: "info" });
+  const [isRetry, setIsRetry]         = useState(false);
 
   // Keep a single razorpay order across retries — never create a new one on retry
   const rzpDataRef = useRef<RzpData | null>(null);
@@ -70,7 +71,7 @@ function CheckoutContent() {
     if (!isCartCheckout && (!variantSizeId || !productId || !productVariantId)) { router.replace("/"); return; }
     (async () => {
       try {
-        const fetchPromises: Promise<any>[] = [fetch("/api/user/me")];
+        const fetchPromises: Promise<Response>[] = [fetch("/api/user/me")];
         if (isCartCheckout) {
           fetchPromises.push(fetch("/api/user/getcart"));
         } else {
@@ -84,6 +85,7 @@ function CheckoutContent() {
           const dataJson = await dataRes.json(); 
           if (isCartCheckout) {
             // Map cart items — API returns { id, variant_sizes: { ..., product_variants: { ... } } }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const items = (dataJson.data || []).map((ci: any) => {
               const vs = ci.variant_sizes;
               const pv = vs?.product_variants;
@@ -121,7 +123,6 @@ function CheckoutContent() {
   const subtotal = checkoutItems.reduce((acc, item) => acc + (item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity, 0);
   const total = subtotal + DELIVERY_CHARGE;
   const amountNow = paymentMethod === "cod" ? Math.min(total, COD_ADVANCE) : total;
-  const amountNowPaise = Math.max(Math.round(amountNow * 100), 100);
 
   // Open the Razorpay modal with given data
   const openRazorpayModal = useCallback(async (data: RzpData) => {
@@ -220,6 +221,7 @@ function CheckoutContent() {
       }
       const rzpData: RzpData = { razorpay_order_id: data.razorpay_order_id, amount: data.amount, currency: data.currency, our_order_id: data.our_order_id };
       rzpDataRef.current = rzpData; // store for retries
+      setIsRetry(true);
       setStep("review");
       await openRazorpayModal(rzpData);
     } catch (e) {
@@ -228,8 +230,6 @@ function CheckoutContent() {
       showAlert("Error", "An unexpected error occurred. Please try again.", "error");
     }
   }, [user, paymentMethod, checkoutItems, openRazorpayModal, showAlert]);
-
-  const isRetry = !!rzpDataRef.current;
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
 

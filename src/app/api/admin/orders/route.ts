@@ -49,6 +49,7 @@ export async function PATCH(req: NextRequest) {
   if (!order_id) return NextResponse.json({ error: "order_id required" }, { status: 400 });
 
   const supabase = supabaseAdmin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: any = { updated_at: new Date().toISOString() };
 
   if (tracking_id !== undefined) updates.tracking_id = tracking_id;

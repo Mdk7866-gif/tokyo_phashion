@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You can only review delivered orders" }, { status: 400 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await ((admin as any).from("reviews")).upsert({
     user_id: user.id,
     product_id,
@@ -49,6 +50,7 @@ export async function GET(req: NextRequest) {
   if (!product_id) return NextResponse.json({ error: "product_id required" }, { status: 400 });
 
   const admin = supabaseAdmin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await ((admin as any).from("reviews"))
     .select("id, rating, comment, created_at, users(name, profile_image)")
     .eq("product_id", product_id)

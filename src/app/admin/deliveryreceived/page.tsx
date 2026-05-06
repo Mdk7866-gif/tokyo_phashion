@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
@@ -176,15 +176,14 @@ export default function DeliveryReceivedPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchOrders = () => {
-    setLoading(true);
+  const fetchOrders = useCallback(() => {
     fetch("/api/admin/orders?status=paid").then(r => r.json()).then(d => {
       setOrders(d.data || []);
       setLoading(false);
     });
-  };
+  }, []);
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   return (
     <div className="min-h-screen bg-zinc-50 p-6">

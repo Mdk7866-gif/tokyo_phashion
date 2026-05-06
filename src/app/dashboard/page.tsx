@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import UserCartItemCard, { CartItem } from "@/components/UserCartItemCard";
 import UserWishlistCard, { WishlistItem } from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
-import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
 import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap, Clock, CheckCircle, XCircle, AlertTriangle, MessageSquare, Star, Loader2 } from "lucide-react";
 
@@ -26,14 +25,41 @@ function DashboardContent() {
     } | null;
   }
 
+  interface OrderItem {
+    id: string;
+    product_name_snapshot: string;
+    color_snapshot: string;
+    size_snapshot: string;
+    quantity: number;
+    price_snapshot: number;
+    product_id: string;
+  }
+
+  interface Order {
+    id: string;
+    created_at: string;
+    delivery_status: "pending" | "delivered" | "cancelled";
+    payment_status: "pending" | "paid" | "failed";
+    payment_method: "cod" | "online";
+    total_amount: number;
+    snapshot_order_full_address: string;
+    snapshot_order_city: string;
+    snapshot_order_state: string;
+    snapshot_order_pincode: string;
+    cancelled_by?: string;
+    cancellation_note?: string;
+    tracking_id?: string;
+    order_items: OrderItem[];
+  }
+
   const activeTab = (searchParams.get("tab") || "profile").toLowerCase();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const [reviewingItem, setReviewingItem] = useState<any>(null);
+  const [reviewingItem, setReviewingItem] = useState<{ orderId: string, productId: string, productName: string } | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -127,6 +153,24 @@ function DashboardContent() {
     setWishlistLoading(false);
   }, [showAlert]);
 
+  const fetchOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const res = await fetch("/api/user/orders");
+      if (res.ok) {
+        const json = await res.json();
+        setOrders(json.data || []);
+      } else {
+        const err = await res.json();
+        showAlert("Error", err.error || "Failed to fetch orders", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Error", "An unexpected error occurred", "error");
+    }
+    setOrdersLoading(false);
+  }, [showAlert]);
+
   useEffect(() => {
     requestAnimationFrame(() => {
       fetchUser();
@@ -140,7 +184,7 @@ function DashboardContent() {
         fetchOrders();
       }
     });
-  }, [activeTab, fetchUser, fetchCart, fetchWishlist]);
+  }, [activeTab, fetchUser, fetchCart, fetchWishlist, fetchOrders]);
 
   useEffect(() => {
     if (user) {
@@ -167,24 +211,6 @@ function DashboardContent() {
     }
     return true;
   };
-
-  const fetchOrders = useCallback(async () => {
-    setOrdersLoading(true);
-    try {
-      const res = await fetch("/api/user/orders");
-      if (res.ok) {
-        const json = await res.json();
-        setOrders(json.data || []);
-      } else {
-        const err = await res.json();
-        showAlert("Error", err.error || "Failed to fetch orders", "error");
-      }
-    } catch (e) {
-      console.error(e);
-      showAlert("Error", "An unexpected error occurred", "error");
-    }
-    setOrdersLoading(false);
-  }, [showAlert]);
 
   const handleCancelOrder = async (orderId: string) => {
     if (!confirm("Are you sure you want to cancel this order? No refund will be issued if payment was made.")) return;
@@ -640,7 +666,7 @@ function DashboardContent() {
                       </div>
 
                       <div className="space-y-3 mb-4">
-                        {order.order_items.map((item: any) => (
+                        {order.order_items.map((item) => (
                           <div key={item.id} className="flex justify-between items-start">
                             <div>
                               <p className="text-xs font-black uppercase tracking-tight">{item.product_name_snapshot}</p>
