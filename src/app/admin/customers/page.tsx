@@ -15,10 +15,18 @@ export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/customers").then(r => r.json()).then(d => {
-      setCustomers(d.data || []);
+      if (d.error) {
+        setError(d.error);
+      } else {
+        setCustomers(d.data || []);
+      }
+      setLoading(false);
+    }).catch(err => {
+      setError(err.message);
       setLoading(false);
     });
   }, []);
@@ -46,6 +54,14 @@ export default function AdminCustomersPage() {
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 p-8 text-center">
+            <p className="text-xs font-black uppercase tracking-widest text-red-600 mb-2">Error Fetching Data</p>
+            <p className="text-[10px] font-bold text-red-400">{error}</p>
+            {error === "Unauthorized" && (
+              <Link href="/admin/login" className="mt-4 inline-block bg-black text-white px-6 py-2 text-[10px] font-black uppercase tracking-widest">Login Again</Link>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(c => (
