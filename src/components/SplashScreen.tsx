@@ -49,43 +49,48 @@ const SplashScreen = ({ onComplete }: { onComplete?: () => void }) => {
       }`}
     >
       <div className={`transform transition-all duration-1000 ease-out ${isVisible ? "scale-100 opacity-100" : "scale-110 opacity-0"}`}>
-        <svg width="400" height="260" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" className="max-w-[80vw] h-auto">
-          {/* Background */}
-          <rect width="100%" height="100%" fill="white"/>
+<svg width="400" height="260" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
 
-          {/* Left Kanji */}
-          <text x="140" y="130"
-                textAnchor="middle"
-                fontSize="90"
-                fontFamily="'Noto Serif JP', 'Hiragino Mincho ProN', serif"
-                fontWeight="700"
-                fill="black">
-            東
-          </text>
+ {/*backgroud*/}
+  <rect width="100%" height="100%" fill="white"/>
 
-          {/* Right Kanji */}
-          <text x="260" y="130"
-                textAnchor="middle"
-                fontSize="90"
-                fontFamily="'Noto Serif JP', 'Hiragino Mincho ProN', serif"
-                fontWeight="700"
-                fill="black">
-            京
-          </text>
+  {/*Left kanji*/}
+  <text x="110"
+        y="130"
+        text-anchor="middle"
+        font-size="120"
+        font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif"
+        font-weight="700"
+        fill="black">
+    東
+  </text>
 
-          {/* Red Circle */}
-          <circle cx="200" cy="110" r="15" fill="#E60012"/>
+  {/* Right Kanji */}
+  <text x="290"
+        y="125"
+        text-anchor="middle"
+        font-size="120"
+        font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif"
+        font-weight="700"
+        fill="black">
+    京
+  </text>
 
-          {/* TOKYO */}
-          <text x="200" y="175"
-                textAnchor="middle"
-                fontSize="38"
-                fontFamily="'Playfair Display', serif"
-                letterSpacing="4"
-                fill="black">
-            TOKYO
-          </text>
-        </svg>
+  {/*Red Circle*/}
+  <circle cx="200" cy="100" r="32" fill="#E60012"/>
+
+  {/* TOKYO */}
+  <text x="200"
+        y="205"
+        text-anchor="middle"
+        font-size="70"
+        font-family="'Playfair Display', serif"
+        letter-spacing="4"
+        fill="black">
+    TOKYO
+  </text>
+
+</svg>
       </div>
     </div>
   );
