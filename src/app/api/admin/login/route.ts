@@ -8,7 +8,7 @@ export async function POST(request: Request) {
       const response = NextResponse.json({ success: true });
       
       // Set an HttpOnly cookie for the admin session
-      response.cookies.set('admin_session', Buffer.from(password).toString('base64'), {
+      response.cookies.set('admin_token', password, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
