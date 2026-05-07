@@ -55,6 +55,7 @@ function DashboardContent() {
     cancelled_by?: string;
     cancellation_note?: string;
     tracking_id?: string;
+    parcel_image?: string;
     order_items: OrderItem[];
   }
 
@@ -68,6 +69,7 @@ function DashboardContent() {
   const [reviewingItem, setReviewingItem] = useState<{ orderId: string, productId: string, productName: string } | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [profileForm, setProfileForm] = useState({
@@ -255,6 +257,7 @@ function DashboardContent() {
       });
       if (res.ok) {
         showAlert("Review Submitted", "Thank you for your feedback!", "success");
+        setSubmittedReviews(prev => new Set(prev).add(`${reviewingItem.orderId}_${reviewingItem.productId}`));
         setReviewingItem(null);
         setReviewForm({ rating: 5, comment: "" });
       } else {
@@ -701,12 +704,18 @@ function DashboardContent() {
                               <div className="text-right shrink-0">
                                 <p className="text-xs font-black text-black">₹{item.price_snapshot * item.quantity}</p>
                                 {order.delivery_status === "delivered" && (
-                                  <button 
-                                    onClick={(e) => { e.preventDefault(); setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot }); }}
-                                    className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
-                                  >
-                                    <Star className="h-2.5 w-2.5" /> Rate & Review
-                                  </button>
+                                  submittedReviews.has(`${order.id}_${item.product_id}`) ? (
+                                    <span className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-green-600">
+                                      <CheckCircle className="h-2.5 w-2.5" /> Reviewed
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => { e.preventDefault(); setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot }); }}
+                                      className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
+                                    >
+                                      <Star className="h-2.5 w-2.5" /> Rate & Review
+                                    </button>
+                                  )
                                 )}
                               </div>
                             </a>
@@ -732,9 +741,19 @@ function DashboardContent() {
                                 <p className="text-[10px] text-red-700 font-bold">Cancelled by {order.cancelled_by}. {order.cancellation_note ? `Reason: ${order.cancellation_note}` : ''}</p>
                              </div>
                            ) : (
-                             <div>
-                               <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Tracking ID</p>
-                               <p className="text-[10px] font-black text-black">{order.tracking_id || "Not available yet"}</p>
+                             <div className="space-y-2">
+                               <div>
+                                 <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Tracking ID</p>
+                                 <p className="text-[10px] font-black text-black">{order.tracking_id || "Not available yet"}</p>
+                               </div>
+                               {order.parcel_image && (
+                                 <div>
+                                   <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Parcel Photo</p>
+                                   <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="block">
+                                     <Image src={order.parcel_image} alt="Parcel" width={80} height={80} className="object-cover border border-zinc-200 hover:border-black transition-colors" />
+                                   </a>
+                                 </div>
+                               )}
                              </div>
                            )}
                          </div>

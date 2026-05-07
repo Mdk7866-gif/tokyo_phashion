@@ -39,6 +39,10 @@ export async function GET(req: NextRequest) {
     query = query.in("payment_status", ["failed", "pending"]).eq("delivery_status", "pending");
   } else if (status === "delivered") {
     query = query.eq("delivery_status", "delivered");
+    const paymentMethod = req.nextUrl.searchParams.get("payment_method");
+    if (paymentMethod === "cod" || paymentMethod === "online") {
+      query = query.eq("payment_method", paymentMethod);
+    }
   } else if (status === "cancelled") {
     query = query.eq("delivery_status", "cancelled");
   }

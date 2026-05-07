@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, CheckCircle, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle, Star, ChevronDown, ChevronUp, CreditCard, Truck, Package } from "lucide-react";
+
+const TABS = [
+  { key: "online", label: "Paid Online", icon: CreditCard, color: "bg-blue-600" },
+  { key: "cod",    label: "Paid COD",    icon: Truck,       color: "bg-amber-500" },
+];
 
 interface Review { id: string; rating: number; comment: string | null; created_at: string; users: { name: string | null } }
 interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string; product_id: string }
 interface Order {
-  id: string; total_amount: number; tracking_id: string | null; parcel_image: string | null; created_at: string;
+  id: string; total_amount: number; payment_method: string; tracking_id: string | null; parcel_image: string | null; created_at: string;
   users: { name: string | null; email: string | null };
   order_items: OrderItem[];
 }
@@ -44,11 +50,12 @@ function DeliveredCard({ order }: { order: Order }) {
 
   return (
     <div className="bg-white border border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-zinc-100">
         <div>
           <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Customer</p>
           <p className="text-xs font-black">{order.users?.name ?? "—"}</p>
-          <p className="text-[10px] text-zinc-400">{order.users?.email}</p>
+          <p className="text-[10px] text-zinc-500">{order.users?.email}</p>
         </div>
         <div className="text-right">
           <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Total Paid</p>
@@ -57,28 +64,34 @@ function DeliveredCard({ order }: { order: Order }) {
         </div>
       </div>
 
-      {order.parcel_image && (
+      {/* Parcel + Tracking */}
+      {(order.parcel_image || order.tracking_id) && (
         <div className="p-4 border-b border-zinc-100 flex items-center gap-4">
-          <div className="relative h-16 w-16 border border-zinc-200 overflow-hidden">
-            <Image src={order.parcel_image} alt="Parcel" fill sizes="64px" className="object-cover" />
-          </div>
+          {order.parcel_image && (
+            <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="relative h-16 w-16 border border-zinc-200 overflow-hidden shrink-0 hover:border-black transition-colors">
+              <Image src={order.parcel_image} alt="Parcel" fill sizes="64px" className="object-cover" />
+            </a>
+          )}
           <div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Tracking ID</p>
-            <p className="text-xs font-bold">{order.tracking_id ?? "—"}</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Tracking ID</p>
+            <p className="text-xs font-bold text-black">{order.tracking_id ?? "—"}</p>
           </div>
         </div>
       )}
 
-      <div className="p-4">
+      {/* Items */}
+      <div className="p-4 border-b border-zinc-100">
+        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered</p>
         <div className="space-y-1 mb-3">
           {order.order_items.map(item => (
             <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
               className="flex justify-between items-center text-[10px] py-1.5 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
-              <span className="text-zinc-600 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
-              <span className="font-bold">₹{item.price_snapshot * item.quantity}</span>
+              <span className="text-zinc-700 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
+              <span className="font-black text-black">₹{item.price_snapshot * item.quantity}</span>
             </Link>
           ))}
         </div>
+
         <button onClick={loadReviews}
           className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-black px-3 py-2 hover:bg-zinc-50 transition-colors w-full justify-center">
           <Star className="h-3 w-3" />
@@ -95,16 +108,16 @@ function DeliveredCard({ order }: { order: Order }) {
                 const itemReviews = reviews[item.product_id] ?? [];
                 return (
                   <div key={item.id} className="border border-zinc-100 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">{item.product_name_snapshot}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">{item.product_name_snapshot}</p>
                     {itemReviews.length === 0 ? (
-                      <p className="text-[10px] text-zinc-300 italic">No review yet</p>
+                      <p className="text-[10px] text-zinc-400 italic">No review yet</p>
                     ) : itemReviews.map(r => (
                       <div key={r.id} className="mt-2">
                         <div className="flex items-center gap-2">
                           <StarRating rating={r.rating} />
-                          <span className="text-[9px] text-zinc-400">{r.users?.name}</span>
+                          <span className="text-[9px] text-zinc-500 font-bold">{r.users?.name}</span>
                         </div>
-                        {r.comment && <p className="text-[10px] text-zinc-600 mt-1">&quot;{r.comment}&quot;</p>}
+                        {r.comment && <p className="text-[10px] text-zinc-700 mt-1 font-medium">&ldquo;{r.comment}&rdquo;</p>}
                       </div>
                     ))}
                   </div>
@@ -118,21 +131,34 @@ function DeliveredCard({ order }: { order: Order }) {
   );
 }
 
-export default function DeliveredPage() {
+function DeliveredContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tab = searchParams.get("tab") || "online";
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [prevTab, setPrevTab] = useState(tab);
+  if (tab !== prevTab) { setPrevTab(tab); setLoading(true); }
 
-  useEffect(() => {
-    fetch("/api/admin/orders?status=delivered").then(r => r.json()).then(d => {
+  const fetchOrders = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/orders?status=delivered&payment_method=${tab}`);
+      const d = await res.json();
       setOrders(d.data || []);
+    } finally {
       setLoading(false);
-    });
-  }, []);
+    }
+  }, [tab]);
+
+  useEffect(() => { fetchOrders(); }, [tab, fetchOrders]);
+
+  const activeMeta = TABS.find(t => t.key === tab) ?? TABS[0];
 
   return (
     <div className="min-h-screen bg-zinc-50 p-6">
       <div className="max-w-screen-xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-6">
           <Link href="/admin" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black">
             <ArrowLeft className="h-3 w-3" /> Admin
           </Link>
@@ -140,14 +166,34 @@ export default function DeliveredPage() {
           <h1 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-2">
             <CheckCircle className="h-6 w-6 text-green-600" /> Delivered Orders
           </h1>
-          <span className="ml-auto text-[10px] font-black uppercase tracking-widest bg-green-600 text-white px-3 py-1">{orders.length} Delivered</span>
+          <span className={`ml-auto text-[10px] font-black uppercase tracking-widest ${activeMeta.color} text-white px-3 py-1`}>
+            {orders.length} {activeMeta.label}
+          </span>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-zinc-200 pb-4">
+          {TABS.map(t => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={() => router.push(`/admin/delivered?tab=${t.key}`)}
+                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === t.key ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
+              >
+                <Icon className="h-3 w-3" />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>
         ) : orders.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-zinc-300">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No delivered orders yet</p>
+            <Package className="h-8 w-8 mx-auto mb-3 text-zinc-200" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No delivered orders in this category</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -156,5 +202,13 @@ export default function DeliveredPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DeliveredPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>}>
+      <DeliveredContent />
+    </Suspense>
   );
 }

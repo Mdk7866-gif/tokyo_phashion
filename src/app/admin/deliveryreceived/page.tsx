@@ -49,21 +49,28 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
 
   const uploadImage = async (file: File) => {
     setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("upload_preset", "tokyo_fashion");
-    const res = await fetch("https://api.cloudinary.com/v1_1/" + process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME + "/image/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    setUploading(false);
-    return data.secure_url as string;
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/uploadimage", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Upload failed");
+      return data.url as string;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = await uploadImage(file);
-    setParcelImg(url);
-    setDeliverError(""); // clear any prior validation error
+    try {
+      const url = await uploadImage(file);
+      setParcelImg(url);
+      setDeliverError("");
+    } catch {
+      setDeliverError("Image upload failed. Please try again.");
+    }
   };
 
   const handleDeliver = async () => {
@@ -163,13 +170,14 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         </div>
       )}
 
-      {/* Order Items */}
-      <div className="p-4 border-b border-zinc-100">
-        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered</p>
-        <div className="space-y-2">
-          {order.order_items.slice(0, expanded ? undefined : 2).map(item => {
-            const itemImg = item.product_variants?.product_images?.[0]?.image_url;
-            return (
+      {/* Order Items — toggled by chevron */}
+      {expanded && (
+        <div className="p-4 border-b border-zinc-100">
+          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered ({order.order_items.length})</p>
+          <div className="space-y-2">
+            {order.order_items.map(item => {
+              const itemImg = item.product_variants?.product_images?.[0]?.image_url;
+              return (
               <Link
                 key={item.id}
                 href={`/detailedproduct?product_id=${item.product_id}`}
@@ -193,11 +201,9 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
               </Link>
             );
           })}
-          {order.order_items.length > 2 && !expanded && (
-            <p className="text-[9px] text-zinc-400 font-bold text-center">+ {order.order_items.length - 2} more item(s)</p>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Tracking — only for active dispatch tabs */}
       {!readOnly && (
