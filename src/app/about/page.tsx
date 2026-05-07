@@ -1,8 +1,6 @@
 "use client";
-
-import React from "react";
 import Image from "next/image";
-import { MapPin, Phone, Map, User, ExternalLink } from "lucide-react";
+import { MapPin, Phone, Map } from "lucide-react";
 
 interface Branch {
   id: number;
