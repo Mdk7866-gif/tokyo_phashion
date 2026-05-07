@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, XCircle } from "lucide-react";
 
-interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string }
+interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string; product_id: string }
 interface Order {
   id: string; total_amount: number; payment_method: string; cancelled_by: string | null;
   cancellation_note: string | null; created_at: string;
@@ -80,10 +80,11 @@ export default function DeliveryCancelledPage() {
                 <div className="p-4 space-y-1">
                   <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items</p>
                   {order.order_items.map(item => (
-                    <div key={item.id} className="flex justify-between text-[10px]">
-                      <span className="text-zinc-600">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
+                    <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
+                      className="flex justify-between items-center text-[10px] py-1 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
+                      <span className="text-zinc-600 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
                       <span className="font-bold">₹{item.price_snapshot * item.quantity}</span>
-                    </div>
+                    </Link>
                   ))}
                   <p className="text-[9px] text-zinc-400 pt-2">Cancelled on {new Date(order.created_at).toLocaleDateString("en-IN")}</p>
                 </div>

@@ -723,9 +723,13 @@ function DashboardContent() {
                            <span className="text-[10px] font-black uppercase">{order.payment_method}</span>
                         </div>
                         <div className="flex justify-between items-center mb-3">
-                           <span className="text-[10px] text-zinc-600 font-bold">Status</span>
-                           <span className={`text-[10px] font-black uppercase ${order.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>{order.payment_status}</span>
-                        </div>
+                            <span className="text-[10px] text-zinc-600 font-bold">Status</span>
+                            <span className={`text-[10px] font-black uppercase ${
+                              order.payment_status === 'paid' ? 'text-green-600' :
+                              order.payment_status === 'failed' ? 'text-red-600' :
+                              'text-amber-600'
+                            }`}>{order.payment_status === 'paid' ? 'Paid' : order.payment_status === 'failed' ? 'Failed' : 'Pending'}</span>
+                         </div>
                         <div className="flex justify-between items-end border-t border-zinc-200 pt-2 mt-2">
                           <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
                           <span className="text-lg font-black tracking-tighter leading-none">₹{order.total_amount}</span>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, CheckCircle, Star, ChevronDown, ChevronUp } from "lucide-react";
 
-interface Review { id: string; rating: number; comment: string | null; created_at: string; users: { name: string | null } }
 interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string; product_id: string }
 interface Order {
   id: string; total_amount: number; tracking_id: string | null; parcel_image: string | null; created_at: string;
@@ -72,10 +71,11 @@ function DeliveredCard({ order }: { order: Order }) {
       <div className="p-4">
         <div className="space-y-1 mb-3">
           {order.order_items.map(item => (
-            <div key={item.id} className="flex justify-between text-[10px]">
-              <span className="text-zinc-600">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
+            <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
+              className="flex justify-between items-center text-[10px] py-1.5 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
+              <span className="text-zinc-600 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
               <span className="font-bold">₹{item.price_snapshot * item.quantity}</span>
-            </div>
+            </Link>
           ))}
         </div>
         <button onClick={loadReviews}
