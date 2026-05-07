@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, CheckCircle, Star, ChevronDown, ChevronUp } from "lucide-react";
 
+interface Review { id: string; rating: number; comment: string | null; created_at: string; users: { name: string | null } }
 interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string; product_id: string }
 interface Order {
   id: string; total_amount: number; tracking_id: string | null; parcel_image: string | null; created_at: string;
