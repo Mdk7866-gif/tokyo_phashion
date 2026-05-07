@@ -29,7 +29,7 @@ const socialIcons = [
 ];
 
 const Footer = () => {
-  
+
 
   return (
     <footer className="w-full border-t-2 border-black bg-zinc-50 text-black">
@@ -41,7 +41,7 @@ const Footer = () => {
               <Logo className="h-10 w-auto" />
             </Link>
             <p className="max-w-xs text-[10px] font-bold uppercase tracking-widest text-zinc-400 leading-relaxed">
-              Defining the future of urban streetwear. Born in the streets of Shibuya, 
+              Defining the future of urban streetwear. Born in the streets of Shibuya,
               crafted for the global avant-garde.
             </p>
           </div>
@@ -51,31 +51,28 @@ const Footer = () => {
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-black">Contact Us</h3>
             <div className="space-y-3">
               <div className="space-y-1">
-                <a 
-                  href="https://maps.app.goo.gl/5SgRZ9Rf22BjUsiY7" 
-                  target="_blank" 
+                <a
+                  href="https://maps.app.goo.gl/5SgRZ9Rf22BjUsiY7"
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-3 group"
+                  className="block pl-7 group"
                 >
-                  {/* Google Maps pin icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 mt-0.5 transition-opacity group-hover:opacity-80" fill="none">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/>
-                    <circle cx="12" cy="9" r="2.5" fill="white"/>
-                  </svg>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-black transition-colors">
                     Tokyo Fashion, Himalaya Road,<br />Danilimda, Ahmedabad 380028
                   </span>
                 </a>
-                <a 
-                  href="https://maps.app.goo.gl/5SgRZ9Rf22BjUsiY7" 
-                  target="_blank" 
+
+                <a
+                  href="https://maps.app.goo.gl/5SgRZ9Rf22BjUsiY7"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="ml-7 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-700 hover:text-black underline underline-offset-4 transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3" fill="none">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/>
-                    <circle cx="12" cy="9" r="2.5" fill="white"/>
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335" />
+                    <circle cx="12" cy="9" r="2.5" fill="white" />
                   </svg>
+
                   View on Google Maps
                 </a>
               </div>
