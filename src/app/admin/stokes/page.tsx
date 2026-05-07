@@ -4,7 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { AlertTriangle, XCircle, LayoutDashboard, Search, ArrowLeft, Package, Loader2 } from "lucide-react";
+import { AlertTriangle, XCircle, Search, ArrowLeft, Package, Loader2 } from "lucide-react";
 
 interface ProductImage {
   image_url: string;
