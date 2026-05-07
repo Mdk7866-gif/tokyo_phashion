@@ -776,7 +776,7 @@ function DashboardContent() {
                 </div>
                 
                 <div className="mb-6">
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Write a review (optional)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-gray-800">Write a review (optional)</label>
                   <textarea 
                     value={reviewForm.comment}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}

@@ -244,7 +244,7 @@ function CheckoutContent() {
           <p className="text-xs text-zinc-600">₹{amountNow} advance paid. Remaining <span className="font-bold">₹{(total - amountNow).toFixed(0)}</span> payable at delivery.</p>
         </div>
       )}
-      <Link href="/dashboard" className="bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors">View My Orders</Link>
+      <Link href="/dashboard?tab=my%20orders" className="bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors">View My Orders</Link>
     </div>
   );
 

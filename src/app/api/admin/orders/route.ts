@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
       total_amount, tracking_id, parcel_image, cancelled_by, cancellation_note,
       created_at, updated_at,
       snapshot_order_full_address, snapshot_order_city, snapshot_order_state, snapshot_order_pincode,
-      addresses ( full_address, city, state, pincode ),
       users ( id, name, email, mobile_number, profile_image ),
       order_items (
         id, quantity, price_snapshot, product_name_snapshot, color_snapshot, size_snapshot,
@@ -28,6 +27,8 @@ export async function GET(req: NextRequest) {
 
   if (status === "paid") {
     query = query.eq("payment_status", "paid").eq("delivery_status", "pending");
+  } else if (status === "pending") {
+    query = query.eq("payment_status", "pending").eq("delivery_status", "pending");
   } else if (status === "delivered") {
     query = query.eq("delivery_status", "delivered");
   } else if (status === "cancelled") {

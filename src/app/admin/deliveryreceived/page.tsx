@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
@@ -172,16 +173,21 @@ function OrderCard({ order, onUpdate }: { order: Order; onUpdate: () => void }) 
   );
 }
 
-export default function DeliveryReceivedPage() {
+function DeliveryReceivedContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tab = searchParams.get("tab") || "paid";
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = useCallback(() => {
-    fetch("/api/admin/orders?status=paid").then(r => r.json()).then(d => {
+    setLoading(true);
+    fetch(`/api/admin/orders?status=${tab}`).then(r => r.json()).then(d => {
       setOrders(d.data || []);
       setLoading(false);
     });
-  }, []);
+  }, [tab]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -196,7 +202,22 @@ export default function DeliveryReceivedPage() {
           <h1 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-2">
             <Package className="h-6 w-6" /> Delivery Received
           </h1>
-          <span className="ml-auto text-[10px] font-black uppercase tracking-widest bg-amber-500 text-white px-3 py-1">{orders.length} Pending</span>
+          <span className="ml-auto text-[10px] font-black uppercase tracking-widest bg-amber-500 text-white px-3 py-1">{orders.length} {tab === "paid" ? "Paid" : "Pending"}</span>
+        </div>
+
+        <div className="flex gap-3 mb-6 border-b border-zinc-200 pb-4">
+          <button 
+            onClick={() => router.push("/admin/deliveryreceived?tab=paid")}
+            className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === 'paid' ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
+          >
+            Paid Online
+          </button>
+          <button 
+            onClick={() => router.push("/admin/deliveryreceived?tab=pending")}
+            className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === 'pending' ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
+          >
+            Pending COD
+          </button>
         </div>
 
         {loading ? (
@@ -214,5 +235,13 @@ export default function DeliveryReceivedPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DeliveryReceivedPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>}>
+      <DeliveryReceivedContent />
+    </Suspense>
   );
 }
