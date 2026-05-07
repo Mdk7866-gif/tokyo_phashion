@@ -514,8 +514,13 @@ function DashboardContent() {
                                   const data = await res.json();
                                   if (data.city && data.state) {
                                     setProfileForm(prev => ({ ...prev, city: data.city, state: data.state }));
+                                  } else {
+                                    showAlert("Invalid Pincode", data.error || "Please enter a correct 6-digit pincode.", "warning");
+                                    setProfileForm(prev => ({ ...prev, city: "", state: "" }));
                                   }
-                                } catch { /* ignore */ } finally {
+                                } catch { 
+                                  showAlert("Lookup Failed", "Could not verify pincode. Please enter city/state manually.", "info");
+                                } finally {
                                   setPincodeLoading(false);
                                 }
                               }

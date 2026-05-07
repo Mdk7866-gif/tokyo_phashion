@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
     });
     const data = await res.json();
 
-    if (!Array.isArray(data) || data[0]?.Status !== "Success") {
-      return NextResponse.json({ error: "Pincode not found" }, { status: 404 });
+    if (!Array.isArray(data) || data[0]?.Status === "Error" || !data[0]?.PostOffice) {
+      return NextResponse.json({ error: "Invalid pincode or no records found" }, { status: 404 });
     }
 
     const postOffice = data[0].PostOffice?.[0];
