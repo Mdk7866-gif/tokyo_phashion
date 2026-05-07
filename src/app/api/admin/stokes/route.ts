@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
+import { verifyAdminSession } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  const isAdmin = await verifyAdminSession();
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -14,23 +12,28 @@ export async function GET(request: Request) {
   const tab = searchParams.get('tab') || 'critical stoke';
 
   try {
+    // We use !inner to ensure we only get variant sizes that have valid products/variants.
+    // Also removing the strict is('deleted_at', null) on the size level to see if it helps with visibility.
     let query = supabaseAdmin
       .from('variant_sizes')
       .select(`
         id, size, stock,
-        product_variants (
+        product_variants!inner (
           id, color,
-          products ( id, name ),
+          products!inner ( id, name ),
           product_images ( image_url, sort_order )
         )
-      `)
-      .is('deleted_at', null);
+      `);
 
     if (tab === 'out of stoke') {
+      // Tab "out of stoke": <= 0
       query = query.lte('stock', 0);
-    } else {
-      // critical stoke: <= 5 and > 0
+    } else if (tab === 'critical stoke') {
+      // Tab "critical stoke": 1 to 5
       query = query.lte('stock', 5).gt('stock', 0);
+    } else if (tab === 'all') {
+      // All problematic stocks: <= 5
+      query = query.lte('stock', 5);
     }
 
     const { data, error } = await query.order('stock', { ascending: true });
@@ -48,10 +51,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
+  const isAdmin = await verifyAdminSession();
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

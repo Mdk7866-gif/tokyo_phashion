@@ -9,6 +9,7 @@ interface Stats {
   ordersReceived: number;
   delivered: number;
   cancelled: number;
+  criticalStocks: number;
 }
 
 export default function AdminDashboard() {
@@ -21,12 +22,14 @@ export default function AdminDashboard() {
       fetch("/api/admin/orders?status=cod").then(r => r.json()),
       fetch("/api/admin/orders?status=delivered").then(r => r.json()),
       fetch("/api/admin/orders?status=cancelled").then(r => r.json()),
-    ]).then(([customers, paid, cod, delivered, cancelled]) => {
+      fetch("/api/admin/stokes?tab=all").then(r => r.json()),
+    ]).then(([customers, paid, cod, delivered, cancelled, critical]) => {
       setStats({
         customers: customers.data?.length ?? 0,
         ordersReceived: (paid.data?.length ?? 0) + (cod.data?.length ?? 0),
         delivered: delivered.data?.length ?? 0,
         cancelled: cancelled.data?.length ?? 0,
+        criticalStocks: critical.data?.length ?? 0,
       });
     });
   }, []);
@@ -62,7 +65,7 @@ export default function AdminDashboard() {
       href: "/admin/stokes?tab=critical stoke",
       color: "border-red-500",
       iconBg: "bg-red-50 text-red-600",
-      stat: null,
+      stat: stats?.criticalStocks,
     },
 
   ];
@@ -86,14 +89,10 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{label}</p>
-                {stat !== null ? (
-                  stat === undefined ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-300 mt-1" />
-                  ) : (
-                    <p className="text-3xl font-black tracking-tighter mt-1">{stat}</p>
-                  )
+                {stat !== undefined ? (
+                  <p className="text-3xl font-black tracking-tighter mt-1">{stat}</p>
                 ) : (
-                  <p className="text-xs text-zinc-400 mt-1 group-hover:text-black transition-colors">Manage →</p>
+                  <Loader2 className="h-4 w-4 animate-spin text-zinc-300 mt-1" />
                 )}
               </div>
             </Link>

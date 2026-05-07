@@ -2,8 +2,9 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
-import { AlertTriangle, XCircle, LayoutDashboard, Search } from "lucide-react";
+import { AlertTriangle, XCircle, LayoutDashboard, Search, ArrowLeft, Package, Loader2 } from "lucide-react";
 
 interface ProductImage {
   image_url: string;
@@ -95,53 +96,49 @@ function StokesContent() {
   }, [tab]);
 
   const tabs = [
-    { id: "critical stoke", label: "Critical Stock", icon: AlertTriangle },
-    { id: "out of stoke", label: "Out of Stock", icon: XCircle },
+    { id: "critical stoke", label: "Critical Stock", icon: AlertTriangle, color: "bg-amber-500" },
+    { id: "out of stoke", label: "Out of Stock", icon: XCircle, color: "bg-red-500" },
   ];
 
+  const activeMeta = tabs.find(t => t.id === tab) ?? tabs[0];
+
   return (
-    <div className="min-h-screen bg-zinc-50 text-black p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-zinc-50 p-4 sm:p-6 text-black overflow-x-hidden">
       <div className="max-w-screen-xl mx-auto">
-        <div className="mb-8">
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter">Stock Management</h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-1">Monitor Low & Depleted Inventory</p>
-          </div>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6">
+          <Link href="/admin" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black">
+            <ArrowLeft className="h-3 w-3" /> Admin
+          </Link>
+          <span className="text-zinc-300">/</span>
+          <h1 className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+            <Package className="h-5 w-5 sm:h-6 sm:w-6 text-black" /> Stock Management
+          </h1>
+          <span className={`ml-auto sm:ml-0 text-[10px] font-black uppercase tracking-widest ${activeMeta.color} text-white px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
+            {items.length} {activeMeta.label}
+          </span>
+        </div>
 
-          <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
-            <div className="flex flex-col sm:flex-row">
-              <div className="bg-black text-white px-6 py-4 flex items-center gap-3 sm:border-r sm:border-zinc-800">
-                <LayoutDashboard className="h-4 w-4" />
-                <h1 className="text-[11px] font-black uppercase tracking-[0.3em] whitespace-nowrap">Status</h1>
-              </div>
-              
-              <div className="flex-1 grid grid-cols-2">
-                {tabs.map((t) => {
-                  const Icon = t.icon;
-                  const isActive = tab === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => router.push(`/admin/stokes?tab=${t.id}`)}
-                      className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-4 text-[9px] font-black uppercase tracking-widest border-r border-black last:border-r-0 transition-all ${
-                        isActive ? 'bg-zinc-100 text-black shadow-[inset_0px_-2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-zinc-400 hover:bg-zinc-50 hover:text-black'
-                      }`}
-                    >
-                      <Icon className={`h-3.5 w-3.5 ${isActive ? (t.id === 'out of stoke' ? 'text-red-500' : 'text-amber-500') : 'text-zinc-300'}`} />
-                      <span className="truncate">{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-zinc-200 pb-4">
+          {tabs.map(t => {
+            const Icon = t.icon;
+            const isActive = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => router.push(`/admin/stokes?tab=${t.id}`)}
+                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${isActive ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
+              >
+                <Icon className={`h-3 w-3 ${isActive ? 'text-white' : (t.id === 'out of stoke' ? 'text-red-500' : 'text-amber-500')}`} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="aspect-[3/4] bg-zinc-100 animate-pulse border-2 border-black" />
-              ))}
-            </div>
-          ) : items.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>
+        ) : items.length === 0 ? (
             <div className="border-2 border-dashed border-zinc-300 bg-white py-20 text-center">
               <Search className="h-8 w-8 text-zinc-200 mx-auto mb-3" />
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">All Good Here</p>
