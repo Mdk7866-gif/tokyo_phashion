@@ -15,7 +15,7 @@ interface Branch {
 const BRANCHES: Branch[] = [
   {
     id: 1,
-    name: "Tokyo Phashion - MEN(Branch 1)",
+    name: "Tokyo Fashion - MEN(Branch 1)",
     type: "Menswear",
     address: "SHOP NO 4, SUGRA RESIDENCY, BERAL MARKET, HIMALAYA ROAD, Danilimda, Ahmedabad, Gujarat 382405",
     mobile: "+91 9624217769",
@@ -24,7 +24,7 @@ const BRANCHES: Branch[] = [
   },
   {
     id: 2,
-    name: "Tokyo Phashion - MEN(Branch 2)",
+    name: "Tokyo Fashion - MEN(Branch 2)",
     type: "Menswear",
     address: "Emaad Heights, Arshad Park, Sarkhej, Ahmedabad, Gujarat 380055",
     mobile: "+91 8347061498",
@@ -33,7 +33,7 @@ const BRANCHES: Branch[] = [
   },
   {
     id: 3,
-    name: "Tokyo Phashion - MEN(Branch 3)",
+    name: "Tokyo Fashion - MEN(Branch 3)",
     type: "Menswear",
     address: "Vatva, Ahmedabad, Gujarat 382445",
     mobile: "+91 7621929267",
@@ -174,10 +174,10 @@ const AboutPage = () => {
               
               <div className="space-y-6 max-w-md">
                 <p className="text-zinc-400 text-sm leading-relaxed italic border-l-4 border-zinc-800 pl-6">
-                  &quot;Fashion is more than just clothing; it&apos;s about how you carry yourself in the urban landscape. We created Tokyo Phashion to bring the precision of Japanese street style to the vibrant energy of India.&quot;
+                  &quot;Fashion is more than just clothing; it&apos;s about how you carry yourself in the urban landscape. We created Tokyo Fashion to bring the precision of Japanese street style to the vibrant energy of India.&quot;
                 </p>
                 <p className="text-zinc-500 text-xs leading-relaxed">
-                  Under Bilal&apos;s vision, Tokyo Phashion has grown from a single boutique to a multi-branch network specializing in menswear, high-end footwear, and street-ready kidswear, setting new benchmarks for the urban aesthetic in Ahmedabad.
+                  Under Bilal&apos;s vision, Tokyo Fashion has grown from a single boutique to a multi-branch network specializing in menswear, high-end footwear, and street-ready kidswear, setting new benchmarks for the urban aesthetic in Ahmedabad.
                 </p>
               </div>
 
