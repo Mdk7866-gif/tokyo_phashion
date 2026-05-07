@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import HomePageThumbnailCard from "@/components/HomePageThumbnailCard";
+import ReelsSection from "@/components/ReelsSection";
 
 interface Category {
   id: string;
@@ -66,6 +67,8 @@ export default function Home() {
             ))}
           </div>
         )}
+
+        <ReelsSection />
       </div>
     </div>
   );
