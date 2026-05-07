@@ -27,12 +27,17 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false); // New state to track visibility
 
-  // Function to optimize Cloudinary URLs
+  // Function to optimize Cloudinary URLs for maximum performance on mobile
   const getOptimizedUrl = (url: string) => {
     if (!url.includes("cloudinary.com")) return url;
-    // Inject transformations: f_auto (format), q_auto:eco (low bandwidth), w_500 (resize)
+    // Inject transformations: 
+    // f_auto: best format (webm/mp4)
+    // q_auto:eco: high compression
+    // w_300: smaller width for vertical reels
+    // vc_h264: ensure compatibility
+    // br_1m: limit bitrate to 1Mbps to prevent choking
     if (url.includes("/upload/")) {
-      return url.replace("/upload/", "/upload/f_auto,q_auto:eco,w_400,vc_h264/");
+      return url.replace("/upload/", "/upload/f_auto,q_auto:eco,w_300,vc_h264,br_1m/");
     }
     return url;
   };
@@ -51,15 +56,12 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // Staggered loading: add a delay based on the index if multiple are visible
-          // This helps prevent bandwidth choking on desktop
-          const delay = index * 400; 
-          setTimeout(() => {
-            setIsVisible(true);
-            videoRef.current?.play().catch(() => {});
-            setIsPlaying(true);
-          }, delay);
+          setIsVisible(true);
+          // Play immediately when visible
+          videoRef.current?.play().catch(() => {});
+          setIsPlaying(true);
         } else {
+          setIsVisible(false); // Stop loading the video source
           videoRef.current?.pause();
           setIsPlaying(false);
         }
@@ -70,7 +72,14 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
     if (currentVideoRef) observer.observe(currentVideoRef);
 
     return () => {
-      if (currentVideoRef) observer.unobserve(currentVideoRef);
+      if (currentVideoRef) {
+        observer.unobserve(currentVideoRef);
+        currentVideoRef.pause();
+        currentVideoRef.src = ""; // Force stop background loading
+        currentVideoRef.load(); // Reset the video element
+      }
+      setIsVisible(false);
+      setIsPlaying(false);
     };
   }, [index]);
 
