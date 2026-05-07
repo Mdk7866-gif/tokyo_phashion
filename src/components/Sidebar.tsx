@@ -119,21 +119,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             {user ? (
               <div className="space-y-4">
                 <div className="px-2">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Account</p>
-                  <p className="text-[11px] font-bold text-black truncate mt-1">{user.email}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account</p>
+                  <p className="text-[12px] font-bold text-black truncate mt-1">{user.email}</p>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                
                   <Link 
                     href="/dashboard" 
                     onClick={onClose}
-                    className="flex items-center gap-3 px-3 py-3 text-[10px] font-black uppercase tracking-widest border border-black hover:bg-zinc-50 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                    className="flex items-center gap-3 px-3 py-3 text-[11px] font-black uppercase tracking-widest border border-black hover:bg-zinc-50 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                   >
                     <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
                   </Link>
                   <button 
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-3 py-3 text-[10px] font-black uppercase tracking-widest text-white bg-black hover:bg-zinc-800 transition-all"
+                    className="flex items-center gap-3 px-3 py-3 text-[11px] font-black uppercase tracking-widest text-white bg-black hover:bg-zinc-800 transition-all"
                   >
                     <LogOut className="h-3.5 w-3.5" /> Sign Out
                   </button>
@@ -143,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Link 
                 href="/login" 
                 onClick={onClose}
-                className="flex items-center justify-center gap-3 px-4 py-4 text-[10px] font-black uppercase tracking-widest bg-black text-white hover:bg-zinc-800 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+                className="flex items-center justify-center gap-3 px-4 py-4 text-[11px] font-black uppercase tracking-widest bg-black text-white hover:bg-zinc-800 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
               >
                 <User className="h-4 w-4" /> Sign In
               </Link>
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Link
                 href="/"
                 onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`flex items-center gap-3 px-3 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${
                   pathname === "/" ? "bg-zinc-100" : "hover:bg-zinc-50"
                 }`}
               >
@@ -165,7 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <Link
                 href="/about"
                 onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`flex items-center gap-3 px-3 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${
                   pathname === "/about" ? "bg-zinc-100" : "hover:bg-zinc-50"
                 }`}
               >
@@ -174,7 +174,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </nav>
 
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">Collections</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">Collections</p>
               <div className="space-y-2">
                 {categories.map((cat) => {
                   const isExpanded = expandedCatIds.includes(cat.id);
@@ -182,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     <div key={cat.id} className="space-y-1">
                       <button
                         onClick={() => toggleCategory(cat.id)}
-                        className="flex w-full items-center justify-between px-3 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all border-l-2 border-transparent hover:border-black"
+                        className="flex w-full items-center justify-between px-3 py-3 text-[11px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all border-l-2 border-transparent hover:border-black"
                       >
                         <span className="flex items-center gap-3">
                           <ShoppingBag className="h-3.5 w-3.5 opacity-40" />
@@ -198,7 +198,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                               key={sub.id}
                               href={`/briefproduct?category_id=${cat.id}&subcategory_id=${sub.id}`}
                               onClick={onClose}
-                              className="block px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
+                              className="block px-3 py-2 text-[11px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
                             >
                               {sub.name}
                             </Link>
@@ -214,12 +214,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           {/* SECTION 3: SOCIALS & ADMIN */}
           <div className="p-6 border-t border-zinc-100">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">External</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">External</p>
             <div className="flex items-center gap-3 px-2">
               <Link 
                 href="/admin"
                 onClick={onClose}
-                className="flex-[2] flex items-center justify-center gap-2 border border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+                className="flex-[2] flex items-center justify-center gap-2 border border-black px-4 py-2 text-[11px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
               >
                 Admin
               </Link>

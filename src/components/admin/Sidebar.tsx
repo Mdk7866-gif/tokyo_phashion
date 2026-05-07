@@ -204,7 +204,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <Link
               href="/admin"
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-3 text-xs font-black uppercase tracking-widest transition-all ${
+              className={`flex items-center gap-3 px-3 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${
                 pathname === "/admin"
                   ? "bg-black text-white"
                   : "text-zinc-600 hover:bg-zinc-100"
@@ -217,7 +217,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <Link
               href="/admin/homepagethumbnail"
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-3 text-xs font-black uppercase tracking-widest transition-all ${
+              className={`flex items-center gap-3 px-3 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${
                 pathname === "/admin/homepagethumbnail"
                   ? "bg-black text-white"
                   : "text-zinc-600 hover:bg-zinc-100"
@@ -230,7 +230,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <div className="mt-6">
               <button 
                 onClick={() => setShowCatSection(!showCatSection)}
-                className="flex w-full items-center justify-between px-2 mb-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black"
+                className="flex w-full items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-black"
               >
                 Category Management
                 {showCatSection ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
@@ -246,7 +246,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
                         placeholder="New Category..."
-                        className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-2 text-[10px] font-bold focus:border-black focus:outline-none"
+                        className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-2 text-[11px] font-bold focus:border-black focus:outline-none"
                       />
                       <button 
                         type="submit" 
@@ -271,16 +271,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                   autoFocus
                                   value={editValue}
                                   onChange={(e) => setEditValue(e.target.value)}
-                                  className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
+                                  className="flex-1 border border-black px-1 py-0.5 text-[11px] font-bold"
                                 />
-                                <button onClick={() => handleUpdateCategory(cat.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
-                                <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
+                                <button onClick={() => handleUpdateCategory(cat.id)} className="bg-black text-white px-1 text-[10px]">SAVE</button>
+                                <button onClick={() => setEditingId(null)} className="text-[10px] uppercase">X</button>
                               </div>
                             ) : (
                               <>
                                 <button 
                                   onClick={() => toggleCategory(cat.id)}
-                                  className="text-[11px] font-black uppercase tracking-tight flex items-center gap-2 flex-1 text-left"
+                                  className="text-[12px] font-black uppercase tracking-tight flex items-center gap-2 flex-1 text-left"
                                 >
                                   {isExpanded ? <ChevronDown className="h-3 w-3 text-black" /> : <ChevronRight className="h-3 w-3 text-zinc-400" />}
                                   {cat.name}
@@ -317,17 +317,17 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                         autoFocus
                                         value={editValue}
                                         onChange={(e) => setEditValue(e.target.value)}
-                                        className="flex-1 border border-black px-1 py-0.5 text-[10px] font-bold"
+                                        className="flex-1 border border-black px-1 py-0.5 text-[11px] font-bold"
                                       />
-                                      <button onClick={() => handleUpdateSubcategory(sub.id)} className="bg-black text-white px-1 text-[8px]">SAVE</button>
-                                      <button onClick={() => setEditingId(null)} className="text-[8px] uppercase">X</button>
+                                      <button onClick={() => handleUpdateSubcategory(sub.id)} className="bg-black text-white px-1 text-[10px]">SAVE</button>
+                                      <button onClick={() => setEditingId(null)} className="text-[10px] uppercase">X</button>
                                     </div>
                                   ) : (
                                     <>
                                       <Link 
                                         href={`/admin/product?category=${cat.name}&subcategory=${sub.name}&cat_id=${cat.id}&sub_id=${sub.id}`}
                                         onClick={onClose}
-                                        className="flex flex-1 items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
+                                        className="flex flex-1 items-center gap-2 text-[11px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
                                       >
                                         <Tag className="h-2.5 w-2.5" />
                                         {sub.name}
@@ -355,7 +355,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                       value={newSubName}
                                       onChange={(e) => setNewSubName(e.target.value)}
                                       placeholder={`Sub to ${cat.name}...`}
-                                      className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-1.5 text-[10px] font-bold focus:border-black focus:outline-none"
+                                      className="flex-1 border border-zinc-200 bg-zinc-50 px-2 py-1.5 text-[11px] font-bold focus:border-black focus:outline-none"
                                     />
                                     <button type="submit" disabled={loading} className="bg-zinc-200 p-1.5 hover:bg-black hover:text-white transition-colors">
                                       <Plus className="h-3 w-3" />
@@ -382,8 +382,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               AD
             </div>
             <div>
-              <p className="text-xs font-bold">System Admin</p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Master</p>
+              <p className="text-[13px] font-bold">System Admin</p>
+              <p className="text-[11px] text-zinc-500 uppercase tracking-widest">Master</p>
             </div>
           </div>
         </div>
