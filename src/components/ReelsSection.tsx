@@ -90,7 +90,7 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
       {/* Video Content */}
       <video
         ref={videoRef}
-        src={isVisible ? optimizedUrl : ""}
+        src={isVisible ? optimizedUrl : undefined}
         poster={posterUrl}
         className={`w-full h-full object-cover transition-all duration-700 ${isLoading ? 'scale-110 blur-xl opacity-0' : 'scale-100 blur-0 opacity-80 group-hover:opacity-100'}`}
         loop
@@ -232,7 +232,7 @@ const ReelsSection = () => {
       {/* Instagram Handle Image — Shown before Reels */}
       <div className="flex justify-center mb-10 px-2 sm:px-4">
         <a
-          href="https://www.instagram.com/tokyo_fashion_hub/"
+          href="https://www.instagram.com/tokyo__fashion_hub/"
           target="_blank"
           rel="noopener noreferrer"
           className="relative w-full max-w-4xl group transition-transform duration-500 hover:scale-[1.005]"
