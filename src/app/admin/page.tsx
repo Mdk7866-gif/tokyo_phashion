@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Package, CheckCircle, ImageIcon, Loader2 } from "lucide-react";
+import { Users, Package, CheckCircle, Loader2 } from "lucide-react";
 
 interface Stats {
   customers: number;

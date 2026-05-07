@@ -413,6 +413,7 @@ function DetailedProductContent() {
         onClose={() => setIsPaymentPopUpOpen(false)}
         onSelect={onPaymentSelect}
         subtotalAmount={(selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity}
+        hideCOD={((selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0) * quantity + 49) <= 100}
       />
 
       {/* COD confirmation popup removed — handled on /checkout page */}

@@ -29,14 +29,14 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (status === "paid") {
-    // Paid online orders awaiting dispatch
+    // Paid online orders awaiting dispatch (full amount paid online)
     query = query.eq("payment_status", "paid").eq("payment_method", "online").eq("delivery_status", "pending");
   } else if (status === "cod") {
-    // COD orders awaiting dispatch (payment pending, delivery pending)
-    query = query.eq("payment_status", "pending").eq("payment_method", "cod").eq("delivery_status", "pending");
+    // COD orders where advance has been paid via Razorpay, awaiting dispatch
+    query = query.eq("payment_status", "paid").eq("payment_method", "cod").eq("delivery_status", "pending");
   } else if (status === "failed") {
-    // Failed/unsuccessful payments
-    query = query.eq("payment_status", "failed");
+    // Failed payments + stale pending orders (user never completed payment)
+    query = query.in("payment_status", ["failed", "pending"]).eq("delivery_status", "pending");
   } else if (status === "delivered") {
     query = query.eq("delivery_status", "delivered");
   } else if (status === "cancelled") {

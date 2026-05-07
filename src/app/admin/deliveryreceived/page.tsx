@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle } from "lucide-react";
 
+const COD_ADVANCE = 100;
+
 interface OrderItem {
   id: string; quantity: number; price_snapshot: number;
   product_name_snapshot: string; color_snapshot: string; size_snapshot: string;
@@ -26,10 +28,10 @@ interface Order {
 }
 
 const TABS = [
-  { key: "paid",      label: "Paid Online",   icon: CreditCard,    color: "bg-blue-600" },
-  { key: "cod",       label: "Pending COD",   icon: Truck,         color: "bg-amber-500" },
-  { key: "cancelled", label: "Cancelled",     icon: XCircle,       color: "bg-zinc-600" },
-  { key: "failed",    label: "Failed Payment",icon: AlertCircle,   color: "bg-red-500" },
+  { key: "paid",      label: "Paid Online",    icon: CreditCard,  color: "bg-blue-600" },
+  { key: "cod",       label: "Paid COD",        icon: Truck,       color: "bg-amber-500" },
+  { key: "cancelled", label: "Cancelled",       icon: XCircle,     color: "bg-zinc-600" },
+  { key: "failed",    label: "Failed / Pending",icon: AlertCircle, color: "bg-red-500" },
 ];
 
 function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () => void; readOnly?: boolean }) {
@@ -37,10 +39,13 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
   const [trackingId, setTrackingId] = useState(order.tracking_id ?? "");
   const [parcelImg, setParcelImg] = useState(order.parcel_image ?? "");
   const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [delivering, setDelivering] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [deliverError, setDeliverError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const isCOD = order.payment_method === "cod";
+  const remainingAtDelivery = isCOD ? Math.max(0, order.total_amount - COD_ADVANCE) : 0;
 
   const uploadImage = async (file: File) => {
     setUploading(true);
@@ -58,26 +63,30 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
     if (!file) return;
     const url = await uploadImage(file);
     setParcelImg(url);
-  };
-
-  const handleSaveTracking = async () => {
-    setSaving(true);
-    await fetch("/api/admin/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_id: order.id, tracking_id: trackingId, parcel_image: parcelImg }),
-    });
-    setSaving(false);
-    alert("Tracking info saved!");
+    setDeliverError(""); // clear any prior validation error
   };
 
   const handleDeliver = async () => {
+    setDeliverError("");
+    if (!trackingId.trim()) {
+      setDeliverError("Please enter a tracking ID before marking as delivered.");
+      return;
+    }
+    if (!parcelImg) {
+      setDeliverError("Please upload the parcel photo before marking as delivered.");
+      return;
+    }
     if (!confirm("Mark this order as DELIVERED?")) return;
     setDelivering(true);
     await fetch("/api/admin/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_id: order.id, delivery_status: "delivered" }),
+      body: JSON.stringify({
+        order_id: order.id,
+        tracking_id: trackingId,
+        parcel_image: parcelImg,
+        delivery_status: "delivered",
+      }),
     });
     setDelivering(false);
     onUpdate();
@@ -117,6 +126,20 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         </button>
       </div>
 
+      {/* COD Remaining Amount Banner */}
+      {isCOD && !readOnly && (
+        <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-widest text-amber-600">COD Advance Paid</p>
+            <p className="text-xs font-black text-amber-700">₹{COD_ADVANCE} received</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[8px] font-black uppercase tracking-widest text-amber-600">Collect at Delivery</p>
+            <p className="text-lg font-black text-amber-700">₹{remainingAtDelivery}</p>
+          </div>
+        </div>
+      )}
+
       {/* Customer + Address */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border-b border-zinc-100">
         <div>
@@ -140,7 +163,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         </div>
       )}
 
-      {/* Order Items — always visible summary, expanded for full detail */}
+      {/* Order Items */}
       <div className="p-4 border-b border-zinc-100">
         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered</p>
         <div className="space-y-2">
@@ -180,41 +203,68 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
       {!readOnly && (
         <div className="p-4 space-y-3">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Courier Info</p>
-          <input value={trackingId} onChange={e => setTrackingId(e.target.value)}
-            placeholder="Paste tracking ID (e.g. Shiprocket #)"
-            className="w-full border border-black px-3 py-2 text-xs font-bold focus:outline-none" />
 
-          <div className="flex items-center gap-3 flex-wrap">
-            <input type="file" ref={fileRef} accept="image/*" onChange={handleFileChange} className="hidden" />
-            <button onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-2 border border-black px-3 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50">
-              <Upload className="h-3 w-3" />{uploading ? "Uploading..." : "Upload Parcel Photo"}
-            </button>
+          {/* Tracking ID */}
+          <div>
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-500 block mb-1">
+              Tracking ID <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={trackingId}
+              onChange={e => { setTrackingId(e.target.value); setDeliverError(""); }}
+              placeholder="Paste tracking ID (e.g. Shiprocket #)"
+              className="w-full border border-black px-3 py-2 text-xs font-bold focus:outline-none"
+            />
+          </div>
+
+          {/* Parcel Photo Upload */}
+          <div>
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-500 block mb-1">
+              Parcel Photo <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center gap-3 flex-wrap">
+              <input type="file" ref={fileRef} accept="image/*" onChange={handleFileChange} className="hidden" />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="flex items-center gap-2 border border-black px-3 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50"
+              >
+                <Upload className="h-3 w-3" />{uploading ? "Uploading..." : "Upload Parcel Photo"}
+              </button>
+            </div>
+
             {parcelImg && (
-              <div className="flex flex-col gap-2 mt-2">
-                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Parcel Photo Preview</p>
+              <div className="flex flex-col gap-2 mt-3">
                 <div className="relative h-48 w-full border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
                   <Image src={parcelImg} alt="Parcel" fill sizes="(max-width: 768px) 100vw, 500px" className="object-contain" />
                 </div>
                 <p className="text-[9px] text-green-600 font-black uppercase tracking-widest flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" /> Photo successfully linked to order
+                  <CheckCircle className="h-3 w-3" /> Photo uploaded — will be saved when you click Mark Delivered
                 </p>
               </div>
             )}
           </div>
 
-          <button onClick={handleSaveTracking} disabled={saving}
-            className="w-full border border-zinc-400 py-2 text-[10px] font-black uppercase tracking-widest hover:border-black transition-colors disabled:opacity-40">
-            {saving ? "Saving..." : "Save Tracking Info"}
-          </button>
+          {/* Validation error */}
+          {deliverError && (
+            <p className="text-[10px] text-red-600 font-bold border border-red-200 bg-red-50 px-3 py-2">
+              {deliverError}
+            </p>
+          )}
 
+          {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-1">
-            <button onClick={handleDeliver} disabled={delivering}
-              className="flex items-center justify-center gap-2 bg-green-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-colors disabled:opacity-40">
-              <CheckCircle className="h-3.5 w-3.5" />{delivering ? "..." : "Mark Delivered"}
+            <button
+              onClick={handleDeliver}
+              disabled={delivering || uploading}
+              className="flex items-center justify-center gap-2 bg-green-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-colors disabled:opacity-40"
+            >
+              <CheckCircle className="h-3.5 w-3.5" />{delivering ? "Saving..." : "Mark Delivered"}
             </button>
-            <button onClick={handleCancel} disabled={cancelling}
-              className="flex items-center justify-center gap-2 bg-red-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors disabled:opacity-40">
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="flex items-center justify-center gap-2 bg-red-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors disabled:opacity-40"
+            >
               <XCircle className="h-3.5 w-3.5" />{cancelling ? "..." : "Cancel Order"}
             </button>
           </div>
@@ -231,16 +281,26 @@ function DeliveryReceivedContent() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [prevTab, setPrevTab] = useState(tab);
 
-  const fetchOrders = useCallback(() => {
+  if (tab !== prevTab) {
+    setPrevTab(tab);
     setLoading(true);
-    fetch(`/api/admin/orders?status=${tab}`).then(r => r.json()).then(d => {
+  }
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/orders?status=${tab}`);
+      const d = await res.json();
       setOrders(d.data || []);
+    } finally {
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }
   }, [tab]);
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  useEffect(() => {
+    fetchOrders();
+  }, [tab, fetchOrders]);
 
   const activeTabMeta = TABS.find(t => t.key === tab) ?? TABS[0];
   const isReadOnly = tab === "failed" || tab === "cancelled";

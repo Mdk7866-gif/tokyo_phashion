@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import UserCartItemCard, { CartItem } from "@/components/UserCartItemCard";
 import UserWishlistCard, { WishlistItem } from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
@@ -33,6 +34,11 @@ function DashboardContent() {
     quantity: number;
     price_snapshot: number;
     product_id: string;
+    product_variant_id: string;
+    product_variants: {
+      id: string;
+      product_images: { image_url: string; sort_order: number }[];
+    } | null;
   }
 
   interface Order {
@@ -646,16 +652,16 @@ function DashboardContent() {
                 orders.map((order) => (
                   <div key={order.id} className="bg-white border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row">
                     <div className="flex-1 p-4 sm:p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-100 gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-200 gap-2">
                         <div>
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Order #{order.id.slice(0,8)}</p>
-                          <p className="text-[10px] text-zinc-600 font-bold">{new Date(order.created_at).toLocaleDateString("en-IN", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Order #{order.id.slice(0,8)}</p>
+                          <p className="text-[10px] text-zinc-800 font-bold">{new Date(order.created_at).toLocaleDateString("en-IN", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border ${
-                            order.delivery_status === 'delivered' ? 'border-green-500 text-green-600 bg-green-50' : 
-                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-600 bg-red-50' : 
-                            'border-amber-500 text-amber-600 bg-amber-50'
+                            order.delivery_status === 'delivered' ? 'border-green-500 text-green-700 bg-green-50' : 
+                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-700 bg-red-50' : 
+                            'border-amber-500 text-amber-700 bg-amber-50'
                           }`}>
                             {order.delivery_status === 'delivered' ? <CheckCircle className="h-3 w-3" /> : 
                              order.delivery_status === 'cancelled' ? <XCircle className="h-3 w-3" /> : 
@@ -665,49 +671,70 @@ function DashboardContent() {
                         </div>
                       </div>
 
-                      <div className="space-y-3 mb-4">
-                        {order.order_items.map((item) => (
-                          <div key={item.id} className="flex justify-between items-start">
-                            <div>
-                              <p className="text-xs font-black uppercase tracking-tight">{item.product_name_snapshot}</p>
-                              <p className="text-[9px] text-zinc-500 font-bold mt-0.5 uppercase tracking-widest">{item.color_snapshot} · Size {item.size_snapshot} · Qty {item.quantity}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs font-black">₹{item.price_snapshot * item.quantity}</p>
-                              {order.delivery_status === "delivered" && (
-                                <button 
-                                  onClick={() => setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot })}
-                                  className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
-                                >
-                                  <Star className="h-2.5 w-2.5" /> Rate & Review
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                      {/* Order Items with images */}
+                      <div className="space-y-2 mb-4">
+                        {order.order_items.map((item) => {
+                          const imgUrl = item.product_variants?.product_images
+                            ?.sort((a, b) => a.sort_order - b.sort_order)?.[0]?.image_url;
+                          return (
+                            <a
+                              key={item.id}
+                              href={`/detailedproduct?product_id=${item.product_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 border border-zinc-200 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
+                            >
+                              {/* Product thumbnail */}
+                              <div className="relative h-12 w-10 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
+                                {imgUrl ? (
+                                  <Image src={imgUrl} alt={item.product_name_snapshot} fill className="object-cover" />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center">
+                                    <Package className="h-4 w-4 text-zinc-300" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-black uppercase tracking-tight text-black group-hover:underline">{item.product_name_snapshot}</p>
+                                <p className="text-[9px] text-zinc-600 font-bold mt-0.5 uppercase tracking-widest">{item.color_snapshot} · Size {item.size_snapshot} · Qty {item.quantity}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-xs font-black text-black">₹{item.price_snapshot * item.quantity}</p>
+                                {order.delivery_status === "delivered" && (
+                                  <button 
+                                    onClick={(e) => { e.preventDefault(); setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot }); }}
+                                    className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
+                                  >
+                                    <Star className="h-2.5 w-2.5" /> Rate & Review
+                                  </button>
+                                )}
+                              </div>
+                            </a>
+                          );
+                        })}
                       </div>
 
                       {/* Tracking / Address info */}
                       <div className="bg-zinc-50 border border-zinc-200 p-3 flex flex-col sm:flex-row gap-4 justify-between mt-auto">
                          <div className="flex-1">
-                           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1 flex items-center gap-1">Shipping To</p>
-                           <p className="text-[10px] text-zinc-600 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
+                           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Shipping To</p>
+                           <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
                          </div>
                          <div className="flex-1 sm:text-right">
                            {order.delivery_status === "pending" ? (
                              <div>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Status</p>
-                                <p className="text-[10px] text-amber-600 font-bold">Waiting for admin to process order.</p>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
+                                <p className="text-[10px] text-amber-700 font-bold">Waiting for admin to process order.</p>
                              </div>
                            ) : order.delivery_status === "cancelled" ? (
                              <div>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Cancellation details</p>
-                                <p className="text-[10px] text-red-600 font-bold">Cancelled by {order.cancelled_by}. {order.cancellation_note ? `Reason: ${order.cancellation_note}` : ''}</p>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Cancellation Details</p>
+                                <p className="text-[10px] text-red-700 font-bold">Cancelled by {order.cancelled_by}. {order.cancellation_note ? `Reason: ${order.cancellation_note}` : ''}</p>
                              </div>
                            ) : (
                              <div>
-                               <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Tracking ID</p>
-                               <p className="text-[10px] font-black">{order.tracking_id || "Not available"}</p>
+                               <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Tracking ID</p>
+                               <p className="text-[10px] font-black text-black">{order.tracking_id || "Not available yet"}</p>
                              </div>
                            )}
                          </div>
@@ -717,31 +744,32 @@ function DashboardContent() {
                     {/* Action Panel */}
                     <div className="bg-zinc-100 border-t sm:border-t-0 sm:border-l border-zinc-200 w-full sm:w-48 p-4 flex flex-col justify-between">
                       <div>
-                        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Payment summary</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-2">Payment</p>
                         <div className="flex justify-between items-center mb-1">
                            <span className="text-[10px] text-zinc-600 font-bold">Method</span>
-                           <span className="text-[10px] font-black uppercase">{order.payment_method}</span>
+                           <span className="text-[10px] font-black uppercase text-black">{order.payment_method}</span>
                         </div>
                         <div className="flex justify-between items-center mb-3">
                             <span className="text-[10px] text-zinc-600 font-bold">Status</span>
                             <span className={`text-[10px] font-black uppercase ${
-                              order.payment_status === 'paid' ? 'text-green-600' :
-                              order.payment_status === 'failed' ? 'text-red-600' :
-                              'text-amber-600'
+                              order.payment_status === 'paid' ? 'text-green-700' :
+                              order.payment_status === 'failed' ? 'text-red-700' :
+                              'text-amber-700'
                             }`}>{order.payment_status === 'paid' ? 'Paid' : order.payment_status === 'failed' ? 'Failed' : 'Pending'}</span>
                          </div>
-                        <div className="flex justify-between items-end border-t border-zinc-200 pt-2 mt-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
-                          <span className="text-lg font-black tracking-tighter leading-none">₹{order.total_amount}</span>
+                        <div className="flex justify-between items-end border-t border-zinc-300 pt-2 mt-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black">Total</span>
+                          <span className="text-lg font-black tracking-tighter leading-none text-black">₹{order.total_amount}</span>
                         </div>
                       </div>
                       
-                      {order.delivery_status === "pending" && (
-                        <div className="mt-4 pt-4 border-t border-zinc-200 text-center">
-                          <p className="text-[8px] font-bold text-zinc-500 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
+                      {/* Cancel button — only for pending delivery AND non-failed payments */}
+                      {order.delivery_status === "pending" && order.payment_status !== "failed" && (
+                        <div className="mt-4 pt-4 border-t border-zinc-300 text-center">
+                          <p className="text-[8px] font-bold text-zinc-600 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
                           <button 
                             onClick={() => handleCancelOrder(order.id)}
-                            className="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2 text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
+                            className="w-full bg-white border border-red-300 text-red-700 hover:bg-red-50 py-2 text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
                           >
                             <AlertTriangle className="h-3 w-3" /> Cancel Order
                           </button>
@@ -807,6 +835,7 @@ function DashboardContent() {
           onClose={() => setIsPaymentPopUpOpen(false)}
           onSelect={onPaymentSelect}
           subtotalAmount={paymentSubtotal}
+          hideCOD={(paymentSubtotal + 49) <= 100}
         />
       </div>
     </div>

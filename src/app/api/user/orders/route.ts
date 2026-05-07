@@ -16,7 +16,12 @@ export async function GET() {
       tracking_id, parcel_image, cancelled_by, cancellation_note, created_at,
       snapshot_order_full_address, snapshot_order_city, snapshot_order_state, snapshot_order_pincode,
       order_items (
-        id, quantity, price_snapshot, product_name_snapshot, color_snapshot, size_snapshot, product_id
+        id, quantity, price_snapshot, product_name_snapshot, color_snapshot, size_snapshot,
+        product_id, product_variant_id,
+        product_variants (
+          id,
+          product_images ( image_url, sort_order )
+        )
       )
     `)
     .eq("user_id", user.id)

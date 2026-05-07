@@ -159,8 +159,15 @@ function CheckoutContent() {
           } catch { setStep("failed"); }
         },
         modal: {
-          ondismiss: () => {
-            // Do NOT create a new order on retry — just allow clicking button again
+          ondismiss: async () => {
+            // Mark as failed in DB when user closes modal
+            try {
+              await fetch("/api/razorpay/cancel-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ our_order_id: data.our_order_id }),
+              });
+            } catch { /* non-fatal */ }
             openingRef.current = false;
             setStep("review");
           },
