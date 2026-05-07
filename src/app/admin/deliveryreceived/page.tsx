@@ -10,6 +10,9 @@ interface OrderItem {
   id: string; quantity: number; price_snapshot: number;
   product_name_snapshot: string; color_snapshot: string; size_snapshot: string;
   product_id: string;
+  product_variants: {
+    product_images: { image_url: string }[];
+  };
 }
 interface Order {
   id: string; total_amount: number; payment_method: string; payment_status: string;
@@ -25,8 +28,8 @@ interface Order {
 const TABS = [
   { key: "paid",      label: "Paid Online",   icon: CreditCard,    color: "bg-blue-600" },
   { key: "cod",       label: "Pending COD",   icon: Truck,         color: "bg-amber-500" },
-  { key: "failed",    label: "Failed Payment",icon: AlertCircle,   color: "bg-red-500" },
   { key: "cancelled", label: "Cancelled",     icon: XCircle,       color: "bg-zinc-600" },
+  { key: "failed",    label: "Failed Payment",icon: AlertCircle,   color: "bg-red-500" },
 ];
 
 function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () => void; readOnly?: boolean }) {
@@ -141,20 +144,32 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
       <div className="p-4 border-b border-zinc-100">
         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered</p>
         <div className="space-y-2">
-          {order.order_items.slice(0, expanded ? undefined : 2).map(item => (
-            <Link
-              key={item.id}
-              href={`/detailedproduct?product_id=${item.product_id}`}
-              target="_blank"
-              className="flex justify-between items-center text-[10px] border border-zinc-100 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
-            >
-              <div>
-                <p className="font-bold group-hover:underline">{item.product_name_snapshot}</p>
-                <p className="text-zinc-400">{item.color_snapshot} · {item.size_snapshot} · Qty {item.quantity}</p>
-              </div>
-              <p className="font-black">₹{item.price_snapshot * item.quantity}</p>
-            </Link>
-          ))}
+          {order.order_items.slice(0, expanded ? undefined : 2).map(item => {
+            const itemImg = item.product_variants?.product_images?.[0]?.image_url;
+            return (
+              <Link
+                key={item.id}
+                href={`/detailedproduct?product_id=${item.product_id}`}
+                target="_blank"
+                className="flex items-center gap-3 text-[10px] border border-zinc-100 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
+              >
+                <div className="relative h-10 w-10 shrink-0 border border-zinc-200 bg-white overflow-hidden">
+                  {itemImg ? (
+                    <Image src={itemImg} alt="Product" fill sizes="40px" className="object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-zinc-50 flex items-center justify-center text-zinc-300">
+                      <Package className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold group-hover:underline">{item.product_name_snapshot}</p>
+                  <p className="text-zinc-400">{item.color_snapshot} · {item.size_snapshot} · Qty {item.quantity}</p>
+                </div>
+                <p className="font-black">₹{item.price_snapshot * item.quantity}</p>
+              </Link>
+            );
+          })}
           {order.order_items.length > 2 && !expanded && (
             <p className="text-[9px] text-zinc-400 font-bold text-center">+ {order.order_items.length - 2} more item(s)</p>
           )}
@@ -176,11 +191,14 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
               <Upload className="h-3 w-3" />{uploading ? "Uploading..." : "Upload Parcel Photo"}
             </button>
             {parcelImg && (
-              <div className="flex items-center gap-2">
-                <div className="relative h-16 w-16 border-2 border-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <Image src={parcelImg} alt="Parcel" fill sizes="64px" className="object-cover" />
+              <div className="flex flex-col gap-2 mt-2">
+                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Parcel Photo Preview</p>
+                <div className="relative h-48 w-full border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
+                  <Image src={parcelImg} alt="Parcel" fill sizes="(max-width: 768px) 100vw, 500px" className="object-contain" />
                 </div>
-                <p className="text-[9px] text-green-600 font-black uppercase tracking-widest">✓ Photo uploaded</p>
+                <p className="text-[9px] text-green-600 font-black uppercase tracking-widest flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" /> Photo successfully linked to order
+                </p>
               </div>
             )}
           </div>

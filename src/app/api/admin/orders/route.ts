@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
       users ( id, name, email, mobile_number, profile_image ),
       order_items (
         id, quantity, price_snapshot, product_name_snapshot, color_snapshot, size_snapshot,
-        product_id, product_variant_id
+        product_id, product_variant_id,
+        product_variants (
+          product_images ( image_url )
+        )
       )
     `)
     .order("created_at", { ascending: false });

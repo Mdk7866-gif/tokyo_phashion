@@ -56,14 +56,7 @@ export default function AdminDashboard() {
       iconBg: "bg-green-50 text-green-600",
       stat: stats?.delivered,
     },
-    {
-      label: "Homepage Thumbnails",
-      icon: ImageIcon,
-      href: "/admin/homepagethumbnail",
-      color: "border-purple-500",
-      iconBg: "bg-purple-50 text-purple-600",
-      stat: null,
-    },
+
   ];
 
   return (
@@ -99,18 +92,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Quick link to cancelled orders */}
-        {stats && stats.cancelled > 0 && (
-          <div className="mt-6 border border-red-200 bg-red-50 p-4 flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-widest text-red-600">
-              {stats.cancelled} Cancelled Order{stats.cancelled !== 1 ? "s" : ""} — review them
-            </p>
-            <Link href="/admin/deliveryreceived?tab=cancelled"
-              className="text-[10px] font-black uppercase tracking-widest bg-red-600 text-white px-4 py-2 hover:bg-red-700 transition-colors">
-              View →
-            </Link>
-          </div>
-        )}
+ 
       </div>
     </div>
   );
