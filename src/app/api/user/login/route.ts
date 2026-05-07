@@ -4,10 +4,11 @@ import { supabaseAdmin } from '../../../../lib/supabase/admin'
 
 // Helper to get the base URL
 function getBaseUrl(request: Request) {
-  const { origin } = new URL(request.url);
+  const url = new URL(request.url);
+  const origin = url.origin;
   
   // Always use the local origin during development (e.g., localhost or 127.0.0.1)
-  if (process.env.NODE_ENV === 'development') {
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || process.env.NODE_ENV === 'development') {
     return origin;
   }
   
