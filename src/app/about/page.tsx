@@ -92,36 +92,39 @@ const AboutPage = () => {
 
               {/* Branch Info - Increased Font Sizes */}
               <div className="flex-1 p-4 sm:p-8 flex flex-col">
-                <div className="space-y-3 sm:space-y-6 flex-1">
+                <div className="space-y-4 flex-1">
                   <h3 className="text-base sm:text-2xl font-black uppercase italic tracking-tighter leading-tight">
                     {branch.name}
                   </h3>
                   
-                  <div className="space-y-2 sm:space-y-4">
-                    <div className="flex items-start gap-2 sm:gap-4">
+                  <div className="space-y-4">
+                    {/* Address with fixed min-height for uniformity */}
+                    <div className="flex items-start gap-2 sm:gap-4 min-h-[40px] sm:min-h-[60px]">
                       <MapPin className="w-3 h-3 sm:w-5 sm:h-5 text-red-600 mt-1 flex-shrink-0" />
                       <p className="text-[10px] sm:text-[13px] font-bold text-zinc-800 leading-snug sm:leading-relaxed">
                         {branch.address}
                       </p>
                     </div>
                     
-                    <a 
-                      href={`tel:${branch.mobile}`}
-                      className="flex items-center gap-2 sm:gap-4 group/phone hover:opacity-70 transition-opacity"
-                    >
-                      <Phone className="w-3 h-3 sm:w-5 sm:h-5 text-black flex-shrink-0" />
-                      <p className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest text-black group-hover/phone:underline underline-offset-4">
-                        {branch.mobile}
-                      </p>
-                    </a>
+                    <div className="space-y-3 pt-2 border-t border-zinc-100">
+                      <a 
+                        href={`tel:${branch.mobile}`}
+                        className="flex items-center gap-2 sm:gap-4 group/phone hover:opacity-70 transition-opacity"
+                      >
+                        <Phone className="w-3 h-3 sm:w-5 sm:h-5 text-black flex-shrink-0" />
+                        <p className="text-[10px] sm:text-[13px] font-black uppercase tracking-widest text-black group-hover/phone:underline underline-offset-4">
+                          {branch.mobile}
+                        </p>
+                      </a>
 
-                    <div className="flex items-center gap-2 sm:gap-4 pt-2 border-t border-zinc-100">
-                      <div className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-zinc-400">Opening Hours</span>
-                        <p className="text-[9px] sm:text-[12px] font-bold text-black">11:30 AM - 11:00 PM (All Days)</p>
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="w-3 h-3 sm:w-5 sm:h-5 flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-zinc-400">Opening Hours</span>
+                          <p className="text-[9px] sm:text-[12px] font-bold text-black">11:30 AM - 11:00 PM (All Days)</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -151,7 +154,7 @@ const AboutPage = () => {
               <div className="absolute -inset-4 border-2 border-zinc-800 translate-x-4 translate-y-4 sm:translate-x-8 sm:translate-y-8 group-hover:translate-x-2 group-hover:translate-y-2 transition-transform duration-500" />
               <div className="relative h-full w-full bg-zinc-900 overflow-hidden border-2 border-white">
                 <Image 
-                  src="https://res.cloudinary.com/ddya4o2yl/image/upload/v1778161746/tokyofashion/prod_1778161737964.jpg" 
+                  src="https://res.cloudinary.com/ddya4o2yl/image/upload/v1778190019/Screenshot_2026-05-08_031012_h4vtby.png" 
                   alt="Bilal Shaikh"
                   fill
                   className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
