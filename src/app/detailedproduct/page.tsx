@@ -135,17 +135,17 @@ function DetailedProductContent() {
             
             if (urlSizeId && initialVariant.variant_sizes) {
               const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === urlSizeId);
-              if (foundSize && foundSize.stock > 0) {
+              if (foundSize) {
                 setSelectedSize(foundSize);
               } else {
-                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
+                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
                 if (availableSize) {
                   setSelectedSize(availableSize);
                   updateQueryParams(initialVariant.id, availableSize.id);
                 }
               }
             } else if (initialVariant.variant_sizes) {
-              const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0);
+              const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
               if (availableSize) {
                 setSelectedSize(availableSize);
                 updateQueryParams(initialVariant.id, availableSize.id);
@@ -313,12 +313,12 @@ function DetailedProductContent() {
     
     // Check if new variant has a size that matches current selection, else select first available
     if (selectedSize) {
-      const matchingSize = v.variant_sizes?.find((s: Size) => s.size === selectedSize.size && s.stock > 0);
+      const matchingSize = v.variant_sizes?.find((s: Size) => s.size === selectedSize.size);
       if (matchingSize) {
         setSelectedSize(matchingSize);
         newParams.set("size_id", matchingSize.id);
       } else {
-        const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0);
+        const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0) || v.variant_sizes?.[0];
         if (firstAvailable) {
           setSelectedSize(firstAvailable);
           newParams.set("size_id", firstAvailable.id);
@@ -329,7 +329,7 @@ function DetailedProductContent() {
       }
       router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     } else {
-      const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0);
+      const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0) || v.variant_sizes?.[0];
       if (firstAvailable) {
         setSelectedSize(firstAvailable);
         newParams.set("size_id", firstAvailable.id);
@@ -532,14 +532,13 @@ function DetailedProductContent() {
                   return (
                     <button
                       key={s.id}
-                      onClick={() => !isOutOfStock && handleSizeChange(s)}
-                      disabled={isOutOfStock}
+                      onClick={() => handleSizeChange(s)}
                       className={`
                         py-3 text-[10px] font-black uppercase tracking-widest transition-all border border-black
-                        ${isOutOfStock ? 'opacity-30 cursor-not-allowed bg-zinc-100' : ''}
+                        ${isOutOfStock ? 'opacity-50 line-through decoration-red-500 decoration-2' : ''}
                         ${selectedSize?.id === s.id 
                           ? 'bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] translate-x-[2px] translate-y-[2px]' 
-                          : (!isOutOfStock ? 'bg-white hover:bg-zinc-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : '')
+                          : 'bg-white hover:bg-zinc-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                         }
                       `}
                     >
@@ -548,8 +547,10 @@ function DetailedProductContent() {
                   );
                 })}
               </div>
-              {selectedSize && selectedSize.stock > 0 && selectedSize.stock <= 5 && (
-                 <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-red-500">Only {selectedSize.stock} left in stock!</p>
+              {selectedSize && (
+                 <p className={`mt-3 text-[10px] font-bold uppercase tracking-widest ${selectedSize.stock <= 0 ? 'text-red-600' : selectedSize.stock <= 5 ? 'text-amber-600' : 'text-green-600'}`}>
+                   {selectedSize.stock <= 0 ? 'Out of Stock' : `In Stock: ${selectedSize.stock}`}
+                 </p>
               )}
             </div>
 
@@ -582,28 +583,28 @@ function DetailedProductContent() {
             <div className="mb-12 space-y-3">
               <button 
                 onClick={handleAddToCart}
-                disabled={!selectedSize || addingToCart}
+                disabled={!selectedSize || addingToCart || (selectedSize?.stock ?? 0) <= 0}
                 className={`w-full flex items-center justify-center gap-2 border border-black py-4 text-xs font-black uppercase tracking-widest transition-all ${
-                  !selectedSize || addingToCart
+                  !selectedSize || addingToCart || (selectedSize?.stock ?? 0) <= 0
                     ? 'opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400' 
                     : 'bg-white text-black hover:bg-zinc-100 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1'
                 }`}
               >
                 <ShoppingBag className="h-4 w-4" />
-                {addingToCart ? "Adding..." : "Add to Cart"}
+                {addingToCart ? "Adding..." : (selectedSize?.stock ?? 0) <= 0 ? "Out of Stock" : "Add to Cart"}
               </button>
 
               <button 
                 onClick={handleBuyNow}
-                disabled={!selectedSize}
+                disabled={!selectedSize || (selectedSize?.stock ?? 0) <= 0}
                 className={`w-full flex items-center justify-center gap-2 border border-black py-4 text-xs font-black uppercase tracking-widest transition-all ${
-                  !selectedSize
+                  !selectedSize || (selectedSize?.stock ?? 0) <= 0
                     ? 'opacity-30 cursor-not-allowed bg-zinc-100 text-zinc-400' 
                     : 'bg-black text-white hover:bg-zinc-800 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1'
                 }`}
               >
                 <Zap className="h-4 w-4 fill-current" />
-                Buy Now
+                {(selectedSize?.stock ?? 0) <= 0 ? "Unavailable" : "Buy Now"}
               </button>
             </div>
 

@@ -37,6 +37,7 @@ interface ProductVariant {
 export interface VariantSize {
   id: string;
   size: string;
+  stock?: number;
   discount_price: number | null;
   original_price: number;
   product_variants: ProductVariant;
@@ -69,6 +70,7 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
 
   const price = size?.discount_price || size?.original_price || 0;
   const totalPrice = price * quantity;
+  const isOutOfStock = size?.stock !== undefined && size.stock <= 0;
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent redirect if clicking on buttons or their children
@@ -136,13 +138,14 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
 
         <div className="flex items-center justify-between gap-1 mt-auto">
            {/* Quantity Controls - Even more compact */}
-           <div className="flex items-center border border-black h-5 bg-white">
+           <div className={`flex items-center border border-black h-5 ${isOutOfStock ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : 'bg-white'}`}>
              <button 
                onClick={(e) => {
                  e.stopPropagation();
-                 setQuantity(Math.max(1, quantity - 1));
+                 if (!isOutOfStock) setQuantity(Math.max(1, quantity - 1));
                }}
-               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-r border-black flex items-center justify-center"
+               disabled={isOutOfStock}
+               className={`px-1.5 h-full transition-colors border-r border-black flex items-center justify-center ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
              >
                <Minus className="h-2 w-2 text-black" />
              </button>
@@ -150,25 +153,32 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
              <button 
                onClick={(e) => {
                  e.stopPropagation();
-                 setQuantity(quantity + 1);
+                 if (!isOutOfStock) setQuantity(quantity + 1);
                }}
-               className="px-1.5 h-full hover:bg-zinc-100 transition-colors border-l border-black flex items-center justify-center"
+               disabled={isOutOfStock}
+               className={`px-1.5 h-full transition-colors border-l border-black flex items-center justify-center ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
              >
                <Plus className="h-2 w-2 text-black" />
              </button>
            </div>
+           {isOutOfStock && <span className="text-[8px] font-black uppercase text-red-500 ml-2">Out of Stock</span>}
         </div>
 
         {/* Compact Buy Button */}
         <button 
           onClick={(e) => {
             e.stopPropagation();
-            if (onBuy) onBuy(item, quantity);
+            if (!isOutOfStock && onBuy) onBuy(item, quantity);
           }}
-          className="w-full border border-black py-2.5 text-[8px] font-black uppercase tracking-widest bg-black text-white flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-zinc-800 transition-all"
+          disabled={isOutOfStock}
+          className={`w-full border border-black py-2.5 text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all ${
+            isOutOfStock 
+            ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' 
+            : 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-zinc-800'
+          }`}
         >
           <ShoppingBag className="h-2.5 w-2.5" />
-          Buy ₹{totalPrice.toFixed(0)}
+          {isOutOfStock ? 'Unavailable' : `Buy ₹${totalPrice.toFixed(0)}`}
         </button>
       </div>
     </div>

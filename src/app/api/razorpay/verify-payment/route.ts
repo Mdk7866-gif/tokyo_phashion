@@ -63,6 +63,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 });
     }
 
+    // --- Decrease Stock ---
+    try {
+      const { data: orderItems, error: itemsError } = await supabaseAdmin
+        .from('order_items')
+        .select('variant_size_id, quantity')
+        .eq('order_id', our_order_id);
+
+      if (orderItems && !itemsError) {
+        for (const item of orderItems) {
+          const { data: vs } = await supabaseAdmin
+            .from('variant_sizes')
+            .select('stock')
+            .eq('id', item.variant_size_id)
+            .single();
+
+          if (vs) {
+            const newStock = Math.max(0, vs.stock - item.quantity);
+            await supabaseAdmin
+              .from('variant_sizes')
+              .update({ stock: newStock })
+              .eq('id', item.variant_size_id);
+          }
+        }
+      }
+    } catch (stockErr) {
+      console.error('Failed to decrease stock:', stockErr);
+      // Non-fatal, let the order confirmation succeed
+    }
+
     // --- Update payment record ---
     const { error: updatePaymentError } = await supabaseAdmin
       .from('payments')

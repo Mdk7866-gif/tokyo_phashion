@@ -56,6 +56,14 @@ export default function AdminDashboard() {
       iconBg: "bg-green-50 text-green-600",
       stat: stats?.delivered,
     },
+    {
+      label: "Stocks",
+      icon: Package, // or another icon
+      href: "/admin/stokes?tab=critical stoke",
+      color: "border-red-500",
+      iconBg: "bg-red-50 text-red-600",
+      stat: null,
+    },
 
   ];
 

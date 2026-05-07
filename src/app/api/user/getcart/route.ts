@@ -19,6 +19,7 @@ export async function GET() {
         variant_sizes!inner (
           id,
           size,
+          stock,
           original_price,
           discount_price,
           product_variants!inner (
