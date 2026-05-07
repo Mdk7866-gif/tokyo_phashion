@@ -380,6 +380,18 @@ export default function ProductDetailedDescriptionCard({
         </div>
       </div>
 
+      {/* Bottom Save Button — so admin doesn't scroll back up */}
+      <div className="flex justify-end border-t-2 border-black pt-4">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 border border-black bg-black px-8 py-3.5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 disabled:opacity-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {saving ? "Saving..." : "Save Product"}
+        </button>
+      </div>
+
       <AlertMessagePopUp
         isOpen={alertInfo.isOpen}
         onClose={() => setAlertInfo({ ...alertInfo, isOpen: false })}

@@ -118,7 +118,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
       <div className="flex items-center justify-between p-4 border-b border-zinc-100">
         <div>
           <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Order ID</p>
-          <p className="text-xs font-black">{order.id.slice(0, 16)}...</p>
+          <p className="text-[9px] font-mono font-black break-all">{order.id}</p>
           <p className="text-[9px] text-zinc-400 mt-0.5">{new Date(order.created_at).toLocaleDateString("en-IN")}</p>
         </div>
         <div className="text-right">

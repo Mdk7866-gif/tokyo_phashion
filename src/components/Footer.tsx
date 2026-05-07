@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 
 const socialIcons = [
   {
@@ -57,7 +57,11 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="flex items-start gap-3 group"
                 >
-                  <MapPin className="h-4 w-4 text-zinc-400 group-hover:text-black transition-colors shrink-0 mt-0.5" />
+                  {/* Google Maps pin icon */}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 mt-0.5 transition-opacity group-hover:opacity-80" fill="none">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/>
+                    <circle cx="12" cy="9" r="2.5" fill="white"/>
+                  </svg>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-black transition-colors">
                     Tokyo Fashion, Himalaya Road,<br />Danilimda, Ahmedabad 380028
                   </span>
@@ -66,8 +70,12 @@ const Footer = () => {
                   href="https://maps.app.goo.gl/5SgRZ9Rf22BjUsiY7" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="ml-7 text-[9px] font-black uppercase tracking-widest text-zinc-700 hover:text-black underline underline-offset-4 transition-colors"
+                  className="ml-7 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-zinc-700 hover:text-black underline underline-offset-4 transition-colors"
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3" fill="none">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335"/>
+                    <circle cx="12" cy="9" r="2.5" fill="white"/>
+                  </svg>
                   View on Google Maps
                 </a>
               </div>

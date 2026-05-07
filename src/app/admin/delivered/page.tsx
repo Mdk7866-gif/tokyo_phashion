@@ -12,9 +12,17 @@ const TABS = [
 ];
 
 interface Review { id: string; rating: number; comment: string | null; created_at: string; users: { name: string | null } }
-interface OrderItem { id: string; quantity: number; price_snapshot: number; product_name_snapshot: string; color_snapshot: string; size_snapshot: string; product_id: string }
+interface OrderItem {
+  id: string; quantity: number; price_snapshot: number;
+  product_name_snapshot: string; color_snapshot: string; size_snapshot: string;
+  product_id: string;
+  product_variants: { product_images: { image_url: string }[] } | null;
+}
 interface Order {
-  id: string; total_amount: number; payment_method: string; tracking_id: string | null; parcel_image: string | null; created_at: string;
+  id: string; total_amount: number; payment_method: string; tracking_id: string | null;
+  parcel_image: string | null; created_at: string;
+  snapshot_order_full_address: string; snapshot_order_city: string;
+  snapshot_order_state: string; snapshot_order_pincode: string;
   users: { name: string | null; email: string | null };
   order_items: OrderItem[];
 }
@@ -31,36 +39,43 @@ function StarRating({ rating }: { rating: number }) {
 
 function DeliveredCard({ order }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
-  const [reviews, setReviews] = useState<Record<string, Review[]>>({});
+  const [review, setReview] = useState<Review | null | undefined>(undefined); // undefined=not loaded
   const [loadingReviews, setLoadingReviews] = useState(false);
 
   const loadReviews = async () => {
     if (expanded) { setExpanded(false); return; }
     setExpanded(true);
+    if (review !== undefined) return; // already loaded
     setLoadingReviews(true);
-    const productIds = [...new Set(order.order_items.map(i => i.product_id))];
-    const entries = await Promise.all(productIds.map(async pid => {
-      const res = await fetch(`/api/user/reviews?product_id=${pid}`);
-      const data = await res.json();
-      return [pid, data.data ?? []] as [string, Review[]];
-    }));
-    setReviews(Object.fromEntries(entries));
+    const res = await fetch(`/api/user/reviews?order_id=${order.id}`);
+    const data = await res.json();
+    setReview(data.data?.[0] ?? null);
     setLoadingReviews(false);
   };
 
   return (
     <div className="bg-white border border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-zinc-100">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Customer</p>
-          <p className="text-xs font-black">{order.users?.name ?? "—"}</p>
-          <p className="text-[10px] text-zinc-500">{order.users?.email}</p>
+      <div className="p-4 border-b border-zinc-100">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Customer</p>
+            <p className="text-xs font-black">{order.users?.name ?? "—"}</p>
+            <p className="text-[10px] text-zinc-500">{order.users?.email}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Total Paid</p>
+            <p className="text-sm font-black">₹{order.total_amount}</p>
+            <p className="text-[9px] text-zinc-400">{new Date(order.created_at).toLocaleDateString("en-IN")}</p>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Total Paid</p>
-          <p className="text-sm font-black">₹{order.total_amount}</p>
-          <p className="text-[9px] text-zinc-400">{new Date(order.created_at).toLocaleDateString("en-IN")}</p>
+        <div className="mt-2 pt-2 border-t border-zinc-100">
+          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Order ID</p>
+          <p className="text-[9px] font-mono font-black break-all text-black">{order.id}</p>
+        </div>
+        <div className="mt-2 pt-2 border-t border-zinc-100">
+          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Shipped To</p>
+          <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} – {order.snapshot_order_pincode}</p>
         </div>
       </div>
 
@@ -79,17 +94,27 @@ function DeliveredCard({ order }: { order: Order }) {
         </div>
       )}
 
-      {/* Items */}
+      {/* Items with thumbnails */}
       <div className="p-4 border-b border-zinc-100">
         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-2">Items Ordered</p>
         <div className="space-y-1 mb-3">
-          {order.order_items.map(item => (
-            <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
-              className="flex justify-between items-center text-[10px] py-1.5 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
-              <span className="text-zinc-700 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
-              <span className="font-black text-black">₹{item.price_snapshot * item.quantity}</span>
-            </Link>
-          ))}
+          {order.order_items.map(item => {
+            const imgUrl = item.product_variants?.product_images?.[0]?.image_url;
+            return (
+              <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
+                className="flex items-center gap-3 text-[10px] py-1.5 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
+                <div className="relative h-10 w-8 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
+                  {imgUrl ? (
+                    <Image src={imgUrl} alt={item.product_name_snapshot} fill sizes="32px" className="object-cover" />
+                  ) : (
+                    <Package className="h-4 w-4 text-zinc-300 m-auto mt-3" />
+                  )}
+                </div>
+                <span className="flex-1 text-zinc-700 group-hover:text-black group-hover:underline">{item.product_name_snapshot} · {item.color_snapshot} · {item.size_snapshot} × {item.quantity}</span>
+                <span className="font-black text-black shrink-0">₹{item.price_snapshot * item.quantity}</span>
+              </Link>
+            );
+          })}
         </div>
 
         <button onClick={loadReviews}
@@ -103,27 +128,17 @@ function DeliveredCard({ order }: { order: Order }) {
           <div className="mt-3 space-y-3">
             {loadingReviews ? (
               <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-zinc-300" /></div>
-            ) : (
-              order.order_items.map(item => {
-                const itemReviews = reviews[item.product_id] ?? [];
-                return (
-                  <div key={item.id} className="border border-zinc-100 p-3">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-2">{item.product_name_snapshot}</p>
-                    {itemReviews.length === 0 ? (
-                      <p className="text-[10px] text-zinc-400 italic">No review yet</p>
-                    ) : itemReviews.map(r => (
-                      <div key={r.id} className="mt-2">
-                        <div className="flex items-center gap-2">
-                          <StarRating rating={r.rating} />
-                          <span className="text-[9px] text-zinc-500 font-bold">{r.users?.name}</span>
-                        </div>
-                        {r.comment && <p className="text-[10px] text-zinc-700 mt-1 font-medium">&ldquo;{r.comment}&rdquo;</p>}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })
-            )}
+            ) : review === null ? (
+              <p className="text-[10px] text-zinc-400 italic">No review submitted yet for this order.</p>
+            ) : review ? (
+              <div className="border border-zinc-100 p-3">
+                <div className="flex items-center gap-2">
+                  <StarRating rating={review.rating} />
+                  <span className="text-[9px] text-zinc-500 font-bold">{review.users?.name}</span>
+                </div>
+                {review.comment && <p className="text-[10px] text-zinc-700 mt-1 font-medium">&ldquo;{review.comment}&rdquo;</p>}
+              </div>
+            ) : null}
           </div>
         )}
       </div>

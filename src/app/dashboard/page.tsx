@@ -66,10 +66,11 @@ function DashboardContent() {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  const [reviewingItem, setReviewingItem] = useState<{ orderId: string, productId: string, productName: string } | null>(null);
+  const [reviewingItem, setReviewingItem] = useState<{ orderId: string } | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
+  const [pincodeLoading, setPincodeLoading] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [profileForm, setProfileForm] = useState({
@@ -250,14 +251,13 @@ function DashboardContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           order_id: reviewingItem.orderId,
-          product_id: reviewingItem.productId,
           rating: reviewForm.rating,
           comment: reviewForm.comment
         })
       });
       if (res.ok) {
         showAlert("Review Submitted", "Thank you for your feedback!", "success");
-        setSubmittedReviews(prev => new Set(prev).add(`${reviewingItem.orderId}_${reviewingItem.productId}`));
+        setSubmittedReviews(prev => new Set(prev).add(reviewingItem.orderId));
         setReviewingItem(null);
         setReviewForm({ rating: 5, comment: "" });
       } else {
@@ -500,7 +500,34 @@ function DashboardContent() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">City</label>
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Pincode {pincodeLoading && <span className="text-blue-400">↻ Looking up...</span>}</label>
+                          <input 
+                            type="text" 
+                            value={profileForm.pincode} 
+                            onChange={async (e) => {
+                              const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                              setProfileForm(prev => ({ ...prev, pincode: val }));
+                              if (val.length === 6) {
+                                setPincodeLoading(true);
+                                try {
+                                  const res = await fetch(`/api/user/pincode?pin=${val}`);
+                                  const data = await res.json();
+                                  if (data.city && data.state) {
+                                    setProfileForm(prev => ({ ...prev, city: data.city, state: data.state }));
+                                  }
+                                } catch { /* ignore */ } finally {
+                                  setPincodeLoading(false);
+                                }
+                              }
+                            }}
+                            placeholder="XXXXXX"
+                            maxLength={6}
+                            className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">City {pincodeLoading && <span className="text-blue-400 animate-pulse">auto-filling...</span>}</label>
                           <input 
                             type="text" 
                             value={profileForm.city} 
@@ -511,23 +538,12 @@ function DashboardContent() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">State</label>
+                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">State {pincodeLoading && <span className="text-blue-400 animate-pulse">auto-filling...</span>}</label>
                           <input 
                             type="text" 
                             value={profileForm.state} 
                             onChange={(e) => setProfileForm({...profileForm, state: e.target.value})}
                             placeholder="State"
-                            className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Pincode</label>
-                          <input 
-                            type="text" 
-                            value={profileForm.pincode} 
-                            onChange={(e) => setProfileForm({...profileForm, pincode: e.target.value})}
-                            placeholder="XXXXXX"
                             className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
                             required
                           />
@@ -657,7 +673,7 @@ function DashboardContent() {
                     <div className="flex-1 p-4 sm:p-5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-4 border-b border-zinc-200 gap-2">
                         <div>
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Order #{order.id.slice(0,8)}</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-0.5">Order #{order.id}</p>
                           <p className="text-[10px] text-zinc-800 font-bold">{new Date(order.created_at).toLocaleDateString("en-IN", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -673,6 +689,29 @@ function DashboardContent() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Tracking / Parcel banner — highlighted when delivered */}
+                      {order.delivery_status === "delivered" && (order.tracking_id || order.parcel_image) && (
+                        <div className="mb-4 border border-green-400 bg-green-50 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex items-center gap-2 shrink-0">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-green-700">Dispatched</span>
+                          </div>
+                          <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:items-center">
+                            {order.tracking_id && (
+                              <div>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-green-600 mb-0.5">Tracking ID</p>
+                                <p className="text-[11px] font-black text-black tracking-tight">{order.tracking_id}</p>
+                              </div>
+                            )}
+                            {order.parcel_image && (
+                              <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                                <Image src={order.parcel_image} alt="Parcel" width={56} height={56} className="object-cover border-2 border-green-400 hover:border-green-600 transition-colors" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Order Items with images */}
                       <div className="space-y-2 mb-4">
@@ -703,61 +742,17 @@ function DashboardContent() {
                               </div>
                               <div className="text-right shrink-0">
                                 <p className="text-xs font-black text-black">₹{item.price_snapshot * item.quantity}</p>
-                                {order.delivery_status === "delivered" && (
-                                  submittedReviews.has(`${order.id}_${item.product_id}`) ? (
-                                    <span className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-green-600">
-                                      <CheckCircle className="h-2.5 w-2.5" /> Reviewed
-                                    </span>
-                                  ) : (
-                                    <button
-                                      onClick={(e) => { e.preventDefault(); setReviewingItem({ orderId: order.id, productId: item.product_id, productName: item.product_name_snapshot }); }}
-                                      className="mt-1 flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-700"
-                                    >
-                                      <Star className="h-2.5 w-2.5" /> Rate & Review
-                                    </button>
-                                  )
-                                )}
                               </div>
                             </a>
                           );
                         })}
                       </div>
 
-                      {/* Tracking / Address info */}
-                      <div className="bg-zinc-50 border border-zinc-200 p-3 flex flex-col sm:flex-row gap-4 justify-between mt-auto">
-                         <div className="flex-1">
-                           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Shipping To</p>
-                           <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
-                         </div>
-                         <div className="flex-1 sm:text-right">
-                           {order.delivery_status === "pending" ? (
-                             <div>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
-                                <p className="text-[10px] text-amber-700 font-bold">Waiting for admin to process order.</p>
-                             </div>
-                           ) : order.delivery_status === "cancelled" ? (
-                             <div>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Cancellation Details</p>
-                                <p className="text-[10px] text-red-700 font-bold">Cancelled by {order.cancelled_by}. {order.cancellation_note ? `Reason: ${order.cancellation_note}` : ''}</p>
-                             </div>
-                           ) : (
-                             <div className="space-y-2">
-                               <div>
-                                 <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Tracking ID</p>
-                                 <p className="text-[10px] font-black text-black">{order.tracking_id || "Not available yet"}</p>
-                               </div>
-                               {order.parcel_image && (
-                                 <div>
-                                   <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Parcel Photo</p>
-                                   <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="block">
-                                     <Image src={order.parcel_image} alt="Parcel" width={80} height={80} className="object-cover border border-zinc-200 hover:border-black transition-colors" />
-                                   </a>
-                                 </div>
-                               )}
-                             </div>
-                           )}
-                         </div>
-                      </div>
+                       {/* Tracking / Address info (bottom) */}
+                       <div className="bg-zinc-50 border border-zinc-200 p-3 mt-auto">
+                         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Shipping To</p>
+                         <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
+                       </div>
                     </div>
                     
                     {/* Action Panel */}
@@ -782,6 +777,24 @@ function DashboardContent() {
                         </div>
                       </div>
                       
+                      {/* Rate & Review Order — one button per delivered order */}
+                       {order.delivery_status === "delivered" && (
+                         <div className="mt-3">
+                           {submittedReviews.has(order.id) ? (
+                             <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-green-600 border border-green-300 bg-green-50 px-3 py-2">
+                               <CheckCircle className="h-3 w-3" /> Review Submitted — Thank You!
+                             </div>
+                           ) : (
+                             <button
+                               onClick={() => setReviewingItem({ orderId: order.id })}
+                               className="w-full flex items-center justify-center gap-2 border border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 py-2 text-[9px] font-black uppercase tracking-widest transition-colors"
+                             >
+                               <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> Rate & Review This Order
+                             </button>
+                           )}
+                         </div>
+                       )}
+
                       {/* Cancel button — only for pending delivery AND non-failed payments */}
                       {order.delivery_status === "pending" && order.payment_status !== "failed" && (
                         <div className="mt-4 pt-4 border-t border-zinc-300 text-center">
@@ -811,8 +824,8 @@ function DashboardContent() {
                 >
                   <XCircle className="h-5 w-5" />
                 </button>
-                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-1">Rate Product</h3>
-                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">{reviewingItem.productName}</p>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-1 text-black">Rate This Order</h3>
+                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6">Order #{reviewingItem.orderId.slice(0, 12)}...</p>
                 
                 <div className="mb-6 flex justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -821,18 +834,18 @@ function DashboardContent() {
                       onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
                       className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
                     >
-                      <Star className={`h-10 w-10 ${reviewForm.rating >= star ? "fill-amber-400 text-amber-400" : "text-zinc-200"}`} />
+                      <Star className={`h-10 w-10 ${reviewForm.rating >= star ? "fill-amber-400 text-amber-400" : "text-zinc-300"}`} />
                     </button>
                   ))}
                 </div>
                 
                 <div className="mb-6">
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2 text-gray-800">Write a review (optional)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-black mb-2">Write a Review (Optional)</label>
                   <textarea 
                     value={reviewForm.comment}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
-                    placeholder="Tell others what you think about this product..."
-                    className="w-full border border-black p-3 text-sm focus:outline-none focus:ring-1 focus:ring-black h-24 resize-none"
+                    placeholder="Share your experience with this order..."
+                    className="w-full border border-black p-3 text-sm text-black placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black h-24 resize-none bg-white"
                   />
                 </div>
                 
