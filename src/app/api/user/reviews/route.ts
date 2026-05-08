@@ -42,15 +42,26 @@ export async function POST(req: NextRequest) {
     product_id = firstItem?.product_id ?? null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await ((admin as any).from("reviews")).upsert({
+  // Check if user already reviewed this order
+  const { data: existingReview } = await admin
+    .from("reviews")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("order_id", order_id)
+    .single();
+
+  if (existingReview) {
+    return NextResponse.json({ error: "You have already reviewed this order" }, { status: 400 });
+  }
+
+  // Insert new review
+  const { error } = await ((admin as any).from("reviews")).insert({
     user_id: user.id,
     product_id,
     order_id,
     rating,
     comment: comment ?? null,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id,order_id" });
+  });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

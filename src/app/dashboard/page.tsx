@@ -85,6 +85,9 @@ function DashboardContent() {
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   
+  // Tab Load Tracking
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
+  
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [paymentSubtotal, setPaymentSubtotal] = useState(0);
   const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
@@ -152,6 +155,7 @@ function DashboardContent() {
       showAlert("Error", "An unexpected error occurred", "error");
     }
     setLoading(false);
+    setLoadedTabs(prev => new Set(prev).add("my cart"));
   }, [showAlert]);
 
   const fetchWishlist = useCallback(async () => {
@@ -170,6 +174,7 @@ function DashboardContent() {
       showAlert("Error", "An unexpected error occurred", "error");
     }
     setWishlistLoading(false);
+    setLoadedTabs(prev => new Set(prev).add("my whishlist"));
   }, [showAlert]);
 
   const fetchOrders = useCallback(async () => {
@@ -204,22 +209,26 @@ function DashboardContent() {
       showAlert("Error", "An unexpected error occurred", "error");
     }
     setOrdersLoading(false);
+    setLoadedTabs(prev => new Set(prev).add("my orders"));
   }, [showAlert]);
 
+  // Initial Load: Profile only
   useEffect(() => {
-    requestAnimationFrame(() => {
-      fetchUser();
-      if (activeTab === "my cart") {
-        fetchCart();
-      }
-      if (activeTab === "my whishlist") {
-        fetchWishlist();
-      }
-      if (activeTab === "my orders") {
-        fetchOrders();
-      }
-    });
-  }, [activeTab, fetchUser, fetchCart, fetchWishlist, fetchOrders]);
+    fetchUser();
+  }, [fetchUser]);
+
+  // Tab Switching: Fetch data only if not loaded
+  useEffect(() => {
+    if (activeTab === "my cart" && !loadedTabs.has("my cart")) {
+      fetchCart();
+    }
+    if (activeTab === "my whishlist" && !loadedTabs.has("my whishlist")) {
+      fetchWishlist();
+    }
+    if (activeTab === "my orders" && !loadedTabs.has("my orders")) {
+      fetchOrders();
+    }
+  }, [activeTab, loadedTabs, fetchCart, fetchWishlist, fetchOrders]);
 
   useEffect(() => {
     if (user) {
