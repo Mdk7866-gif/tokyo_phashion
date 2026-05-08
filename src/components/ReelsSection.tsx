@@ -125,7 +125,6 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
         onWaiting={()  => setIsBuffering(true)}
         onPlaying={()  => { setIsBuffering(false); setIsPlaying(true); setNeedsTap(false); }}
         onPause={()    => setIsPlaying(false)}
-        onClick={e => e.stopPropagation()}
       />
 
       {/* Single custom spinner — no native controls = no duplicate ring */}
@@ -136,11 +135,11 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
       )}
 
       {needsTap && !isPlaying && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20 gap-3 pointer-events-none">
-          <div className="bg-white/90 rounded-full p-4">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20 gap-3">
+          <div className="bg-white/90 rounded-full p-4 shadow-2xl scale-110">
             <Play className="w-8 h-8 text-black fill-black" />
           </div>
-          <span className="text-white text-xs font-bold uppercase tracking-widest">Tap to play</span>
+          <span className="text-white text-xs font-black uppercase tracking-widest drop-shadow-md">Tap to play</span>
         </div>
       )}
 
