@@ -177,6 +177,8 @@ function DetailedProductContent() {
   useEffect(() => {
     if (id) {
       requestAnimationFrame(() => fetchProduct());
+    } else {
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);

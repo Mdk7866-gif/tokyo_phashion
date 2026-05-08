@@ -274,9 +274,15 @@ function CheckoutContent() {
 
       <div className="border-b border-black">
         <div className="mx-auto max-w-screen-lg px-4 py-4 sm:px-6">
-          <Link href="/detailedproduct" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
-            <ArrowLeft className="h-3 w-3" /> Back to Product
-          </Link>
+          {isCartCheckout ? (
+            <Link href="/dashboard?tab=my%20cart" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
+              <ArrowLeft className="h-3 w-3" /> Back to Cart
+            </Link>
+          ) : (
+            <Link href={`/detailedproduct?product_id=${productId}&variant_id=${productVariantId}&size_id=${variantSizeId}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
+              <ArrowLeft className="h-3 w-3" /> Back to Product
+            </Link>
+          )}
         </div>
       </div>
 
