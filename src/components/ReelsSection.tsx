@@ -25,17 +25,12 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [isVisible, setIsVisible] = useState(false); // New state to track visibility
+  const [isInView, setIsInView] = useState(false); // For playing
+  const [isNearView, setIsNearView] = useState(false); // For preloading source
 
   // Function to optimize Cloudinary URLs for maximum performance on mobile
   const getOptimizedUrl = (url: string) => {
     if (!url.includes("cloudinary.com")) return url;
-    // Inject transformations: 
-    // f_auto: best format (webm/mp4)
-    // q_auto:eco: high compression
-    // w_300: smaller width for vertical reels
-    // vc_h264: ensure compatibility
-    // br_1m: limit bitrate to 1Mbps to prevent choking
     if (url.includes("/upload/")) {
       return url.replace("/upload/", "/upload/f_auto,q_auto:eco,w_300,vc_h264,br_1m/");
     }
@@ -47,39 +42,57 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
   const posterUrl = optimizedUrl.replace(/\.[^/.]+$/, ".jpg");
 
   useEffect(() => {
-    const options = {
+    // Observer for Preloading (Near View)
+    // Starts loading the video source when it's within 400px of the viewport horizontally
+    const preloadOptions = {
       root: null,
-      rootMargin: "0px",
-      threshold: 0.6, // Play when 60% of the card is visible
+      rootMargin: "0px 400px 0px 400px",
+      threshold: 0.01,
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const preloadObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-          // Play immediately when visible
+          setIsNearView(true);
+        }
+      });
+    }, preloadOptions);
+
+    // Observer for Auto-playing (In View)
+    const playOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.6,
+    };
+
+    const playObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
           videoRef.current?.play().catch(() => {});
           setIsPlaying(true);
         } else {
-          setIsVisible(false); // Stop loading the video source
+          setIsInView(false);
           videoRef.current?.pause();
           setIsPlaying(false);
         }
       });
-    }, options);
+    }, playOptions);
 
     const currentVideoRef = videoRef.current;
-    if (currentVideoRef) observer.observe(currentVideoRef);
+    if (currentVideoRef) {
+      preloadObserver.observe(currentVideoRef);
+      playObserver.observe(currentVideoRef);
+    }
 
     return () => {
       if (currentVideoRef) {
-        observer.unobserve(currentVideoRef);
+        preloadObserver.unobserve(currentVideoRef);
+        playObserver.unobserve(currentVideoRef);
         currentVideoRef.pause();
-        currentVideoRef.src = ""; // Force stop background loading
-        currentVideoRef.load(); // Reset the video element
+        currentVideoRef.src = "";
+        currentVideoRef.load();
       }
-      setIsVisible(false);
-      setIsPlaying(false);
     };
   }, [index]);
 
@@ -99,13 +112,13 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
       {/* Video Content */}
       <video
         ref={videoRef}
-        src={isVisible ? optimizedUrl : undefined}
+        src={isNearView ? optimizedUrl : undefined}
         poster={posterUrl}
         className={`w-full h-full object-cover transition-all duration-700 ${isLoading ? 'scale-110 blur-xl opacity-0' : 'scale-100 blur-0 opacity-80 group-hover:opacity-100'}`}
         loop
         muted={isMuted}
         playsInline
-        preload={isVisible ? "auto" : "none"}
+        preload={isNearView ? "auto" : "none"}
         onCanPlay={() => setIsLoading(false)}
         onWaiting={() => setIsLoading(true)}
         onPlaying={() => setIsLoading(false)}
@@ -113,7 +126,7 @@ const ReelCard = ({ reel, index }: { reel: Reel, index: number }) => {
       />
 
       {/* Loading Spinner — More prominent */}
-      {isLoading && isVisible && (
+      {isLoading && isNearView && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] z-10 transition-opacity">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 border-4 border-white/10 border-t-amber-500 rounded-full animate-spin" />

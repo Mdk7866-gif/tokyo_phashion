@@ -41,7 +41,7 @@ const Footer = () => {
               <Logo className="h-10 w-auto" />
             </Link>
             <p className="max-w-xs text-[11px] font-bold uppercase tracking-widest text-zinc-400 leading-relaxed">
-              Defining the future of urban streetwear. Born in the streets of Shibuya,
+              Defining the future of urban streetwear. Born in the streets of Danilimda,
               crafted for the global avant-garde.
             </p>
           </div>
