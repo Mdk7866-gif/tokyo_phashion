@@ -48,8 +48,13 @@ export default function Home() {
         </header>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20 font-black uppercase italic text-zinc-300 animate-pulse">
-            Loading drops...
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="aspect-[3/4] bg-zinc-100 animate-pulse border border-zinc-200 rounded-sm flex flex-col justify-end p-4">
+                <div className="h-4 w-2/3 bg-zinc-200 rounded-sm mb-2" />
+                <div className="h-2 w-1/2 bg-zinc-200 rounded-sm" />
+              </div>
+            ))}
           </div>
         ) : categories.length === 0 ? (
           <div className="text-center text-[10px] font-black uppercase tracking-widest text-zinc-400 py-20">
