@@ -48,6 +48,7 @@ function CheckoutContent() {
   const productId         = searchParams.get("product_id") ?? "";
   const productVariantId  = searchParams.get("product_variant_id") ?? "";
   const quantity          = Math.max(1, parseInt(searchParams.get("quantity") ?? "1", 10) || 1);
+  const quantitiesRaw     = searchParams.get("quantities") ?? "{}";
   const paymentMethod     = (searchParams.get("payment_method") ?? "online") as "cod" | "online";
 
   const [step, setStep]               = useState<Step>("review");
@@ -84,13 +85,16 @@ function CheckoutContent() {
         if (dataRes.ok) { 
           const dataJson = await dataRes.json(); 
           if (isCartCheckout) {
-            // Map cart items — API returns { id, variant_sizes: { ..., product_variants: { ... } } }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let qtyMap: Record<string, number> = {};
+            try { qtyMap = JSON.parse(quantitiesRaw); } catch { qtyMap = {}; }
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const items = (dataJson.data || []).map((ci: any) => {
               const vs = ci.variant_sizes;
               const pv = vs?.product_variants;
               return {
-                quantity: 1,
+                quantity: qtyMap[ci.id] || 1,
                 variantSize: {
                   id: vs.id,
                   size: vs.size,

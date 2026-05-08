@@ -52,9 +52,10 @@ interface UserCartItemCardProps {
   item: CartItem;
   onRemove: (id: string) => void;
   onBuy?: (item: CartItem, quantity: number) => void;
+  onQuantityChange?: (id: string, quantity: number) => void;
 }
 
-export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItemCardProps) {
+export default function UserCartItemCard({ item, onRemove, onBuy, onQuantityChange }: UserCartItemCardProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   
@@ -142,7 +143,11 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
                <button 
                  onClick={(e) => {
                    e.stopPropagation();
-                   if (!isOutOfStock) setQuantity(Math.max(1, quantity - 1));
+                   if (!isOutOfStock) {
+                    const newQty = Math.max(1, quantity - 1);
+                    setQuantity(newQty);
+                    if (onQuantityChange) onQuantityChange(item.id, newQty);
+                  }
                  }}
                  disabled={isOutOfStock || quantity <= 1}
                  className={`px-1.5 h-full transition-colors border-r border-black flex items-center justify-center disabled:opacity-30 ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
@@ -153,7 +158,11 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
                <button 
                  onClick={(e) => {
                    e.stopPropagation();
-                   if (!isOutOfStock && quantity < (size.stock || 0)) setQuantity(quantity + 1);
+                   if (!isOutOfStock && quantity < (size.stock || 0)) {
+                    const newQty = quantity + 1;
+                    setQuantity(newQty);
+                    if (onQuantityChange) onQuantityChange(item.id, newQty);
+                  }
                  }}
                  disabled={isOutOfStock || quantity >= (size.stock || 0)}
                  className={`px-1.5 h-full transition-colors border-l border-black flex items-center justify-center disabled:opacity-30 ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}

@@ -88,6 +88,7 @@ function DashboardContent() {
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [paymentSubtotal, setPaymentSubtotal] = useState(0);
   const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
+  const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({});
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -133,7 +134,15 @@ function DashboardContent() {
       const res = await fetch("/api/user/getcart");
       if (res.ok) {
         const json = await res.json();
-        setCartItems(json.data || []);
+        const items = json.data || [];
+        setCartItems(items);
+        
+        // Initialize quantities
+        const q: Record<string, number> = {};
+        items.forEach((item: CartItem) => {
+          q[item.id] = 1;
+        });
+        setCartQuantities(q);
       } else {
         const error = await res.json();
         showAlert("Error", error.error || "Failed to fetch cart", "error");
@@ -292,6 +301,10 @@ function DashboardContent() {
     setSubmittingReview(false);
   };
 
+  const handleQuantityChange = (id: string, quantity: number) => {
+    setCartQuantities(prev => ({ ...prev, [id]: quantity }));
+  };
+
   const handleRemoveItem = async (id: string) => {
     try {
       const deleteRes = await fetch(`/api/user/crudcart?id=${id}`, { method: "DELETE" });
@@ -322,7 +335,8 @@ function DashboardContent() {
     
     const subtotal = cartItems.reduce((acc, item) => {
       const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
-      return acc + (price * 1); 
+      const qty = cartQuantities[item.id] || 1;
+      return acc + (price * qty); 
     }, 0);
     
     setPaymentSubtotal(subtotal);
@@ -333,7 +347,12 @@ function DashboardContent() {
   const onPaymentSelect = (method: "cod" | "online") => {
     setIsPaymentPopUpOpen(false);
     if (selectedItemForPurchase === 'all') {
-      router.push(`/checkout?cart_checkout=true&payment_method=${method}`);
+      const params = new URLSearchParams({
+        cart_checkout: "true",
+        payment_method: method,
+        quantities: JSON.stringify(cartQuantities)
+      });
+      router.push(`/checkout?${params.toString()}`);
     } else if (selectedItemForPurchase) {
       const { item, quantity } = selectedItemForPurchase;
       const params = new URLSearchParams({
@@ -636,6 +655,7 @@ function DashboardContent() {
                       item={item} 
                       onRemove={handleRemoveItem}
                       onBuy={handleBuyItem}
+                      onQuantityChange={handleQuantityChange}
                     />
                   ))}
                 </div>
