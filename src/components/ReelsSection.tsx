@@ -316,8 +316,10 @@ const ReelsSection = () => {
              </div>
 
              <video 
-               src={getAdaptiveUrl(selectedReel.videoUrl, true)} 
+               key={selectedReel.id}
+               src={selectedReel.videoUrl} 
                autoPlay 
+               muted
                loop 
                controls 
                playsInline
