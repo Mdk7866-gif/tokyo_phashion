@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Save, Loader2, Plus } from "lucide-react";
 import ProductDetailedDescriptionVariantCard from "./ProductDetailedDescriptionVariantCard";
 import AlertMessagePopUp from "../AlertMessagePopUp";
+import imageCompression from 'browser-image-compression';
 
 interface SizeData {
   size: string;
@@ -170,10 +171,19 @@ export default function ProductDetailedDescriptionCard({
     if (!file) return;
     
     setSaving(true);
-    const formData = new FormData();
-    formData.append('file', file);
     
     try {
+      // Compress image before upload
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+      const compressedFile = await imageCompression(file, options);
+
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      
       const res = await fetch('/api/admin/uploadimage', {
         method: 'POST',
         body: formData

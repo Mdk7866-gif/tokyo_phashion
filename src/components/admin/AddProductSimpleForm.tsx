@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ArrowLeft, Save, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import AlertMessagePopUp from "../AlertMessagePopUp";
+import imageCompression from 'browser-image-compression';
 
 interface ColorData {
   color: string;
@@ -80,10 +81,19 @@ export default function AddProductSimpleForm({
     if (!file) return;
     
     setSaving(true);
-    const formData = new FormData();
-    formData.append('file', file);
     
     try {
+      // Compress image before upload
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+      const compressedFile = await imageCompression(file, options);
+      
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      
       const res = await fetch('/api/admin/uploadimage', {
         method: 'POST',
         body: formData
@@ -364,6 +374,18 @@ export default function AddProductSimpleForm({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Bottom Save Button */}
+      <div className="flex justify-end border-t border-black pt-6">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 border border-black bg-black px-10 py-4 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 disabled:opacity-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {saving ? "Saving..." : "Save Product"}
+        </button>
       </div>
 
       <AlertMessagePopUp

@@ -365,6 +365,10 @@ function DetailedProductContent() {
 
   const handleSizeChange = (s: Size) => {
     setSelectedSize(s);
+    // If current quantity exceeds new size stock, cap it
+    if (quantity > s.stock) {
+      setQuantity(Math.max(1, s.stock));
+    }
     if (selectedVariant) {
       updateQueryParams(selectedVariant.id, s.id);
     }
@@ -600,30 +604,43 @@ function DetailedProductContent() {
               )}
             </div>
 
-            {/* Quantity */}
-            <div className="mb-8">
-               <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Quantity</h3>
-               <div className="flex items-center border border-black w-fit">
-                 <button 
-                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                   className="p-3 hover:bg-zinc-100 transition-colors border-r border-black"
-                 >
-                   <Minus className="h-3 w-3" />
-                 </button>
-                 <input 
-                   type="number" 
-                   value={quantity}
-                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                   className="w-12 text-center text-xs font-black bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                 />
-                 <button 
-                   onClick={() => setQuantity(quantity + 1)}
-                   className="p-3 hover:bg-zinc-100 transition-colors border-l border-black"
-                 >
-                   <Plus className="h-3 w-3" />
-                 </button>
-               </div>
-            </div>
+             {/* Quantity */}
+             <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest">Quantity</h3>
+                  {selectedSize && (
+                    <span className={`text-[9px] font-bold uppercase tracking-widest ${selectedSize.stock <= 5 ? 'text-amber-600' : 'text-zinc-400'}`}>
+                      {selectedSize.stock} available
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center border border-black w-fit">
+                  <button 
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-3 hover:bg-zinc-100 transition-colors border-r border-black disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <input 
+                    type="number" 
+                    value={quantity}
+                    onChange={(e) => {
+                      const val = Math.max(1, parseInt(e.target.value) || 1);
+                      const max = selectedSize ? selectedSize.stock : 99;
+                      setQuantity(Math.min(val, max));
+                    }}
+                    className="w-12 text-center text-xs font-black bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button 
+                    onClick={() => setQuantity(Math.min(quantity + 1, selectedSize?.stock || 1))}
+                    className="p-3 hover:bg-zinc-100 transition-colors border-l border-black disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled={selectedSize ? quantity >= selectedSize.stock : false}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+             </div>
 
             {/* Actions */}
             <div className="mb-12 space-y-3">

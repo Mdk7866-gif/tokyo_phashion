@@ -39,7 +39,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <div className={`min-h-screen flex flex-col bg-black text-white ${isSplashChecking ? "opacity-0" : "opacity-100 transition-opacity duration-500"}`}>
         <div className="flex flex-1">
           {/* Sidebar */}
-          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          <React.Suspense fallback={<div className="w-72 bg-white hidden lg:block border-r border-black" />}>
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+          </React.Suspense>
 
           {/* Main Content Area */}
           <div className="flex flex-col flex-1 min-w-0">

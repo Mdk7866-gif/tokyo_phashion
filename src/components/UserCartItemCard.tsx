@@ -136,32 +136,38 @@ export default function UserCartItemCard({ item, onRemove, onBuy }: UserCartItem
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-1 mt-auto">
-           {/* Quantity Controls - Even more compact */}
-           <div className={`flex items-center border border-black h-5 ${isOutOfStock ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : 'bg-white'}`}>
-             <button 
-               onClick={(e) => {
-                 e.stopPropagation();
-                 if (!isOutOfStock) setQuantity(Math.max(1, quantity - 1));
-               }}
-               disabled={isOutOfStock}
-               className={`px-1.5 h-full transition-colors border-r border-black flex items-center justify-center ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
-             >
-               <Minus className="h-2 w-2 text-black" />
-             </button>
-             <span className="w-5 text-center text-[8px] font-black text-black">{quantity}</span>
-             <button 
-               onClick={(e) => {
-                 e.stopPropagation();
-                 if (!isOutOfStock) setQuantity(quantity + 1);
-               }}
-               disabled={isOutOfStock}
-               className={`px-1.5 h-full transition-colors border-l border-black flex items-center justify-center ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
-             >
-               <Plus className="h-2 w-2 text-black" />
-             </button>
+        <div className="flex flex-col gap-1.5 mt-auto">
+           <div className="flex items-center justify-between">
+             <div className={`flex items-center border border-black h-6 ${isOutOfStock ? 'bg-zinc-100 opacity-50 cursor-not-allowed' : 'bg-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'}`}>
+               <button 
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   if (!isOutOfStock) setQuantity(Math.max(1, quantity - 1));
+                 }}
+                 disabled={isOutOfStock || quantity <= 1}
+                 className={`px-1.5 h-full transition-colors border-r border-black flex items-center justify-center disabled:opacity-30 ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
+               >
+                 <Minus className="h-2 w-2 text-black" />
+               </button>
+               <span className="w-6 text-center text-[9px] font-black text-black">{quantity}</span>
+               <button 
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   if (!isOutOfStock && quantity < (size.stock || 0)) setQuantity(quantity + 1);
+                 }}
+                 disabled={isOutOfStock || quantity >= (size.stock || 0)}
+                 className={`px-1.5 h-full transition-colors border-l border-black flex items-center justify-center disabled:opacity-30 ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-zinc-100'}`}
+               >
+                 <Plus className="h-2 w-2 text-black" />
+               </button>
+             </div>
+             {size?.stock !== undefined && (
+               <span className={`text-[7px] font-bold uppercase tracking-widest ${size.stock <= 5 ? 'text-amber-600' : 'text-zinc-400'}`}>
+                 {size.stock} in stock
+               </span>
+             )}
            </div>
-           {isOutOfStock && <span className="text-[8px] font-black uppercase text-red-500 ml-2">Out of Stock</span>}
+           {isOutOfStock && <p className="text-[7px] font-black uppercase text-red-600 leading-none">Out of Stock</p>}
         </div>
 
         {/* Compact Buy Button */}
