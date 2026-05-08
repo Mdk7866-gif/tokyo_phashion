@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { 
   X, 
   Home, 
   Info, 
-  ChevronDown, 
   ChevronRight, 
   User, 
   LogOut, 
@@ -23,6 +22,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   interface Subcategory {
     id: string;
     name: string;
@@ -38,7 +38,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const [user, setUser] = useState<UserType | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [expandedCatIds, setExpandedCatIds] = useState<string[]>([]);
   // Removed unused loading state
 
   const getUser = React.useCallback(async () => {
@@ -75,12 +74,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     if (response.ok) {
       window.location.href = "/";
     }
-  };
-
-  const toggleCategory = (id: string) => {
-    setExpandedCatIds(prev => 
-      prev.includes(id) ? prev.filter(catId => catId !== id) : [...prev, id]
-    );
   };
 
   return (
@@ -176,38 +169,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">Collections</p>
               <div className="space-y-2">
-                {categories.map((cat) => {
-                  const isExpanded = expandedCatIds.includes(cat.id);
-                  return (
-                    <div key={cat.id} className="space-y-1">
-                      <button
-                        onClick={() => toggleCategory(cat.id)}
-                        className="flex w-full items-center justify-between px-3 py-3 text-[11px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all border-l-2 border-transparent hover:border-black"
-                      >
-                        <span className="flex items-center gap-3">
-                          <ShoppingBag className="h-3.5 w-3.5 opacity-40" />
-                          {cat.name}
-                        </span>
-                        {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                      </button>
-                      
-                      {isExpanded && (
-                        <div className="ml-8 space-y-1 animate-in fade-in slide-in-from-left-2 duration-300">
-                          {cat.subcategories?.map((sub: Subcategory) => (
-                            <Link
-                              key={sub.id}
-                              href={`/briefproduct?category_id=${cat.id}&subcategory_id=${sub.id}`}
-                              onClick={onClose}
-                              className="block px-3 py-2 text-[11px] font-bold text-zinc-500 uppercase hover:text-black transition-colors"
-                            >
-                              {sub.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/briefproduct?category_id=${cat.id}`}
+                    onClick={onClose}
+                    className={`flex w-full items-center justify-between px-3 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-l-2 border-transparent hover:border-black ${
+                      searchParams.get("category_id") === cat.id ? "bg-zinc-100 border-black" : "hover:bg-zinc-50"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <ShoppingBag className="h-3.5 w-3.5 opacity-40" />
+                      {cat.name}
+                    </span>
+                    <ChevronRight className="h-3 w-3" />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

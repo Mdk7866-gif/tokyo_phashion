@@ -66,6 +66,7 @@ function DetailedProductContent() {
   const [copied, setCopied] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -179,6 +180,21 @@ function DetailedProductContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Preload images for all variants to ensure fast switching
+  useEffect(() => {
+    if (product?.product_variants) {
+      product.product_variants.forEach(variant => {
+        variant.product_images?.forEach(img => {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = img.image_url;
+          document.head.appendChild(link);
+        });
+      });
+    }
+  }, [product]);
 
   // Load auth + wishlist on mount
   useEffect(() => {
@@ -304,8 +320,17 @@ function DetailedProductContent() {
   // Removed fetchProduct from here as it was moved up
 
   const handleVariantChange = (v: ProductVariant) => {
+    if (selectedVariant?.id === v.id) return;
+    
+    const newImageUrl = v.product_images?.[0]?.image_url;
+    if (newImageUrl) {
+      setIsImageLoading(true);
+    } else {
+      setIsImageLoading(false);
+    }
+
     setSelectedVariant(v);
-    setMainImage(v.product_images?.[0]?.image_url || "");
+    setMainImage(newImageUrl || "");
     // Update URL without reloading
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set("variant_id", v.id);
@@ -434,8 +459,25 @@ function DetailedProductContent() {
           {/* Left: Image Gallery */}
           <div className="space-y-4">
             <div className="aspect-[3/4] relative border border-black bg-zinc-50 overflow-hidden group">
+              {/* Skeleton/Loading State */}
+              <div className={`absolute inset-0 bg-zinc-100 animate-pulse flex items-center justify-center transition-opacity duration-300 ${isImageLoading ? "opacity-100 z-10" : "opacity-0 pointer-events-none"}`}>
+                 <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Loading...</span>
+                 </div>
+              </div>
+
               {mainImage ? (
-                <Image src={mainImage} alt={product.name} fill sizes="(max-width: 1024px) 100vw, 50vw" priority className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Image 
+                  src={mainImage} 
+                  alt={product.name} 
+                  fill 
+                  sizes="(max-width: 1024px) 100vw, 50vw" 
+                  priority 
+                  onLoad={() => setIsImageLoading(false)}
+                  onError={() => setIsImageLoading(false)}
+                  className={`object-cover transition-all duration-700 group-hover:scale-105 ${isImageLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"}`} 
+                />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-black uppercase tracking-widest text-zinc-300">No Image</div>
               )}
@@ -460,7 +502,11 @@ function DetailedProductContent() {
                 {sortedImages.map((img: ProductImage) => (
                   <button 
                     key={img.id}
-                    onClick={() => setMainImage(img.image_url)}
+                    onClick={() => {
+                      if (mainImage === img.image_url) return;
+                      setIsImageLoading(true);
+                      setMainImage(img.image_url);
+                    }}
                     className={`aspect-[3/4] relative border cursor-pointer transition-all ${mainImage === img.image_url ? 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-transparent hover:border-black/30'}`}
                   >
                     <Image src={img.image_url} alt="Thumbnail" fill sizes="15vw" className="object-cover" />
