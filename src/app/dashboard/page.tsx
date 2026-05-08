@@ -768,6 +768,28 @@ function DashboardContent() {
                         </div>
                       )}
 
+                      {/* Cancellation Info — visible to user */}
+                      {order.delivery_status === "cancelled" && (order.cancelled_by || order.cancellation_note) && (
+                        <div className="mb-4 border border-red-200 bg-red-50 p-3">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-red-700">Cancellation Details</span>
+                          </div>
+                          <div className="space-y-1 pl-5.5">
+                            {order.cancelled_by && (
+                              <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-tight">
+                                <span className="text-zinc-400 font-medium">Cancelled By:</span> {order.cancelled_by === 'admin' ? 'Tokyo Fashion (Admin)' : 'You'}
+                              </p>
+                            )}
+                            {order.cancellation_note && (
+                              <p className="text-[10px] font-bold text-zinc-700">
+                                <span className="text-zinc-400 font-medium uppercase tracking-tight">Reason:</span> {order.cancellation_note}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Order Items with images */}
                       <div className="space-y-2 mb-4">
                         {order.order_items.map((item) => {
