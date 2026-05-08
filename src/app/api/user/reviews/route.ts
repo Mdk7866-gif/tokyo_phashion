@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if user already reviewed this order
-  const { data: existingReview } = await admin
+  const { data: existingReview } = await (admin as any)
     .from("reviews")
     .select("id")
     .eq("user_id", user.id)
