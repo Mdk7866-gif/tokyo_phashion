@@ -60,19 +60,26 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const product_id = req.nextUrl.searchParams.get("product_id");
   const order_id = req.nextUrl.searchParams.get("order_id");
-  if (!product_id && !order_id) {
-    return NextResponse.json({ error: "product_id or order_id required" }, { status: 400 });
-  }
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const admin = supabaseAdmin;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query = ((admin as any).from("reviews"))
-    .select("id, rating, comment, created_at, users(name, profile_image)")
+    .select("id, rating, comment, created_at, order_id, product_id, users(name, profile_image)")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
-  if (product_id) query = query.eq("product_id", product_id);
-  if (order_id) query = query.eq("order_id", order_id);
+  if (product_id) {
+    query = query.eq("product_id", product_id);
+  } else if (order_id) {
+    query = query.eq("order_id", order_id);
+  } else if (user) {
+    // If no specific product/order, but user is logged in, return their reviews
+    query = query.eq("user_id", user.id);
+  } else {
+    return NextResponse.json({ error: "product_id or order_id required" }, { status: 400 });
+  }
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

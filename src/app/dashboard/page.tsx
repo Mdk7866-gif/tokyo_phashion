@@ -70,6 +70,7 @@ function DashboardContent() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
+  const [reviewsMap, setReviewsMap] = useState<Record<string, { rating: number, comment: string }>>({});
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(true);
@@ -165,13 +166,29 @@ function DashboardContent() {
   const fetchOrders = useCallback(async () => {
     setOrdersLoading(true);
     try {
-      const res = await fetch("/api/user/orders");
-      if (res.ok) {
-        const json = await res.json();
-        setOrders(json.data || []);
-      } else {
-        const err = await res.json();
-        showAlert("Error", err.error || "Failed to fetch orders", "error");
+      const [ordersRes, reviewsRes] = await Promise.all([
+        fetch("/api/user/orders"),
+        fetch("/api/user/reviews") // Fetch all reviews for this user
+      ]);
+
+      if (ordersRes.ok) {
+        const ordersJson = await ordersRes.json();
+        setOrders(ordersJson.data || []);
+      }
+
+      if (reviewsRes.ok) {
+        const reviewsJson = await reviewsRes.json();
+        const map: Record<string, { rating: number, comment: string }> = {};
+        const submittedSet = new Set<string>();
+        
+        reviewsJson.data?.forEach((rev: any) => {
+          if (rev.order_id) {
+            map[rev.order_id] = { rating: rev.rating, comment: rev.comment };
+            submittedSet.add(rev.order_id);
+          }
+        });
+        setReviewsMap(map);
+        setSubmittedReviews(submittedSet);
       }
     } catch (e) {
       console.error(e);
@@ -258,6 +275,10 @@ function DashboardContent() {
       if (res.ok) {
         showAlert("Review Submitted", "Thank you for your feedback!", "success");
         setSubmittedReviews(prev => new Set(prev).add(reviewingItem.orderId));
+        setReviewsMap(prev => ({
+          ...prev,
+          [reviewingItem.orderId]: { rating: reviewForm.rating, comment: reviewForm.comment }
+        }));
         setReviewingItem(null);
         setReviewForm({ rating: 5, comment: "" });
       } else {
@@ -786,8 +807,18 @@ function DashboardContent() {
                        {order.delivery_status === "delivered" && (
                          <div className="mt-3">
                            {submittedReviews.has(order.id) ? (
-                             <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-green-600 border border-green-300 bg-green-50 px-3 py-2">
-                               <CheckCircle className="h-3 w-3" /> Review Submitted — Thank You!
+                             <div className="flex flex-col gap-2 p-3 bg-zinc-50 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                               <div className="flex items-center justify-between">
+                                 <div className="flex gap-1">
+                                   {[1,2,3,4,5].map(star => (
+                                     <Star key={star} className={`h-3 w-3 ${reviewsMap[order.id]?.rating >= star ? 'fill-amber-400 text-amber-400' : 'text-zinc-200'}`} />
+                                   ))}
+                                 </div>
+                                 <span className="text-[8px] font-black uppercase tracking-widest text-green-600">Review Verified</span>
+                               </div>
+                               {reviewsMap[order.id]?.comment && (
+                                 <p className="text-[10px] font-medium text-zinc-600 italic">"{reviewsMap[order.id].comment}"</p>
+                               )}
                              </div>
                            ) : (
                              <button
