@@ -93,14 +93,22 @@ function DetailedProductContent() {
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   // codConfirmation removed — flow now redirects to /checkout
 
-  const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null) => {
+  const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productOverride?: Product | null) => {
     const params = new URLSearchParams(searchParams.toString());
     
-    if (product) {
-      if (product.subcategories?.categories?.name) params.set("category", product.subcategories.categories.name.toLowerCase());
-      if (product.subcategories?.name) params.set("subcategory", product.subcategories.name.toLowerCase());
-      if (product.subcategories?.category_id) params.set("category_id", product.subcategories.category_id);
-      if (product.subcategory_id) params.set("subcategory_id", product.subcategory_id);
+    // Ensure we are using the correct product_id from the current URL or state
+    const currentProductId = searchParams.get("product_id") || searchParams.get("id");
+    if (currentProductId) {
+      params.set("product_id", currentProductId);
+      params.delete("id"); // Standardize on product_id
+    }
+
+    const p = productOverride !== undefined ? productOverride : product;
+    if (p) {
+      if (p.subcategories?.categories?.name) params.set("category", p.subcategories.categories.name.toLowerCase());
+      if (p.subcategories?.name) params.set("subcategory", p.subcategories.name.toLowerCase());
+      if (p.subcategories?.category_id) params.set("category_id", p.subcategories.category_id);
+      if (p.subcategory_id) params.set("subcategory_id", p.subcategory_id);
     }
     
     if (variantId) {
@@ -142,14 +150,14 @@ function DetailedProductContent() {
                 const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
                 if (availableSize) {
                   setSelectedSize(availableSize);
-                  updateQueryParams(initialVariant.id, availableSize.id);
+                  updateQueryParams(initialVariant.id, availableSize.id, data);
                 }
               }
             } else if (initialVariant.variant_sizes) {
               const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
               if (availableSize) {
                 setSelectedSize(availableSize);
-                updateQueryParams(initialVariant.id, availableSize.id);
+                updateQueryParams(initialVariant.id, availableSize.id, data);
               }
             }
             
@@ -176,12 +184,16 @@ function DetailedProductContent() {
 
   useEffect(() => {
     if (id) {
-      requestAnimationFrame(() => fetchProduct());
+      // Reset state for new product to avoid UI glitches
+      setProduct(null);
+      setSelectedVariant(null);
+      setSelectedSize(null);
+      setQuantity(1);
+      fetchProduct();
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, fetchProduct]);
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {
