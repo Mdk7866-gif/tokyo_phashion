@@ -282,15 +282,15 @@ function CheckoutContent() {
           <div class="details-grid">
             <div>
               <div class="section-title">Order Information</div>
-              <strong>Order ID:</strong> #${rzpDataRef.current?.our_order_id || 'N/A'}<br>
-              <strong>Payment ID:</strong> #${paymentId || 'N/A'}<br>
+              <strong>Order ID:</strong> #${(rzpDataRef.current?.our_order_id || 'N/A').toUpperCase()}<br>
+              <strong>Payment ID:</strong> #${(paymentId || 'N/A').toUpperCase()}<br>
               <strong>Method:</strong> ${paymentMethod.toUpperCase()}<br>
               <strong>Date:</strong> ${new Date().toLocaleDateString()}
             </div>
             <div>
               <div class="section-title">Customer Details</div>
               <strong>Name:</strong> ${user?.name || 'N/A'}<br>
-              <strong>Email:</strong> ${user?.email || 'N/A'}<br>
+              <strong>Email:</strong> ${(user?.email || 'N/A').toUpperCase()}<br>
               <strong>Mobile:</strong> ${user?.mobile_number || 'N/A'}<br>
               <strong>Address:</strong> ${user?.address?.city}, ${user?.address?.state}
             </div>
