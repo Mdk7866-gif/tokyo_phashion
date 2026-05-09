@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProductDetail } from '@/lib/services/product';
+import { fetchShareProduct as getProductDetail } from '@/app/admin/shareproduct/route';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

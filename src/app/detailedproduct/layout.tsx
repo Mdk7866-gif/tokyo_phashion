@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next'
-import { getProductDetail } from '@/lib/services/product'
+import { fetchShareProduct } from '@/app/admin/shareproduct/route'
 import { headers } from 'next/headers'
 
 type Props = {
@@ -31,7 +31,7 @@ export async function generateMetadata(
   }
 
   try {
-    const { data: product, error } = await getProductDetail(productId);
+    const { data: product, error } = await fetchShareProduct(productId);
 
     if (error || !product || !product.product_variants || product.product_variants.length === 0) {
       return {
@@ -62,9 +62,9 @@ export async function generateMetadata(
     const price = selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0;
     const formattedPrice = `₹${price.toLocaleString('en-IN')}`;
     
-    // Premium Title & Description for "Card"
-    const title = `${product.name} — ${formattedPrice} | Tokyo Fashion`;
-    const description = `Shop the ${product.name} at Tokyo Fashion. Premium quality streetwear designed for the modern lifestyle. ${product.description ? product.description.slice(0, 120) + '...' : ''}`;
+    // Optimized for WhatsApp Card
+    const title = `${product.name} | Tokyo Fashion`;
+    const description = `Price: ${formattedPrice}. Premium streetwear designed for the modern lifestyle. Shop ${product.name} at Tokyo Fashion.`;
 
     return {
       title,
@@ -82,6 +82,10 @@ export async function generateMetadata(
         description,
         images: mainImage ? [mainImage] : [],
       },
+      other: {
+        'product:price:amount': price.toString(),
+        'product:price:currency': 'INR',
+      }
     }
   } catch (error) {
     console.error("Metadata error:", error);
