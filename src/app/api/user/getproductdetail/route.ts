@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { getProductDetail } from '@/lib/services/product';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -9,35 +9,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing product_id" }, { status: 400 });
   }
 
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('products')
-      .select(`
-        *,
-        subcategories (
-          id,
-          name,
-          category_id,
-          categories (
-            id,
-            name
-          )
-        ),
-        product_variants (
-          *,
-          variant_sizes (*),
-          product_images (*)
-        )
-      `)
-      .eq('id', product_id)
-      .is('deleted_at', null)
-      .single();
+  const { data, error } = await getProductDetail(product_id);
 
-    if (error) throw error;
-    
-    return NextResponse.json({ data });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "An unexpected error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (error) {
+    return NextResponse.json({ error }, { status: 500 });
   }
+  
+  return NextResponse.json({ data });
 }

@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next'
-import { supabaseAdmin } from '@/lib/supabase/admin'
+import { getProductDetail } from '@/lib/services/product'
 import { headers } from 'next/headers'
 
 type Props = {
@@ -26,35 +26,23 @@ export async function generateMetadata(
 
   if (!productId) {
     return {
-      title: "Product Details - Tokyo Fashion",
+      title: "Tokyo Fashion | Urban Streetwear",
     };
   }
 
   try {
-    const { data: product, error } = await supabaseAdmin
-      .from('products')
-      .select(`
-        *,
-        product_variants (
-          *,
-          variant_sizes (*),
-          product_images (*)
-        )
-      `)
-      .eq('id', productId)
-      .is('deleted_at', null)
-      .maybeSingle();
+    const { data: product, error } = await getProductDetail(productId);
 
     if (error || !product || !product.product_variants || product.product_variants.length === 0) {
       return {
-        title: "Product Details - Tokyo Fashion",
+        title: "Tokyo Fashion | Urban Streetwear",
       };
     }
 
     // Use the variant/size from URL if available, otherwise default to first
     let selectedVariant = product.product_variants.find((v: any) => v.id === variantId) || product.product_variants[0];
     if (!selectedVariant) {
-      return { title: product.name + " - Tokyo Fashion" };
+      return { title: product.name + " | Tokyo Fashion" };
     }
 
     let selectedSize = selectedVariant.variant_sizes?.find((s: any) => s.id === sizeId) || selectedVariant.variant_sizes?.[0];
@@ -66,14 +54,17 @@ export async function generateMetadata(
     // Ensure absolute URL for social crawlers
     if (mainImage && !mainImage.startsWith('http')) {
       const headerList = await headers();
-      const host = headerList.get('host') || 'tokyofashion.syp3.com';
+      const host = headerList.get('host') || process.env.DOMAIN_NAME || 'tokyofashion.syp3.com';
       const protocol = host.includes('localhost') ? 'http' : 'https';
       mainImage = `${protocol}://${host}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`;
     }
 
     const price = selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0;
-    const title = `${product.name} - Tokyo Fashion`;
-    const description = `₹${price} | ${product.description ? product.description.slice(0, 150) + '...' : 'Premium Streetwear from Tokyo Fashion'}`;
+    const formattedPrice = `₹${price.toLocaleString('en-IN')}`;
+    
+    // Premium Title & Description for "Card"
+    const title = `${product.name} — ${formattedPrice} | Tokyo Fashion`;
+    const description = `Shop the ${product.name} at Tokyo Fashion. Premium quality streetwear designed for the modern lifestyle. ${product.description ? product.description.slice(0, 120) + '...' : ''}`;
 
     return {
       title,
@@ -83,6 +74,7 @@ export async function generateMetadata(
         description,
         images: mainImage ? [{ url: mainImage, width: 1200, height: 1600, alt: product.name }] : [],
         type: 'website',
+        siteName: 'Tokyo Fashion',
       },
       twitter: {
         card: 'summary_large_image',
@@ -94,7 +86,7 @@ export async function generateMetadata(
   } catch (error) {
     console.error("Metadata error:", error);
     return {
-      title: "Product Details - Tokyo Fashion",
+      title: "Tokyo Fashion | Urban Streetwear",
     };
   }
 }
