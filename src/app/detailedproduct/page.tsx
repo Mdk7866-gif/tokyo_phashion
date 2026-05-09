@@ -267,6 +267,17 @@ function DetailedProductContent() {
       setTogglingWishlist(false);
     }
   };
+  let displayPrice = 0;
+  let originalPrice = 0;
+  
+  if (selectedSize) {
+     displayPrice = selectedSize.discount_price || selectedSize.original_price;
+     originalPrice = selectedSize.original_price;
+  } else if (selectedVariant && selectedVariant.variant_sizes && selectedVariant.variant_sizes.length > 0) {
+     displayPrice = selectedVariant.variant_sizes[0].discount_price || selectedVariant.variant_sizes[0].original_price;
+     originalPrice = selectedVariant.variant_sizes[0].original_price;
+  }
+
   const handleShare = async () => {
     const params = new URLSearchParams(searchParams.toString());
     if (selectedVariant) params.set("variant_id", selectedVariant.id);
@@ -278,7 +289,7 @@ function DetailedProductContent() {
       try {
         await navigator.share({
           title: product?.name || "Tokyo Fashion",
-          text: `Check out this ${product?.name} at Tokyo Fashion!`,
+          text: `Check out this ${product?.name} at Tokyo Fashion for ₹${displayPrice.toFixed(0)}!`,
           url: shareableUrl,
         });
       } catch (err) {
@@ -437,16 +448,7 @@ function DetailedProductContent() {
   const categoryName = product.subcategories?.categories?.name || "Category";
   const subcategoryName = product.subcategories?.name || "Subcategory";
 
-  let displayPrice = 0;
-  let originalPrice = 0;
-  
-  if (selectedSize) {
-     displayPrice = selectedSize.discount_price || selectedSize.original_price;
-     originalPrice = selectedSize.original_price;
-  } else if (selectedVariant && selectedVariant.variant_sizes && selectedVariant.variant_sizes.length > 0) {
-     displayPrice = selectedVariant.variant_sizes[0].discount_price || selectedVariant.variant_sizes[0].original_price;
-     originalPrice = selectedVariant.variant_sizes[0].original_price;
-  }
+
 
   const sortedImages = selectedVariant?.product_images ? [...selectedVariant.product_images].sort((a:ProductImage, b:ProductImage) => a.sort_order - b.sort_order) : [];
 
