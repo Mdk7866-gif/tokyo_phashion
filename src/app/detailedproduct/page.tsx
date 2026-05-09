@@ -300,6 +300,11 @@ function DetailedProductContent() {
         
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           shareData.files = [file];
+          // Fix for WhatsApp/Android: When sharing files, many apps ignore the `text` field 
+          // if `url` is also provided. By combining them into `text` and removing `url`, 
+          // we ensure the price and description appear in the image caption.
+          shareData.text = `${shareData.text}\n\n${shareableUrl}`;
+          delete shareData.url;
         }
       } catch (err) {
         console.error("File sharing not supported or image fetch failed:", err);

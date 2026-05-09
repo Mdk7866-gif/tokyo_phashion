@@ -1,5 +1,4 @@
 import { Metadata, ResolvingMetadata } from 'next'
-import { fetchShareProduct } from '@/app/admin/shareproduct/route'
 import { headers } from 'next/headers'
 
 type Props = {
@@ -31,9 +30,21 @@ export async function generateMetadata(
   }
 
   try {
-    const { data: product, error } = await fetchShareProduct(productId);
+    const headerList = await headers();
+    const host = headerList.get('host') || process.env.DOMAIN_NAME || 'tokyofashion.syp3.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
 
-    if (error || !product || !product.product_variants || product.product_variants.length === 0) {
+    // Calling the API endpoint as requested instead of the service directly
+    const res = await fetch(`${baseUrl}/api/admin/shareproduct?product_id=${productId}`, {
+      cache: 'no-store' // Ensure we get fresh data for sharing
+    });
+    
+    if (!res.ok) throw new Error('Failed to fetch sharing data');
+    
+    const { data: product } = await res.json();
+
+    if (!product || !product.product_variants || product.product_variants.length === 0) {
       return {
         title: "Tokyo Fashion | Urban Streetwear",
       };
@@ -62,9 +73,9 @@ export async function generateMetadata(
     const price = selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0;
     const formattedPrice = `₹${price.toLocaleString('en-IN')}`;
     
-    // Optimized for WhatsApp Card
-    const title = `${product.name} | Tokyo Fashion`;
-    const description = `Price: ${formattedPrice}. Premium streetwear designed for the modern lifestyle. Shop ${product.name} at Tokyo Fashion.`;
+    // Highly visible Title & Description for WhatsApp/Social Cards
+    const title = `${formattedPrice} - ${product.name} | Tokyo Fashion`;
+    const description = `Get this ${product.name} for only ${formattedPrice}. Premium urban streetwear, available now at Tokyo Fashion. ${product.description ? product.description.slice(0, 100) : ''}`;
 
     return {
       title,
@@ -82,10 +93,6 @@ export async function generateMetadata(
         description,
         images: mainImage ? [mainImage] : [],
       },
-      other: {
-        'product:price:amount': price.toString(),
-        'product:price:currency': 'INR',
-      }
     }
   } catch (error) {
     console.error("Metadata error:", error);
