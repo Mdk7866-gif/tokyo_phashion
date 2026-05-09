@@ -251,69 +251,126 @@ function CheckoutContent() {
 
     const itemsHtml = checkoutItems.map(item => `
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #eee;">
-          <div style="font-weight: bold;">${item.variantSize.product_variants.products.name}</div>
-          <div style="font-size: 10px; color: #666;">${item.variantSize.product_variants.color} | Size: ${item.variantSize.size} x ${item.quantity}</div>
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
+          <div style="font-weight: 800; text-transform: uppercase; font-size: 13px;">${item.variantSize.product_variants.products.name}</div>
+          <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
+            ${item.variantSize.product_variants.color} | Size: ${item.variantSize.size} | Qty: ${item.quantity}
+          </div>
         </td>
-        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
+        <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: 800;">
           ₹${((item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity).toFixed(0)}
         </td>
       </tr>
     `).join("");
 
+    const isCod = paymentMethod === "cod";
+    const paidAmount = isCod ? Math.min(total, COD_ADVANCE) : total;
+    const balanceAmount = total - paidAmount;
+
     printWindow.document.write(`
       <html>
         <head>
-          <title>Receipt - ${rzpDataRef.current?.our_order_id || 'Order'}</title>
+          <title>Receipt - Tokyo Phashion</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
-            .details { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 12px; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+            body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; line-height: 1.4; max-width: 800px; margin: 0 auto; }
+            .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -1px; }
+            .details-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 40px; margin-bottom: 40px; font-size: 11px; text-transform: uppercase; }
+            .section-title { font-weight: 900; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 1px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            .total { text-align: right; border-top: 2px solid #000; padding-top: 10px; font-weight: 900; font-size: 18px; }
-            .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #999; }
+            .summary-row { display: flex; justify-content: flex-end; gap: 40px; font-size: 12px; margin-bottom: 8px; }
+            .total-box { background: #000; color: #fff; padding: 15px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+            .total-box span:first-child { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+            .total-box span:last-child { font-size: 20px; font-weight: 900; font-style: italic; }
+            .cod-breakdown { background: #f4f4f4; border: 1px dashed #ccc; padding: 15px; margin-top: 20px; font-size: 11px; }
+            .footer { margin-top: 60px; text-align: center; font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 2px; }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>Tokyo Fashion</h1>
-            <p>Official Purchase Receipt</p>
+            <h1>TOKYO PHASHION</h1>
+            <p style="font-size: 10px; font-weight: 700; letter-spacing: 3px; margin-top: 5px;">OFFICIAL PURCHASE RECEIPT</p>
           </div>
-          <div class="details">
+          
+          <div class="details-grid">
             <div>
-              <strong>Order ID:</strong> ${rzpDataRef.current?.our_order_id || 'N/A'}<br>
-              <strong>Payment ID:</strong> ${paymentId || 'N/A'}<br>
+              <div class="section-title">Order Information</div>
+              <strong>Order ID:</strong> #${rzpDataRef.current?.our_order_id || 'N/A'}<br>
+              <strong>Payment ID:</strong> #${paymentId || 'N/A'}<br>
+              <strong>Method:</strong> ${paymentMethod.toUpperCase()}<br>
               <strong>Date:</strong> ${new Date().toLocaleDateString()}
             </div>
-            <div style="text-align: right;">
-              <strong>Customer:</strong> ${user?.name || 'Valued Customer'}<br>
-              <strong>Status:</strong> Paid
+            <div>
+              <div class="section-title">Customer Details</div>
+              <strong>Name:</strong> ${user?.name || 'N/A'}<br>
+              <strong>Email:</strong> ${user?.email || 'N/A'}<br>
+              <strong>Mobile:</strong> ${user?.mobile_number || 'N/A'}<br>
+              <strong>Address:</strong> ${user?.address?.city}, ${user?.address?.state}
             </div>
           </div>
+
           <table>
             <thead>
-              <tr style="border-bottom: 1px solid #000; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">
-                <th style="text-align: left; padding-bottom: 10px;">Item Description</th>
+              <tr style="border-bottom: 2px solid #000; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                <th style="text-align: left; padding-bottom: 10px;">Item Details</th>
                 <th style="text-align: right; padding-bottom: 10px;">Amount</th>
               </tr>
             </thead>
             <tbody>
               ${itemsHtml}
-              <tr><td style="padding-top: 20px;">Subtotal</td><td style="text-align: right; padding-top: 20px;">₹${subtotal.toFixed(0)}</td></tr>
-              <tr><td>Delivery</td><td style="text-align: right;">₹${DELIVERY_CHARGE}</td></tr>
             </tbody>
           </table>
-          <div class="total">Total Paid: ₹${total.toFixed(0)}</div>
-          <div class="footer">
-            Thank you for shopping with Tokyo Phashion. This is a computer-generated receipt.
+
+          <div class="summary-row">
+            <span style="color: #666; text-transform: uppercase; font-size: 10px;">Subtotal</span>
+            <span style="font-weight: 700;">₹${subtotal.toFixed(0)}</span>
           </div>
+          <div class="summary-row">
+            <span style="color: #666; text-transform: uppercase; font-size: 10px;">Delivery</span>
+            <span style="font-weight: 700;">₹${DELIVERY_CHARGE}</span>
+          </div>
+
+          <div class="total-box">
+            <span>Grand Total Paid</span>
+            <span>₹${paidAmount.toFixed(0)}</span>
+          </div>
+
+          ${isCod ? `
+            <div class="cod-breakdown">
+              <div style="font-weight: 900; margin-bottom: 8px; text-transform: uppercase;">COD Payment Breakdown</div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Advance Paid Online:</span>
+                <span>₹${paidAmount.toFixed(0)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-weight: 900; color: #e11d48; margin-top: 8px; border-top: 1px solid #ddd; pt: 8px;">
+                <span>Balance to pay at Delivery:</span>
+                <span>₹${balanceAmount.toFixed(0)}</span>
+              </div>
+            </div>
+          ` : `
+            <div style="text-align: right; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 10px; color: #16a34a;">
+              ✓ Full Payment Settled Online
+            </div>
+          `}
+
+          <div class="footer">
+            Thank you for shopping with us. Stay Phashionable.<br>
+            www.tokyophashion.com
+          </div>
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+              }, 500);
+            };
+          </script>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
-  }, [checkoutItems, user, paymentId, subtotal, total]);
+  }, [checkoutItems, user, paymentId, subtotal, total, paymentMethod]);
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
   
@@ -349,11 +406,15 @@ function CheckoutContent() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Order ID</p>
-              <p className="text-xs font-bold break-all">#{rzpDataRef.current?.our_order_id.slice(-8).toUpperCase()}</p>
+              <p className="text-[10px] font-bold break-all text-black leading-tight">
+                #{rzpDataRef.current?.our_order_id ? rzpDataRef.current.our_order_id.toUpperCase() : 'LOADING...'}
+              </p>
             </div>
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Payment ID</p>
-              <p className="text-xs font-bold break-all">#{paymentId.slice(-8).toUpperCase()}</p>
+              <p className="text-[10px] font-bold break-all text-black leading-tight">
+                #{paymentId ? paymentId.toUpperCase() : 'LOADING...'}
+              </p>
             </div>
           </div>
 
@@ -384,7 +445,13 @@ function CheckoutContent() {
               href="/dashboard?tab=my%20orders" 
               className="w-full border border-black py-4 text-[10px] font-black uppercase tracking-widest text-center hover:bg-zinc-50 transition-colors"
             >
-              View All Orders
+              Go to My Orders
+            </Link>
+            <Link 
+              href="/" 
+              className="w-full py-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 text-center hover:text-black transition-colors"
+            >
+              Back to Home
             </Link>
           </div>
         </div>
