@@ -193,7 +193,8 @@ function DetailedProductContent() {
     } else {
       setLoading(false);
     }
-  }, [id, fetchProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {
