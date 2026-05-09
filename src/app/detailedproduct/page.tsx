@@ -267,13 +267,34 @@ function DetailedProductContent() {
       setTogglingWishlist(false);
     }
   };
-  const handleShare = () => {
+  const handleShare = async () => {
     const params = new URLSearchParams(searchParams.toString());
     if (selectedVariant) params.set("variant_id", selectedVariant.id);
     if (selectedSize) params.set("size_id", selectedSize.id);
     
     const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(shareableUrl);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name || "Tokyo Phashion",
+          text: `Check out this ${product?.name} at Tokyo Phashion!`,
+          url: shareableUrl,
+        });
+      } catch (err) {
+        // Only fallback if it's not an AbortError (user cancelled)
+        if ((err as Error).name !== 'AbortError') {
+          console.error("Error sharing:", err);
+          copyToClipboard(shareableUrl);
+        }
+      }
+    } else {
+      copyToClipboard(shareableUrl);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
