@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.DOMAIN_NAME ? `https://${process.env.DOMAIN_NAME}` : 'http://localhost:3000'),
   title: "Tokyo Fashion | Urban Streetwear",
   description: "Defining the future of urban streetwear. Born in the streets of Danilimda, worn worldwide.",
 };
