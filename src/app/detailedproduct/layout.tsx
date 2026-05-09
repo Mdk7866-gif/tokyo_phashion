@@ -1,5 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { headers } from 'next/headers'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -60,7 +61,15 @@ export async function generateMetadata(
     
     // Sort images to get the main one
     const sortedImages = [...(selectedVariant.product_images || [])].sort((a: any, b: any) => a.sort_order - b.sort_order);
-    const mainImage = sortedImages[0]?.image_url;
+    let mainImage = sortedImages[0]?.image_url;
+
+    // Ensure absolute URL for social crawlers
+    if (mainImage && !mainImage.startsWith('http')) {
+      const headerList = await headers();
+      const host = headerList.get('host') || 'tokyofashion.syp3.com';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      mainImage = `${protocol}://${host}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`;
+    }
 
     const price = selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0;
     const title = `${product.name} - Tokyo Fashion`;

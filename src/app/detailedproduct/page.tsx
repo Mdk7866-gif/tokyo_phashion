@@ -285,13 +285,30 @@ function DetailedProductContent() {
     
     const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
 
+    const shareData: ShareData = {
+      title: product?.name || "Tokyo Fashion",
+      text: `Check out this ${product?.name} at Tokyo Fashion for ₹${displayPrice.toFixed(0)}!`,
+      url: shareableUrl,
+    };
+
+    // Try to include the image file if supported (allows direct image sharing on mobile)
+    if (mainImage) {
+      try {
+        const response = await fetch(mainImage);
+        const blob = await response.blob();
+        const file = new File([blob], 'product.jpg', { type: blob.type });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          shareData.files = [file];
+        }
+      } catch (err) {
+        console.error("File sharing not supported or image fetch failed:", err);
+      }
+    }
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: product?.name || "Tokyo Fashion",
-          text: `Check out this ${product?.name} at Tokyo Fashion for ₹${displayPrice.toFixed(0)}!`,
-          url: shareableUrl,
-        });
+        await navigator.share(shareData);
       } catch (err) {
         // Only fallback if it's not an AbortError (user cancelled)
         if ((err as Error).name !== 'AbortError') {
