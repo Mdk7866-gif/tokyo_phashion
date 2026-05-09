@@ -255,7 +255,7 @@ function CheckoutContent() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Receipt - Tokyo Phashion</title>
+          <title>Receipt - Tokyo Fashion</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -275,7 +275,7 @@ function CheckoutContent() {
         </head>
         <body>
           <div class="header">
-            <h1>TOKYO PHASHION</h1>
+            <h1>TOKYO FASHION</h1>
             <p style="font-size: 10px; font-weight: 700; letter-spacing: 3px; margin-top: 5px;">OFFICIAL PURCHASE RECEIPT</p>
           </div>
           
@@ -341,8 +341,8 @@ function CheckoutContent() {
           `}
 
           <div class="footer">
-            Thank you for shopping with us. Stay Phashionable.<br>
-            www.tokyophashion.com
+            Thank you for shopping with us. Stay Fashionable.<br>
+            www.tokyfashion.syp3.com
           </div>
           <script>
             window.onload = () => {
@@ -426,12 +426,6 @@ function CheckoutContent() {
             >
               Download Receipt
             </button>
-            <Link 
-              href="/dashboard?tab=my%20orders" 
-              className="w-full border border-black py-4 text-[10px] font-black uppercase tracking-widest text-center hover:bg-zinc-50 transition-colors"
-            >
-              Go to My Orders
-            </Link>
             <Link 
               href="/" 
               className="w-full py-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 text-center hover:text-black transition-colors"
