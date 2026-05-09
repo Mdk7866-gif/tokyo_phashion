@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order_id: our_order_id,
+      razorpay_payment_id,
       message: isCod
         ? 'Advance payment received! Your COD order is confirmed.'
         : 'Payment successful! Your order is confirmed.',

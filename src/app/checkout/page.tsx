@@ -56,6 +56,7 @@ function CheckoutContent() {
   const [checkoutItems, setCheckoutItems] = useState<{ variantSize: VariantSize, quantity: number }[]>([]);
   const [user, setUser]               = useState<UserProfile | null>(null);
   const [successMsg, setSuccessMsg]   = useState("");
+  const [paymentId, setPaymentId]     = useState("");
   const [alert, setAlert]             = useState<{ isOpen: boolean; title: string; message: string; type: "success"|"error"|"info"|"warning" }>({ isOpen: false, title: "", message: "", type: "info" });
   const [isRetry, setIsRetry]         = useState(false);
 
@@ -160,6 +161,7 @@ function CheckoutContent() {
             const vData = await verifyRes.json();
             if (!verifyRes.ok || !vData.success) { setStep("failed"); return; }
             setSuccessMsg(vData.message);
+            setPaymentId(vData.razorpay_payment_id || "");
             setStep("success");
           } catch { setStep("failed"); }
         },
@@ -243,6 +245,76 @@ function CheckoutContent() {
     }
   }, [user, paymentMethod, checkoutItems, openRazorpayModal, showAlert]);
 
+  const handleDownloadReceipt = useCallback(() => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const itemsHtml = checkoutItems.map(item => `
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee;">
+          <div style="font-weight: bold;">${item.variantSize.product_variants.products.name}</div>
+          <div style="font-size: 10px; color: #666;">${item.variantSize.product_variants.color} | Size: ${item.variantSize.size} x ${item.quantity}</div>
+        </td>
+        <td style="padding: 10px 0; border-bottom: 1px solid #eee; text-align: right;">
+          ₹${((item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity).toFixed(0)}
+        </td>
+      </tr>
+    `).join("");
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${rzpDataRef.current?.our_order_id || 'Order'}</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+            .details { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            .total { text-align: right; border-top: 2px solid #000; padding-top: 10px; font-weight: 900; font-size: 18px; }
+            .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #999; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Tokyo Fashion</h1>
+            <p>Official Purchase Receipt</p>
+          </div>
+          <div class="details">
+            <div>
+              <strong>Order ID:</strong> ${rzpDataRef.current?.our_order_id || 'N/A'}<br>
+              <strong>Payment ID:</strong> ${paymentId || 'N/A'}<br>
+              <strong>Date:</strong> ${new Date().toLocaleDateString()}
+            </div>
+            <div style="text-align: right;">
+              <strong>Customer:</strong> ${user?.name || 'Valued Customer'}<br>
+              <strong>Status:</strong> Paid
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr style="border-bottom: 1px solid #000; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                <th style="text-align: left; padding-bottom: 10px;">Item Description</th>
+                <th style="text-align: right; padding-bottom: 10px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+              <tr><td style="padding-top: 20px;">Subtotal</td><td style="text-align: right; padding-top: 20px;">₹${subtotal.toFixed(0)}</td></tr>
+              <tr><td>Delivery</td><td style="text-align: right;">₹${DELIVERY_CHARGE}</td></tr>
+            </tbody>
+          </table>
+          <div class="total">Total Paid: ₹${total.toFixed(0)}</div>
+          <div class="footer">
+            Thank you for shopping with Tokyo Phashion. This is a computer-generated receipt.
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  }, [checkoutItems, user, paymentId, subtotal, total]);
+
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
   
   if (step === "verifying") return (
@@ -261,26 +333,76 @@ function CheckoutContent() {
   );
 
   if (step === "success") return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
-      <CheckCircle className="h-20 w-20 text-green-500 mb-6" strokeWidth={1.5} />
-      <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-3">Order Confirmed!</h1>
-      <p className="text-sm text-zinc-500 mb-8 max-w-sm">{successMsg}</p>
-      {paymentMethod === "cod" && (
-        <div className="mb-8 border border-dashed border-zinc-300 p-4 max-w-sm w-full text-left">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">COD Note</p>
-          <p className="text-xs text-zinc-600">₹{amountNow} advance paid. Remaining <span className="font-bold">₹{(total - amountNow).toFixed(0)}</span> payable at delivery.</p>
+    <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white border border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+        {/* Success Header */}
+        <div className="bg-black text-white p-8 text-center">
+          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+            <CheckCircle className="h-10 w-10 text-black" />
+          </div>
+          <h1 className="text-3xl font-black uppercase italic tracking-tighter">Order Confirmed!</h1>
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">{successMsg}</p>
         </div>
-      )}
-      <Link href="/dashboard?tab=my%20orders" className="bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors">View My Orders</Link>
+
+        {/* Details Card */}
+        <div className="p-8 space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Order ID</p>
+              <p className="text-xs font-bold break-all">#{rzpDataRef.current?.our_order_id.slice(-8).toUpperCase()}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Payment ID</p>
+              <p className="text-xs font-bold break-all">#{paymentId.slice(-8).toUpperCase()}</p>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-100 pt-6">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-3">Order Summary</p>
+            <div className="space-y-3">
+              {checkoutItems.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-start text-xs font-bold">
+                  <span className="text-zinc-600 truncate mr-4">{item.quantity}x {item.variantSize.product_variants.products.name} ({item.variantSize.size})</span>
+                  <span>₹{((item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity).toFixed(0)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center pt-3 border-t border-black">
+                <span className="text-[10px] font-black uppercase tracking-widest">Total Paid</span>
+                <span className="text-xl font-black italic tracking-tighter">₹{total.toFixed(0)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-4">
+            <button 
+              onClick={handleDownloadReceipt}
+              className="w-full bg-black text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+            >
+              Download Receipt
+            </button>
+            <Link 
+              href="/dashboard?tab=my%20orders" 
+              className="w-full border border-black py-4 text-[10px] font-black uppercase tracking-widest text-center hover:bg-zinc-50 transition-colors"
+            >
+              View All Orders
+            </Link>
+          </div>
+        </div>
+      </div>
+      <p className="mt-8 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">Thank you for shopping at Tokyo Fashion</p>
     </div>
   );
 
   if (step === "failed") return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
-      <XCircle className="h-20 w-20 text-red-500 mb-6" strokeWidth={1.5} />
-      <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-3">Payment Failed</h1>
-      <p className="text-sm text-zinc-500 mb-8 max-w-sm">Payment signature verification failed. If money was debited it will be refunded within 5-7 days.</p>
-      <button onClick={() => setStep("review")} className="bg-black text-white px-8 py-4 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors">Try Again</button>
+    <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="w-full max-w-md bg-white border border-black shadow-[12px_12px_0px_0px_rgba(239,68,68,1)] p-12">
+        <XCircle className="h-20 w-20 text-red-500 mx-auto mb-6" strokeWidth={1.5} />
+        <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-3 text-red-500">Payment Failed</h1>
+        <p className="text-sm text-zinc-500 mb-8 max-w-sm mx-auto font-medium">Your payment could not be verified. If any amount was debited, it will be refunded to your source account automatically.</p>
+        <button onClick={() => setStep("review")} className="w-full bg-black text-white px-8 py-5 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)]">
+          Try Again
+        </button>
+      </div>
     </div>
   );
 
@@ -386,9 +508,9 @@ function CheckoutContent() {
               <button
                 id="checkout-confirm-btn"
                 onClick={handleConfirmAndPay}
-                disabled={step === "processing" || step === "verifying" || !user?.address}
+                disabled={step === "processing" || !user?.address}
                 className={`w-full flex items-center justify-center gap-2 py-4 text-xs font-black uppercase tracking-widest transition-all border border-black ${
-                  step === "processing" || step === "verifying" || !user?.address
+                  step === "processing" || !user?.address
                     ? "opacity-40 cursor-not-allowed bg-zinc-100 text-zinc-400"
                     : "bg-black text-white hover:bg-zinc-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
                 }`}
