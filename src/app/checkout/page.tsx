@@ -149,6 +149,7 @@ function CheckoutContent() {
         order_id: data.razorpay_order_id,
         prefill: { name: user?.name ?? "", email: user?.email ?? "", contact: user?.mobile_number ?? "" },
         theme: { color: "#000000" },
+        retry: { enabled: false },
         handler: async (response: unknown) => {
           const res = response as { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string };
           setStep("verifying");
@@ -166,33 +167,17 @@ function CheckoutContent() {
           } catch { setStep("failed"); }
         },
         modal: {
-          ondismiss: async () => {
-            // Mark as failed in DB when user closes modal
-            try {
-              await fetch("/api/razorpay/cancel-order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ our_order_id: data.our_order_id }),
-              });
-            } catch { /* non-fatal */ }
+          ondismiss: () => {
             openingRef.current = false;
-            setStep("review");
+            setStep((prev) => (prev === "verifying" || prev === "success" ? prev : "review"));
           },
         },
       });
 
-      rzp.on("payment.failed", async () => {
+      rzp.on("payment.failed", () => {
         openingRef.current = false;
-        // Mark payment as failed in DB (best-effort)
-        try {
-          await fetch("/api/razorpay/cancel-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ our_order_id: data.our_order_id }),
-          });
-        } catch { /* non-fatal */ }
         showAlert("Payment Failed", "Your payment could not be processed. You can retry using the same order.", "error");
-        setStep("review");
+        setStep((prev) => (prev === "verifying" || prev === "success" ? prev : "review"));
       });
 
       rzp.open();

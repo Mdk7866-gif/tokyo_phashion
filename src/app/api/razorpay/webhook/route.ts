@@ -73,6 +73,37 @@ async function handleEvent(event: {
           .from('orders')
           .update({ payment_status: 'paid', updated_at: new Date().toISOString() })
           .eq('id', paymentRow.order_id);
+
+        // Decrease stock
+        try {
+          const { data: orderItems } = await supabaseAdmin
+            .from('order_items')
+            .select('variant_size_id, quantity')
+            .eq('order_id', paymentRow.order_id);
+
+          if (orderItems && orderItems.length > 0) {
+            const variantSizeIds = orderItems.map(i => i.variant_size_id);
+            const { data: variantSizes } = await supabaseAdmin
+              .from('variant_sizes')
+              .select('id, stock')
+              .in('id', variantSizeIds);
+
+            if (variantSizes) {
+              await Promise.all(orderItems.map(async (item) => {
+                const vs = variantSizes.find(v => v.id === item.variant_size_id);
+                if (vs) {
+                  const newStock = Math.max(0, vs.stock - item.quantity);
+                  return supabaseAdmin
+                    .from('variant_sizes')
+                    .update({ stock: newStock })
+                    .eq('id', item.variant_size_id);
+                }
+              }));
+            }
+          }
+        } catch (stockErr) {
+          console.error('Webhook: Failed to decrease stock:', stockErr);
+        }
       }
       break;
     }
