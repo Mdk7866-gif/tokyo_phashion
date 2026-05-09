@@ -70,21 +70,26 @@ export async function POST(request: NextRequest) {
         .select('variant_size_id, quantity')
         .eq('order_id', our_order_id);
 
-      if (orderItems && !itemsError) {
-        for (const item of orderItems) {
-          const { data: vs } = await supabaseAdmin
-            .from('variant_sizes')
-            .select('stock')
-            .eq('id', item.variant_size_id)
-            .single();
+      if (orderItems && !itemsError && orderItems.length > 0) {
+        // Fetch all variant sizes at once
+        const variantSizeIds = orderItems.map(i => i.variant_size_id);
+        const { data: variantSizes } = await supabaseAdmin
+          .from('variant_sizes')
+          .select('id, stock')
+          .in('id', variantSizeIds);
 
-          if (vs) {
-            const newStock = Math.max(0, vs.stock - item.quantity);
-            await supabaseAdmin
-              .from('variant_sizes')
-              .update({ stock: newStock })
-              .eq('id', item.variant_size_id);
-          }
+        if (variantSizes) {
+          // Update stocks in parallel
+          await Promise.all(orderItems.map(async (item) => {
+            const vs = variantSizes.find(v => v.id === item.variant_size_id);
+            if (vs) {
+              const newStock = Math.max(0, vs.stock - item.quantity);
+              return supabaseAdmin
+                .from('variant_sizes')
+                .update({ stock: newStock })
+                .eq('id', item.variant_size_id);
+            }
+          }));
         }
       }
     } catch (stockErr) {

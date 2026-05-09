@@ -37,7 +37,7 @@ interface UserProfile {
 }
 interface RzpData { razorpay_order_id: string; amount: number; currency: string; our_order_id: string }
 
-type Step = "review" | "processing" | "success" | "failed";
+type Step = "review" | "processing" | "verifying" | "success" | "failed";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -150,6 +150,7 @@ function CheckoutContent() {
         theme: { color: "#000000" },
         handler: async (response: unknown) => {
           const res = response as { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string };
+          setStep("verifying");
           try {
             const verifyRes = await fetch("/api/razorpay/verify-payment", {
               method: "POST",
@@ -243,6 +244,21 @@ function CheckoutContent() {
   }, [user, paymentMethod, checkoutItems, openRazorpayModal, showAlert]);
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
+  
+  if (step === "verifying") return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
+      <div className="relative mb-8">
+        <div className="h-20 w-20 border-4 border-zinc-100 border-t-black rounded-full animate-spin"></div>
+        <CheckCircle className="h-8 w-8 text-zinc-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      </div>
+      <h1 className="text-3xl font-black uppercase italic tracking-tighter mb-3">Verifying Payment</h1>
+      <p className="text-sm text-zinc-500 mb-2 max-w-sm">We are confirming your payment with the bank.</p>
+      <div className="bg-amber-50 border border-amber-200 px-4 py-3 rounded-sm flex items-center gap-3 max-w-sm mx-auto animate-pulse">
+        <Loader2 className="h-4 w-4 text-amber-600 animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Please do not refresh or leave this page</p>
+      </div>
+    </div>
+  );
 
   if (step === "success") return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
@@ -370,9 +386,9 @@ function CheckoutContent() {
               <button
                 id="checkout-confirm-btn"
                 onClick={handleConfirmAndPay}
-                disabled={step === "processing" || !user?.address}
+                disabled={step === "processing" || step === "verifying" || !user?.address}
                 className={`w-full flex items-center justify-center gap-2 py-4 text-xs font-black uppercase tracking-widest transition-all border border-black ${
-                  step === "processing" || !user?.address
+                  step === "processing" || step === "verifying" || !user?.address
                     ? "opacity-40 cursor-not-allowed bg-zinc-100 text-zinc-400"
                     : "bg-black text-white hover:bg-zinc-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
                 }`}
@@ -385,6 +401,12 @@ function CheckoutContent() {
                   <><Zap className="h-4 w-4 fill-current" />Confirm &amp; Pay ₹{amountNow.toFixed(0)}</>
                 )}
               </button>
+
+              {step === "processing" && (
+                <p className="text-[9px] font-bold text-center text-zinc-500 animate-pulse uppercase tracking-widest">
+                  Initializing secure gateway... Please wait
+                </p>
+              )}
 
               <p className="text-center text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300 pt-2">Secured by Razorpay</p>
             </div>
