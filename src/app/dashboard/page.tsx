@@ -882,8 +882,8 @@ function DashboardContent() {
                          </div>
                        )}
 
-                      {/* Cancel button — only for pending delivery AND (pending or paid) payments */}
-                      {order.delivery_status === "pending" && (order.payment_status === "pending" || order.payment_status === "paid") && (
+                      {/* Cancel button — only for pending delivery AND paid payments */}
+                      {order.delivery_status === "pending" && order.payment_status === "paid" && (
                         <div className="mt-4 pt-4 border-t border-zinc-300 text-center">
                           <p className="text-[8px] font-bold text-zinc-600 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
                           <button 
