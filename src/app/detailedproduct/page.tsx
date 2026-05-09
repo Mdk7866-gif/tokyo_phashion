@@ -285,11 +285,11 @@ function DetailedProductContent() {
     
     const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
 
-    const shareData: ShareData = {
-      title: product?.name || "Tokyo Fashion",
-      text: `Check out this ${product?.name} at Tokyo Fashion for ₹${displayPrice.toFixed(0)}!`,
-      url: shareableUrl,
-    };
+        const shareData: ShareData = {
+          title: `Tokyo Fashion | ${product?.name}`,
+          text: `✨ ${product?.name} — ₹${displayPrice.toLocaleString('en-IN')}\nPremium Urban Streetwear | Tokyo Fashion\n\nShop Now 👇`,
+          url: shareableUrl,
+        };
 
     // Try to include the image file if supported (allows direct image sharing on mobile)
     if (mainImage) {

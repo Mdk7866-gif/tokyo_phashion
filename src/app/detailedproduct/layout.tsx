@@ -83,7 +83,6 @@ export async function generateMetadata(
       openGraph: {
         title,
         description,
-        images: mainImage ? [{ url: mainImage, width: 1200, height: 1600, alt: product.name }] : [],
         type: 'website',
         siteName: 'Tokyo Fashion',
       },
@@ -91,7 +90,6 @@ export async function generateMetadata(
         card: 'summary_large_image',
         title,
         description,
-        images: mainImage ? [mainImage] : [],
       },
     }
   } catch (error) {
