@@ -277,8 +277,8 @@ function DetailedProductContent() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: product?.name || "Tokyo Phashion",
-          text: `Check out this ${product?.name} at Tokyo Phashion!`,
+          title: product?.name || "Tokyo Fashion",
+          text: `Check out this ${product?.name} at Tokyo Fashion!`,
           url: shareableUrl,
         });
       } catch (err) {
