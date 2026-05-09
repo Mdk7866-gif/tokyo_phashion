@@ -105,6 +105,13 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                       <span className="italic">Pay remaining ₹{totalAmount - 100} at delivery.</span>
                     </p>
                   </div>
+                  
+                  {/* Explicit Select Button */}
+                  <div className="mt-4 border-t border-zinc-200 pt-3">
+                    <div className="w-full bg-indigo-600 text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] text-center group-hover:bg-indigo-700 transition-all shadow-[4px_4px_0px_0px_rgba(79,70,229,0.3)] active:translate-y-0.5">
+                      Pay ₹100 via COD
+                    </div>
+                  </div>
                 </div>
               </button>
             )}
@@ -139,6 +146,13 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                 <div className="flex justify-between text-[10px] font-black text-white mt-1.5 pt-1.5 border-t border-zinc-700">
                   <span>Total Payable</span>
                   <span>₹{totalAmount}</span>
+                </div>
+
+                {/* Explicit Select Button */}
+                <div className="mt-4 border-t border-zinc-700 pt-3">
+                  <div className="w-full bg-indigo-600 text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] text-center group-hover:bg-indigo-700 transition-all shadow-[4px_4px_0px_0px_rgba(79,70,229,0.3)] active:translate-y-0.5">
+                    Pay ₹{totalAmount} via Online
+                  </div>
                 </div>
               </div>
             </button>

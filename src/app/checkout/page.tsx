@@ -376,7 +376,7 @@ function CheckoutContent() {
           <div className="flex flex-col gap-3 pt-4">
             <button 
               onClick={handleDownloadReceipt}
-              className="w-full bg-black text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-indigo-600 text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-[6px_6px_0px_0px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2 active:translate-y-0.5"
             >
               Download Receipt
             </button>
@@ -399,7 +399,7 @@ function CheckoutContent() {
         <XCircle className="h-20 w-20 text-red-500 mx-auto mb-6" strokeWidth={1.5} />
         <h1 className="text-4xl font-black uppercase italic tracking-tighter mb-3 text-red-500">Payment Failed</h1>
         <p className="text-sm text-zinc-500 mb-8 max-w-sm mx-auto font-medium">Your payment could not be verified. If any amount was debited, it will be refunded to your source account automatically.</p>
-        <button onClick={() => setStep("review")} className="w-full bg-black text-white px-8 py-5 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)]">
+        <button onClick={() => setStep("review")} className="w-full bg-indigo-600 text-white px-8 py-5 text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-[6px_6px_0px_0px_rgba(79,70,229,0.3)] active:translate-y-0.5">
           Try Again
         </button>
       </div>
@@ -509,10 +509,10 @@ function CheckoutContent() {
                 id="checkout-confirm-btn"
                 onClick={handleConfirmAndPay}
                 disabled={step === "processing" || !user?.address}
-                className={`w-full flex items-center justify-center gap-2 py-4 text-xs font-black uppercase tracking-widest transition-all border border-black ${
+                className={`w-full flex items-center justify-center gap-2 py-4 text-xs font-black uppercase tracking-widest transition-all border border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1 ${
                   step === "processing" || !user?.address
                     ? "opacity-40 cursor-not-allowed bg-zinc-100 text-zinc-400"
-                    : "bg-black text-white hover:bg-zinc-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
                 }`}
               >
                 {step === "processing" ? (
