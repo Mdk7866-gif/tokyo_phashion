@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const admin = supabaseAdmin;
-  let query = admin.from("reviews")
+  let query: any = admin.from("reviews")
     .select("id, rating, comment, created_at, order_id, product_id, users(name, profile_image)")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
