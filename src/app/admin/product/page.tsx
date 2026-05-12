@@ -60,11 +60,9 @@ function ProductContent() {
   }, [sub_id]);
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      if (sub_id && !product_id) {
-        fetchProducts();
-      }
-    });
+    if (sub_id && !product_id) {
+      fetchProducts();
+    }
   }, [sub_id, product_id, fetchProducts]);
 
   if (!category || !subcategory || !cat_id || !sub_id) {

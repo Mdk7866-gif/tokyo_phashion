@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -25,7 +25,9 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
-  const supabase = createClient();
+  // Stable reference — never re-created between renders, fixes the
+  // useCallback/useEffect infinite loop (issue 3)
+  const supabase = useMemo(() => createClient(), []);
   
   interface Subcategory {
     id: string;
@@ -84,31 +86,39 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCatName) return;
+    if (!newCatName.trim()) return;
     setLoading(true);
-    const res = await fetch('/api/admin/crudcategory', {
-      method: 'POST',
-      body: JSON.stringify({ name: newCatName })
-    });
-    if (res.ok) {
-      setNewCatName("");
-      fetchCategories();
+    try {
+      const res = await fetch('/api/admin/crudcategory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCatName.trim() })
+      });
+      if (res.ok) {
+        setNewCatName("");
+        await fetchCategories();
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleUpdateCategory = async (id: string) => {
-    if (!editValue) return;
+    if (!editValue.trim()) return;
     setLoading(true);
-    const res = await fetch('/api/admin/crudcategory', {
-      method: 'PATCH',
-      body: JSON.stringify({ id, name: editValue })
-    });
-    if (res.ok) {
-      setEditingId(null);
-      fetchCategories();
+    try {
+      const res = await fetch('/api/admin/crudcategory', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: editValue.trim() })
+      });
+      if (res.ok) {
+        setEditingId(null);
+        await fetchCategories();
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleDeleteCategory = async (id: string) => {
@@ -118,43 +128,55 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       message: "Are you sure? This will permanently remove this category and all its subcategories.",
       onConfirm: async () => {
         setLoading(true);
-        const res = await fetch('/api/admin/crudcategory', {
-          method: 'DELETE',
-          body: JSON.stringify({ id })
-        });
-        if (res.ok) fetchCategories();
-        setLoading(false);
+        try {
+          const res = await fetch('/api/admin/crudcategory', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+          if (res.ok) await fetchCategories();
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
 
   const handleAddSubcategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSubName || !selectedCatId) return;
+    if (!newSubName.trim() || !selectedCatId) return;
     setLoading(true);
-    const res = await fetch('/api/admin/crudsubcategory', {
-      method: 'POST',
-      body: JSON.stringify({ category_id: selectedCatId, name: newSubName })
-    });
-    if (res.ok) {
-      setNewSubName("");
-      fetchCategories();
+    try {
+      const res = await fetch('/api/admin/crudsubcategory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category_id: selectedCatId, name: newSubName.trim() })
+      });
+      if (res.ok) {
+        setNewSubName("");
+        await fetchCategories();
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleUpdateSubcategory = async (id: string) => {
-    if (!editValue) return;
+    if (!editValue.trim()) return;
     setLoading(true);
-    const res = await fetch('/api/admin/crudsubcategory', {
-      method: 'PATCH',
-      body: JSON.stringify({ id, name: editValue })
-    });
-    if (res.ok) {
-      setEditingId(null);
-      fetchCategories();
+    try {
+      const res = await fetch('/api/admin/crudsubcategory', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: editValue.trim() })
+      });
+      if (res.ok) {
+        setEditingId(null);
+        await fetchCategories();
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleDeleteSubcategory = async (id: string) => {
@@ -164,12 +186,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       message: "Are you sure you want to remove this subcategory?",
       onConfirm: async () => {
         setLoading(true);
-        const res = await fetch('/api/admin/crudsubcategory', {
-          method: 'DELETE',
-          body: JSON.stringify({ id })
-        });
-        if (res.ok) fetchCategories();
-        setLoading(false);
+        try {
+          const res = await fetch('/api/admin/crudsubcategory', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+          if (res.ok) await fetchCategories();
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };

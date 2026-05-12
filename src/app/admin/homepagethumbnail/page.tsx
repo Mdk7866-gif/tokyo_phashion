@@ -53,9 +53,7 @@ export default function HomePageThumbnailPage() {
   }, []);
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      fetchData();
-    });
+    fetchData();
   }, [fetchData]);
 
   return (
