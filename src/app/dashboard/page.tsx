@@ -341,6 +341,13 @@ function DashboardContent() {
   const handleBuyAll = () => {
     if (cartItems.length === 0) return;
     if (!checkProfileBeforePurchase()) return;
+
+    // Check if any item is out of stock
+    const outOfStockItem = cartItems.find(item => (item.variant_sizes?.stock ?? 0) <= 0);
+    if (outOfStockItem) {
+      showAlert("Out of Stock", `One or more items in your cart (like "${outOfStockItem.variant_sizes.product_variants.products.name}") are out of stock. Please remove them to continue.`, "warning");
+      return;
+    }
     
     const subtotal = cartItems.reduce((acc, item) => {
       const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
@@ -951,10 +958,13 @@ function DashboardContent() {
 
         <PaymentMethodConfirmationPopUp
           isOpen={isPaymentPopUpOpen}
-          onClose={() => setIsPaymentPopUpOpen(false)}
+          onClose={() => {
+            setIsPaymentPopUpOpen(false);
+            setSelectedItemForPurchase(null);
+          }}
           onSelect={onPaymentSelect}
           subtotalAmount={paymentSubtotal}
-          hideCOD={(paymentSubtotal + 49) <= 100}
+          hideCOD={(paymentSubtotal + 150) <= 100}
         />
       </div>
     </div>

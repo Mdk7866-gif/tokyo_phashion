@@ -10,17 +10,25 @@ function LoginContent() {
 
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch('/api/user/login', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ next: redirectTo })
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      
+      // Determine base URL for callback
+      const baseUrl = window.location.origin;
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${baseUrl}/api/user/login?next=${encodeURIComponent(redirectTo)}`,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'offline',
+          },
+        },
       });
-      const data = await response.json();
 
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        console.error("Login error:", data.error);
+      if (error) {
+        console.error("Login error:", error.message);
       }
     } catch (error) {
       console.error("Error logging in:", error);

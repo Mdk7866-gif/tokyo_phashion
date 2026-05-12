@@ -33,8 +33,11 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
 
   if (!shouldRender) return null;
 
-  const DELIVERY_CHARGE = 49;
-  const totalAmount = subtotalAmount + DELIVERY_CHARGE;
+  const DELIVERY_COD = 150;
+  const DELIVERY_ONLINE = 100;
+  
+  const totalCOD = subtotalAmount + DELIVERY_COD;
+  const totalOnline = subtotalAmount + DELIVERY_ONLINE;
 
   return (
     <div
@@ -58,7 +61,7 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-black uppercase italic tracking-tighter">Choose Payment</h3>
-              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Total Order: ₹{totalAmount}</p>
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Flexible Delivery Pricing Applied</p>
             </div>
             <button onClick={onClose} className="p-1 hover:bg-zinc-100 border border-transparent hover:border-black transition-all">
               <X className="h-5 w-5" />
@@ -82,7 +85,7 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                       <span className="text-[7px] font-bold text-zinc-400 uppercase mt-1">Pay at Delivery</span>
                     </div>
                   </div>
-                  <span className="text-[12px] font-black text-black">₹{totalAmount}</span>
+                  <span className="text-[12px] font-black text-black">₹{totalCOD}</span>
                 </div>
                 
                 <div className="w-full flex flex-col gap-1.5 p-3 bg-zinc-50 border border-dashed border-zinc-200 rounded-sm">
@@ -92,17 +95,17 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                   </div>
                   <div className="flex justify-between text-[8px] font-bold text-zinc-400 uppercase tracking-widest">
                     <span>Delivery Charge</span>
-                    <span className="text-zinc-600">+ ₹{DELIVERY_CHARGE}</span>
+                    <span className="text-zinc-600">+ ₹{DELIVERY_COD}</span>
                   </div>
                   <div className="flex justify-between text-[10px] font-black text-black mt-1.5 pt-1.5 border-t border-zinc-200">
                     <span>Total Payable</span>
-                    <span>₹{totalAmount}</span>
+                    <span>₹{totalCOD}</span>
                   </div>
                   <div className="flex gap-2 items-start mt-2 pt-2 border-t border-zinc-200">
                     <Info className="h-3 w-3 text-zinc-400 shrink-0 mt-0.5" />
                     <p className="text-[8px] font-bold text-zinc-500 leading-tight">
                       <span className="text-black font-black uppercase text-[7px]">₹100 Advanced Payment</span> required now. <br />
-                      <span className="italic">Pay remaining ₹{totalAmount - 100} at delivery.</span>
+                      <span className="italic">Pay remaining ₹{totalCOD - 100} at delivery.</span>
                     </p>
                   </div>
                   
@@ -131,7 +134,7 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                     <span className="text-[7px] font-bold text-zinc-500 uppercase mt-1">Instant Settlement</span>
                   </div>
                 </div>
-                <span className="text-[12px] font-black text-white">₹{totalAmount}</span>
+                <span className="text-[12px] font-black text-white">₹{totalOnline}</span>
               </div>
               
               <div className="w-full flex flex-col gap-1.5 p-3 bg-zinc-900 border border-dashed border-zinc-700 rounded-sm">
@@ -141,17 +144,17 @@ const PaymentMethodConfirmationPopUp: React.FC<PaymentMethodConfirmationPopUpPro
                 </div>
                 <div className="flex justify-between text-[8px] font-bold text-zinc-500 uppercase tracking-widest">
                   <span>Delivery Charge</span>
-                  <span className="text-zinc-300">+ ₹{DELIVERY_CHARGE}</span>
+                  <span className="text-zinc-300">+ ₹{DELIVERY_ONLINE}</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-black text-white mt-1.5 pt-1.5 border-t border-zinc-700">
                   <span>Total Payable</span>
-                  <span>₹{totalAmount}</span>
+                  <span>₹{totalOnline}</span>
                 </div>
 
                 {/* Explicit Select Button */}
                 <div className="mt-4 border-t border-zinc-700 pt-3">
                   <div className="w-full bg-indigo-600 text-white py-3 text-[10px] font-black uppercase tracking-[0.2em] text-center group-hover:bg-indigo-700 transition-all shadow-[4px_4px_0px_0px_rgba(79,70,229,0.3)] active:translate-y-0.5">
-                    Pay ₹{totalAmount} via Online
+                    Pay ₹{totalOnline} via Online
                   </div>
                 </div>
               </div>

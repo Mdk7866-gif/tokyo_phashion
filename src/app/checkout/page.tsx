@@ -7,7 +7,8 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, ShoppingBag, Zap, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 
-const DELIVERY_CHARGE = 49;
+const DELIVERY_COD = 150;
+const DELIVERY_ONLINE = 100;
 const COD_ADVANCE = 100;
 
 // ── Razorpay script loader ────────────────────────────────────────────────────
@@ -126,7 +127,8 @@ function CheckoutContent() {
   }, [isCartCheckout, variantSizeId, productId, productVariantId, quantity, router, showAlert]);
 
   const subtotal = checkoutItems.reduce((acc, item) => acc + (item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity, 0);
-  const total = subtotal + DELIVERY_CHARGE;
+  const deliveryCharge = paymentMethod === "cod" ? DELIVERY_COD : DELIVERY_ONLINE;
+  const total = subtotal + deliveryCharge;
   const amountNow = paymentMethod === "cod" ? Math.min(total, COD_ADVANCE) : total;
 
   // Open the Razorpay modal with given data
@@ -314,7 +316,7 @@ function CheckoutContent() {
           </div>
           <div class="summary-row">
             <span style="color: #666; text-transform: uppercase; font-size: 10px;">Delivery</span>
-            <span style="font-weight: 700;">₹${DELIVERY_CHARGE}</span>
+            <span style="font-weight: 700;">₹${deliveryCharge}</span>
           </div>
 
           <div class="total-box">
@@ -509,7 +511,7 @@ function CheckoutContent() {
             <div className="border border-black p-4 space-y-3">
               <h2 className="text-[10px] font-black uppercase tracking-widest mb-4 text-zinc-400">Price Details</h2>
               <div className="flex justify-between text-sm"><span className="text-zinc-600">Subtotal</span><span className="font-bold">₹{subtotal.toFixed(0)}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-zinc-600">Delivery Charge</span><span className="font-bold">₹{DELIVERY_CHARGE}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-zinc-600">Delivery Charge</span><span className="font-bold">₹{deliveryCharge}</span></div>
               <div className="border-t border-zinc-200 pt-3 flex justify-between"><span className="font-black uppercase text-xs tracking-widest">Total</span><span className="font-black text-lg">₹{total.toFixed(0)}</span></div>
               {paymentMethod === "cod" && (
                 <div className="bg-zinc-50 border border-dashed border-zinc-300 p-3 mt-2">

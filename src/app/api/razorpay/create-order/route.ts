@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { razorpay, DELIVERY_CHARGE, COD_ADVANCE } from '@/lib/razorpay';
+import { razorpay, DELIVERY_COD, DELIVERY_ONLINE, COD_ADVANCE } from '@/lib/razorpay';
 
 interface OrderItem {
   variant_size_id: string;
@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
       const price = vs.discount_price ?? vs.original_price;
       subtotal += price * item.quantity;
     }
-    const totalAmount = subtotal + DELIVERY_CHARGE;
+    const deliveryCharge = payment_method === 'cod' ? DELIVERY_COD : DELIVERY_ONLINE;
+    const totalAmount = subtotal + deliveryCharge;
 
     let razorpayAmountPaise: number;
     if (payment_method === 'online') {
