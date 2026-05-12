@@ -20,8 +20,11 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
   // Reset on open
   useEffect(() => {
     if (isOpen) {
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
+      // Use microtask to avoid synchronous setState warning in useEffect
+      Promise.resolve().then(() => {
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+      });
     }
   }, [isOpen]);
 

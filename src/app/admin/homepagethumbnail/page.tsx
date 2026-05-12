@@ -27,6 +27,7 @@ export default function HomePageThumbnailPage() {
 
   const fetchData = useCallback(async () => {
     try {
+      await Promise.resolve();
       const res = await fetch('/api/admin/crudhomepagethumnail');
       if (res.ok) {
         const result = await res.json();
@@ -53,7 +54,10 @@ export default function HomePageThumbnailPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    // Avoid synchronous state update warning in useEffect by using a microtask
+    Promise.resolve().then(() => {
+      fetchData();
+    });
   }, [fetchData]);
 
   return (

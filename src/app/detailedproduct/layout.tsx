@@ -7,13 +7,13 @@ type Props = {
 }
 
 export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
+  { searchParams }: Props,
+  _parent: ResolvingMetadata
 ): Promise<Metadata> {
   let sParams;
   try {
     sParams = await searchParams;
-  } catch (e) {
+  } catch {
     sParams = {};
   }
   
@@ -42,7 +42,30 @@ export async function generateMetadata(
     
     if (!res.ok) throw new Error('Failed to fetch sharing data');
     
-    const { data: product } = await res.json();
+    interface VariantSize {
+      id: string;
+      discount_price?: number;
+      original_price: number;
+    }
+
+    interface ProductImage {
+      image_url: string;
+      sort_order: number;
+    }
+
+    interface ProductVariant {
+      id: string;
+      variant_sizes?: VariantSize[];
+      product_images?: ProductImage[];
+    }
+
+    interface ProductData {
+      name: string;
+      description?: string;
+      product_variants: ProductVariant[];
+    }
+
+    const { data: product } = (await res.json()) as { data: ProductData };
 
     if (!product || !product.product_variants || product.product_variants.length === 0) {
       return {
@@ -51,15 +74,15 @@ export async function generateMetadata(
     }
 
     // Use the variant/size from URL if available, otherwise default to first
-    let selectedVariant = product.product_variants.find((v: any) => v.id === variantId) || product.product_variants[0];
+    const selectedVariant = product.product_variants.find((v: ProductVariant) => v.id === variantId) || product.product_variants[0];
     if (!selectedVariant) {
       return { title: product.name + " | Tokyo Fashion" };
     }
 
-    let selectedSize = selectedVariant.variant_sizes?.find((s: any) => s.id === sizeId) || selectedVariant.variant_sizes?.[0];
+    const selectedSize = selectedVariant.variant_sizes?.find((s: VariantSize) => s.id === sizeId) || selectedVariant.variant_sizes?.[0];
     
     // Sort images to get the main one
-    const sortedImages = [...(selectedVariant.product_images || [])].sort((a: any, b: any) => a.sort_order - b.sort_order);
+    const sortedImages = [...(selectedVariant.product_images || [])].sort((a: ProductImage, b: ProductImage) => a.sort_order - b.sort_order);
     let mainImage = sortedImages[0]?.image_url;
 
     // Ensure absolute URL for social crawlers

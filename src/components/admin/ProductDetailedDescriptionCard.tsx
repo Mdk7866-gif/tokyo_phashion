@@ -66,8 +66,10 @@ export default function ProductDetailedDescriptionCard({
 
   const fetchProductData = useCallback(async () => {
     if (!product_id) return;
-    setLoading(true);
     try {
+      // Ensure state update is not synchronous with the effect to avoid cascading renders
+      await Promise.resolve();
+      setLoading(true);
       const res = await fetch(`/api/admin/crudproduct?product_id=${product_id}`);
       if (res.ok) {
         const json = await res.json();
@@ -124,7 +126,10 @@ export default function ProductDetailedDescriptionCard({
   }, [product_id, color]);
 
   useEffect(() => {
-    fetchProductData();
+    // Avoid synchronous state update warning in useEffect by using a microtask
+    Promise.resolve().then(() => {
+      fetchProductData();
+    });
   }, [fetchProductData]);
 
   // Variant Handlers

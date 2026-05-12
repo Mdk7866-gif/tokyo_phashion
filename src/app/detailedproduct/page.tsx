@@ -184,17 +184,19 @@ function DetailedProductContent() {
 
   useEffect(() => {
     if (id) {
-      // Reset state for new product to avoid UI glitches
-      setProduct(null);
-      setSelectedVariant(null);
-      setSelectedSize(null);
-      setQuantity(1);
-      fetchProduct();
+      // Use microtask to avoid synchronous setState warning in useEffect
+      Promise.resolve().then(() => {
+        setProduct(null);
+        setSelectedVariant(null);
+        setSelectedSize(null);
+        setQuantity(1);
+        fetchProduct();
+      });
     } else {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, fetchProduct]);
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {

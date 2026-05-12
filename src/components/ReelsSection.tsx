@@ -104,7 +104,11 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
   const onCardClick = () => {
     const el = videoRef.current;
     if (!el) return;
-    el.paused ? safePlay(el) : el.pause();
+    if (el.paused) {
+      safePlay(el);
+    } else {
+      el.pause();
+    }
   };
 
   return (
@@ -255,7 +259,11 @@ const ReelModal = ({ reel, onClose }: { reel: Reel; onClose: () => void }) => {
   const togglePlay = () => {
     const el = videoRef.current;
     if (!el) return;
-    el.paused ? el.play().catch(() => {}) : el.pause();
+    if (el.paused) {
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
   };
 
   const toggleMute = () => {

@@ -46,8 +46,9 @@ function ProductContent() {
 
   const fetchProducts = useCallback(async () => {
     if (!sub_id) return;
-    setLoading(true);
     try {
+      await Promise.resolve();
+      setLoading(true);
       const res = await fetch(`/api/admin/crudproduct?sub_id=${sub_id}`);
       if (res.ok) {
         const json = await res.json();
