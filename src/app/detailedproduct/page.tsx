@@ -54,8 +54,7 @@ function DetailedProductContent() {
   const pathname = usePathname();
   
   const id = searchParams.get("id") || searchParams.get("product_id");
-  const urlVariantId = searchParams.get("variant_id");
-  const urlSizeId = searchParams.get("size_id");
+  // urlVariantId and urlSizeId are read inside fetchProduct on mount only — not reactive
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,28 +92,27 @@ function DetailedProductContent() {
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   // codConfirmation removed — flow now redirects to /checkout
 
-  const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productOverride?: Product | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+  // IMPORTANT: Uses window.location.search instead of reactive searchParams so that
+  // calling this function does NOT trigger a re-creation of fetchProduct (avoids the
+  // URL-change → searchParams update → fetchProduct re-create → useEffect re-fire loop).
+  const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productData?: Product | null) => {
+    const params = new URLSearchParams(window.location.search);
     
-    // Ensure we are using the correct product_id from the current URL or state
-    const currentProductId = searchParams.get("product_id") || searchParams.get("id");
+    // Standardize on product_id
+    const currentProductId = params.get("product_id") || params.get("id");
     if (currentProductId) {
       params.set("product_id", currentProductId);
-      params.delete("id"); // Standardize on product_id
+      params.delete("id");
     }
 
-    const p = productOverride !== undefined ? productOverride : product;
-    if (p) {
-      if (p.subcategories?.categories?.name) params.set("category", p.subcategories.categories.name.toLowerCase());
-      if (p.subcategories?.name) params.set("subcategory", p.subcategories.name.toLowerCase());
-      if (p.subcategories?.category_id) params.set("category_id", p.subcategories.category_id);
-      if (p.subcategory_id) params.set("subcategory_id", p.subcategory_id);
+    if (productData) {
+      if (productData.subcategories?.categories?.name) params.set("category", productData.subcategories.categories.name.toLowerCase());
+      if (productData.subcategories?.name) params.set("subcategory", productData.subcategories.name.toLowerCase());
+      if (productData.subcategories?.category_id) params.set("category_id", productData.subcategories.category_id);
+      if (productData.subcategory_id) params.set("subcategory_id", productData.subcategory_id);
     }
     
-    if (variantId) {
-      params.set("variant_id", variantId);
-    }
-    
+    if (variantId) params.set("variant_id", variantId);
     if (sizeId) {
       params.set("size_id", sizeId);
     } else if (sizeId === null) {
@@ -122,9 +120,10 @@ function DetailedProductContent() {
     }
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [product, pathname, router, searchParams]);
+  }, [pathname, router]); // Stable — does NOT depend on searchParams
 
   const fetchProduct = useCallback(async () => {
+    if (!id) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/user/getproductdetail?product_id=${id}`);
@@ -134,16 +133,19 @@ function DetailedProductContent() {
         if (data) {
           setProduct(data);
           
+          const currentVariantId = searchParams.get("variant_id");
+          const currentSizeId = searchParams.get("size_id");
+
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
-            if (urlVariantId) {
-              const found = data.product_variants.find((v: ProductVariant) => v.id === urlVariantId);
+            if (currentVariantId) {
+              const found = data.product_variants.find((v: ProductVariant) => v.id === currentVariantId);
               if (found) initialVariant = found;
             }
             setSelectedVariant(initialVariant);
             
-            if (urlSizeId && initialVariant.variant_sizes) {
-              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === urlSizeId);
+            if (currentSizeId && initialVariant.variant_sizes) {
+              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.id === currentSizeId);
               if (foundSize) {
                 setSelectedSize(foundSize);
               } else {
@@ -166,7 +168,7 @@ function DetailedProductContent() {
                setMainImage(sortedImages[0].image_url);
             }
 
-            if (!urlVariantId && !urlSizeId) {
+            if (!currentVariantId && !currentSizeId) {
               // Only update variant id if size auto-selection above didn't already update everything
               if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
                 updateQueryParams(initialVariant.id);
@@ -178,26 +180,25 @@ function DetailedProductContent() {
     } catch (err) {
       console.error(err);
       showAlert("Error", "Failed to fetch product details", "error");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [id, urlVariantId, urlSizeId, updateQueryParams, showAlert]);
+  }, [id, updateQueryParams, showAlert]);
 
   useEffect(() => {
     if (id) {
-      // Use microtask to avoid synchronous setState warning in useEffect
-      Promise.resolve().then(() => {
-        setProduct(null);
-        setSelectedVariant(null);
-        setSelectedSize(null);
-        setQuantity(1);
-        fetchProduct();
-      });
+      // Clear previous state
+      setProduct(null);
+      setSelectedVariant(null);
+      setSelectedSize(null);
+      setQuantity(1);
+      
+      // Fetch new product
+      fetchProduct();
     } else {
-      Promise.resolve().then(() => {
-        setLoading(false);
-      });
+      setLoading(false);
     }
-  }, [id, fetchProduct]);
+  }, [id, fetchProduct]); // fetchProduct is now more stable
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {
