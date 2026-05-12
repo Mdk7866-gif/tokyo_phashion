@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Rating must be between 1 and 5" }, { status: 400 });
   }
 
-  const admin = supabaseAdmin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabaseAdmin as any;
   // Verify order belongs to user and is delivered
-  const { data: order } = await admin
+  const { data: order } = await db
     .from("orders")
     .select("id, delivery_status")
     .eq("id", order_id)
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
   // If product_id not provided, resolve the first item from the order
   let product_id = explicitProductId;
   if (!product_id) {
-    const { data: firstItem } = await admin
+    const { data: firstItem } = await db
       .from("order_items")
       .select("product_id")
       .eq("order_id", order_id)
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if user already reviewed this order
-  const { data: existingReview } = await admin
+  const { data: existingReview } = await db
     .from("reviews")
     .select("id")
     .eq("user_id", user.id)
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Insert new review
-  const { error } = await admin.from("reviews").insert({
+  const { error } = await db.from("reviews").insert({
     user_id: user.id,
     product_id,
     order_id,
@@ -74,8 +75,9 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const admin = supabaseAdmin;
-  let query: any = admin.from("reviews")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabaseAdmin as any;
+  let query = db.from("reviews")
     .select("id, rating, comment, created_at, order_id, product_id, users(name, profile_image)")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
