@@ -25,6 +25,10 @@ export async function GET() {
       )
     `)
     .eq("user_id", user.id)
+    // Exclude orders where payment was never completed.
+    // System-cancelled orders (user abandoned checkout) have payment_status='failed'.
+    // We exclude those — the user never actually paid so they shouldn't see them.
+    .neq("payment_status", "failed")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

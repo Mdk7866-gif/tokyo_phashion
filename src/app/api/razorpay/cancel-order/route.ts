@@ -37,10 +37,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Order already resolved' });
     }
 
-    // Mark order as failed
-    await supabaseAdmin
-      .from('orders')
-      .update({ payment_status: 'failed', updated_at: new Date().toISOString() })
+    // Mark order as failed — both payment AND delivery so it doesn't sit in the active queue.
+    // cancelled_by is left NULL (DB CHECK only allows 'admin'|'user'); payment_status='failed'
+    // is the reliable signal that no payment was ever collected.
+    await (supabaseAdmin.from('orders') as any)
+      .update({
+        payment_status: 'failed',
+        delivery_status: 'cancelled',
+        cancellation_note: 'Payment not completed by customer',
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', our_order_id);
 
     // Also update the payments record

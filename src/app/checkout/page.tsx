@@ -171,6 +171,14 @@ function CheckoutContent() {
         modal: {
           ondismiss: () => {
             openingRef.current = false;
+            if (data.our_order_id) {
+              // Fire-and-forget: mark order as failed so it doesn't stay in "pending" limbo
+              fetch("/api/razorpay/cancel-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ our_order_id: data.our_order_id }),
+              }).catch(() => {});
+            }
             setStep((prev) => (prev === "verifying" || prev === "success" ? prev : "review"));
           },
         },
@@ -178,6 +186,13 @@ function CheckoutContent() {
 
       rzp.on("payment.failed", () => {
         openingRef.current = false;
+        if (data.our_order_id) {
+          fetch("/api/razorpay/cancel-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ our_order_id: data.our_order_id }),
+          }).catch(() => {});
+        }
         showAlert("Payment Failed", "Your payment could not be processed. You can retry using the same order.", "error");
         setStep((prev) => (prev === "verifying" || prev === "success" ? prev : "review"));
       });

@@ -29,14 +29,16 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (status === "paid") {
-    // Paid online orders awaiting dispatch (full amount paid online)
+    // Paid online orders awaiting dispatch
     query = query.eq("payment_status", "paid").eq("payment_method", "online").eq("delivery_status", "pending");
   } else if (status === "cod") {
     // COD orders where advance has been paid via Razorpay, awaiting dispatch
     query = query.eq("payment_status", "paid").eq("payment_method", "cod").eq("delivery_status", "pending");
   } else if (status === "failed") {
-    // Failed payments + stale pending orders (user never completed payment)
-    query = query.in("payment_status", ["failed", "pending"]).eq("delivery_status", "pending");
+    // Failed/abandoned payments: payment_status='failed' covers both explicit failures
+    // and system-auto-cancels (user closed Razorpay without paying).
+    // cancelled_by is NULL for system auto-cancels (DB CHECK blocks 'system').
+    query = query.eq("payment_status", "failed");
   } else if (status === "delivered") {
     query = query.eq("delivery_status", "delivered");
     const paymentMethod = req.nextUrl.searchParams.get("payment_method");
@@ -44,7 +46,9 @@ export async function GET(req: NextRequest) {
       query = query.eq("payment_method", paymentMethod);
     }
   } else if (status === "cancelled") {
-    query = query.eq("delivery_status", "cancelled");
+    // Human-initiated cancellations only (user or admin).
+    // System-abandoned checkouts have payment_status='failed' and appear in the 'failed' tab instead.
+    query = query.eq("delivery_status", "cancelled").neq("payment_status", "failed");
   }
 
   const { data, error } = await query;

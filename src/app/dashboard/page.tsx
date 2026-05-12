@@ -7,7 +7,8 @@ import UserCartItemCard, { CartItem } from "@/components/UserCartItemCard";
 import UserWishlistCard, { WishlistItem } from "@/components/UserWishlistCard";
 import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
-import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap, Clock, CheckCircle, XCircle, AlertTriangle, MessageSquare, Star, Loader2 } from "lucide-react";
+import ImageZoomPopUp from "@/components/ImageZoomPopUp";
+import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap, Clock, CheckCircle, XCircle, AlertTriangle, MessageSquare, Star, Loader2, Truck } from "lucide-react";
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -92,6 +93,7 @@ function DashboardContent() {
   const [paymentSubtotal, setPaymentSubtotal] = useState(0);
   const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
   const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({});
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -752,8 +754,23 @@ function DashboardContent() {
                         </div>
                       </div>
 
-                      {/* Tracking / Parcel banner — highlighted when delivered */}
-                      {order.delivery_status === "delivered" && (order.tracking_id || order.parcel_image) && (
+                      {/* ── Tracking / Parcel section ── */}
+                      {order.payment_status === 'paid' && order.delivery_status !== 'delivered' && order.delivery_status !== 'cancelled' && (
+                        <div className="mb-4 border border-amber-300 bg-amber-50 p-3">
+                          <div className="flex items-start gap-2.5">
+                            <Truck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                            <div>
+                              <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-0.5">Order Confirmed — Preparing Shipment</p>
+                              <p className="text-[10px] font-medium text-amber-700 leading-snug">
+                                Your payment was received! We are packing your order. Your tracking ID and parcel photo will appear here once dispatched.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Dispatched banner with tracking + parcel photo */}
+                      {order.delivery_status === 'delivered' && (order.tracking_id || order.parcel_image) && (
                         <div className="mb-4 border border-green-400 bg-green-50 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
                           <div className="flex items-center gap-2 shrink-0">
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -767,9 +784,16 @@ function DashboardContent() {
                               </div>
                             )}
                             {order.parcel_image && (
-                              <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                                <Image src={order.parcel_image} alt="Parcel" width={56} height={56} className="object-cover border-2 border-green-400 hover:border-green-600 transition-colors" />
-                              </a>
+                              <button
+                                onClick={() => setZoomedImage(order.parcel_image!)}
+                                className="shrink-0 relative h-14 w-14 border-2 border-green-400 hover:border-green-600 overflow-hidden transition-colors group cursor-zoom-in"
+                                title="Click to zoom"
+                              >
+                                <Image src={order.parcel_image} alt="Parcel" fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <span className="text-white text-[8px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Zoom</span>
+                                </div>
+                              </button>
                             )}
                           </div>
                         </div>
@@ -965,6 +989,13 @@ function DashboardContent() {
           onSelect={onPaymentSelect}
           subtotalAmount={paymentSubtotal}
           hideCOD={(paymentSubtotal + 150) <= 100}
+        />
+
+        <ImageZoomPopUp
+          isOpen={!!zoomedImage}
+          onClose={() => setZoomedImage(null)}
+          imageUrl={zoomedImage ?? ""}
+          alt="Parcel Photo"
         />
       </div>
     </div>

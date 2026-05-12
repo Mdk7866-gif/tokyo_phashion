@@ -4,7 +4,8 @@ import { useEffect, useState, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle, ZoomIn } from "lucide-react";
+import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 
 const COD_ADVANCE = 100;
 
@@ -240,9 +241,17 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
 
             {parcelImg && (
               <div className="flex flex-col gap-2 mt-3">
-                <div className="relative h-48 w-full border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent('zoom-parcel', { detail: parcelImg }))}
+                  className="relative h-48 w-full border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white group cursor-zoom-in"
+                  title="Click to zoom"
+                >
                   <Image src={parcelImg} alt="Parcel" fill sizes="(max-width: 768px) 100vw, 500px" className="object-contain" />
-                </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                  </div>
+                </button>
                 <p className="text-[9px] text-green-600 font-black uppercase tracking-widest flex items-center gap-1">
                   <CheckCircle className="h-3 w-3" /> Photo uploaded — will be saved when you click Mark Delivered
                 </p>
@@ -288,6 +297,17 @@ function DeliveryReceivedContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [prevTab, setPrevTab] = useState(tab);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
+  // Listen for zoom events emitted by OrderCard
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const url = (e as CustomEvent<string>).detail;
+      if (url) setZoomedImage(url);
+    };
+    window.addEventListener('zoom-parcel', handler);
+    return () => window.removeEventListener('zoom-parcel', handler);
+  }, []);
 
   if (tab !== prevTab) {
     setPrevTab(tab);
@@ -358,6 +378,13 @@ function DeliveryReceivedContent() {
           </div>
         )}
       </div>
+
+      <ImageZoomPopUp
+        isOpen={!!zoomedImage}
+        onClose={() => setZoomedImage(null)}
+        imageUrl={zoomedImage ?? ""}
+        alt="Parcel Photo"
+      />
     </div>
   );
 }
