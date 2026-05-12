@@ -163,11 +163,18 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         </div>
       </div>
 
-      {/* Cancellation note (for cancelled tab) */}
+      {/* Cancellation note (for cancelled/failed tab) */}
       {order.delivery_status === "cancelled" && order.cancellation_note && (
         <div className="px-4 py-3 border-b border-zinc-100 bg-red-50">
           <p className="text-[9px] font-black uppercase tracking-widest text-red-400 mb-1">Cancellation Reason</p>
-          <p className="text-[10px] text-red-600">{order.cancellation_note} — by {order.cancelled_by}</p>
+          <p className="text-[10px] text-red-600">
+            {order.cancellation_note}
+            {order.cancelled_by && (
+              <span className="ml-1 font-bold">
+                — by {order.cancelled_by === 'system' ? 'System (Payment abandoned)' : order.cancelled_by === 'admin' ? 'Admin' : 'Customer'}
+              </span>
+            )}
+          </p>
         </div>
       )}
 

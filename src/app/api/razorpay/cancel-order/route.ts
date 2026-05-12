@@ -38,13 +38,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark order as failed — both payment AND delivery so it doesn't sit in the active queue.
-    // cancelled_by is left NULL (DB CHECK only allows 'admin'|'user'); payment_status='failed'
-    // is the reliable signal that no payment was ever collected.
+    // cancelled_by='system' signals an auto-cancel (no human involved).
     await (supabaseAdmin.from('orders') as any)
       .update({
         payment_status: 'failed',
         delivery_status: 'cancelled',
         cancellation_note: 'Payment not completed by customer',
+        cancelled_by: 'system',
         updated_at: new Date().toISOString(),
       })
       .eq('id', our_order_id);

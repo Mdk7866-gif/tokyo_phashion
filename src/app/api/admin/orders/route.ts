@@ -35,9 +35,8 @@ export async function GET(req: NextRequest) {
     // COD orders where advance has been paid via Razorpay, awaiting dispatch
     query = query.eq("payment_status", "paid").eq("payment_method", "cod").eq("delivery_status", "pending");
   } else if (status === "failed") {
-    // Failed/abandoned payments: payment_status='failed' covers both explicit failures
-    // and system-auto-cancels (user closed Razorpay without paying).
-    // cancelled_by is NULL for system auto-cancels (DB CHECK blocks 'system').
+    // Failed/abandoned payments: payment_status='failed'
+    // Includes both explicit payment failures and system-auto-cancels (cancelled_by='system').
     query = query.eq("payment_status", "failed");
   } else if (status === "delivered") {
     query = query.eq("delivery_status", "delivered");
@@ -46,9 +45,9 @@ export async function GET(req: NextRequest) {
       query = query.eq("payment_method", paymentMethod);
     }
   } else if (status === "cancelled") {
-    // Human-initiated cancellations only (user or admin).
-    // System-abandoned checkouts have payment_status='failed' and appear in the 'failed' tab instead.
-    query = query.eq("delivery_status", "cancelled").neq("payment_status", "failed");
+    // Human-initiated cancellations only (admin or user).
+    // Using .in() instead of .neq('system') to avoid the PostgreSQL NULL != 'system' = NULL gotcha.
+    query = query.eq("delivery_status", "cancelled").in("cancelled_by", ["admin", "user"]);
   }
 
   const { data, error } = await query;
