@@ -44,14 +44,13 @@ export default function ProductDetailedDescriptionCard({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   
-  const [variants, setVariants] = useState<VariantData[]>([
-    {
-      id: null,
-      color: "",
-      sizes: [{ size: "", stock: 0, original_price: 0, discount_price: 0 }],
-      images: []
-    }
-  ]);
+  // When editing an existing product, start empty — fetchProductData will populate.
+  // When creating a new product, start with one blank variant so the form is ready.
+  const [variants, setVariants] = useState<VariantData[]>(
+    product_id
+      ? []
+      : [{ id: null, color: "", sizes: [{ size: "", stock: 0, original_price: 0, discount_price: 0 }], images: [] }]
+  );
 
   // Alert State
   const [alertInfo, setAlertInfo] = useState({
@@ -125,10 +124,7 @@ export default function ProductDetailedDescriptionCard({
   }, [product_id, color]);
 
   useEffect(() => {
-    const load = async () => {
-      await fetchProductData();
-    };
-    load();
+    fetchProductData();
   }, [fetchProductData]);
 
   // Variant Handlers

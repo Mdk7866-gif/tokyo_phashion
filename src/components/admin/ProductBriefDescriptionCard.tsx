@@ -145,7 +145,7 @@ export default function ProductBriefDescriptionCard({
                )}
              </div>
              <button 
-                onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}&color=NEW`)}
+                onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}`)}
                 className="p-1.5 text-zinc-500 hover:text-black hover:bg-zinc-200"
                 title="Edit Product Details"
              >

@@ -110,73 +110,132 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { id, name, description, variants } = body;
 
-    // 1. Update Product
-    if (name || description) {
-      const { error: productErr } = await supabaseAdmin
-        .from('products')
-        .update({ name, description, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      if (productErr) throw productErr;
-    }
+    // Step 1: Update product name/description
+    const { error: productErr } = await supabaseAdmin
+      .from('products')
+      .update({ name, description, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (productErr) throw productErr;
 
-    if (variants && Array.isArray(variants)) {
-      for (const variant of variants) {
-        let variantId = variant.id;
+    // Step 2: Process all variants concurrently
+    if (Array.isArray(variants) && variants.length > 0) {
+      await Promise.all(
+        variants.map(async (variant: {
+          id: string | null;
+          color: string;
+          sizes: { size: string; original_price: number; discount_price: number; stock: number }[];
+          images: { url: string }[];
+        }) => {
+          // Resolve variantId as a definite string before any DB work
+          let variantId: string;
 
-        // 2. Insert or Update Variant
-        if (!variantId) {
-          const { data: newVar, error: varErr } = await supabaseAdmin
-            .from('product_variants')
-            .insert({ product_id: id, color: variant.color })
-            .select()
-            .single();
-          if (varErr) throw varErr;
-          variantId = newVar.id;
-        } else {
-           const { error: varErr } = await supabaseAdmin
-            .from('product_variants')
-            .update({ color: variant.color, updated_at: new Date().toISOString() })
-            .eq('id', variantId);
-          if (varErr) throw varErr;
-        }
+          if (!variant.id) {
+            const { data: newVar, error: varErr } = await supabaseAdmin
+              .from('product_variants')
+              .insert({ product_id: id, color: variant.color })
+              .select('id')
+              .single();
+            if (varErr) throw varErr;
+            variantId = newVar.id;
+          } else {
+            variantId = variant.id;
+            const { error: varErr } = await supabaseAdmin
+              .from('product_variants')
+              .update({ color: variant.color, updated_at: new Date().toISOString() })
+              .eq('id', variantId);
+            if (varErr) throw varErr;
+          }
 
-        // 3. Sync Sizes (Delete old sizes and insert new ones)
-        if (variant.sizes) {
-           await supabaseAdmin.from('variant_sizes').delete().eq('product_variant_id', variantId);
-           if (variant.sizes.length > 0) {
-             const sizesData = variant.sizes.map((s: { size: string; original_price: number; discount_price: number; stock: number }) => ({
-               product_variant_id: variantId,
-               size: s.size,
-               original_price: s.original_price,
-               discount_price: s.discount_price,
-               stock: s.stock
-             }));
-             const { error: sizeErr } = await supabaseAdmin.from('variant_sizes').insert(sizesData);
-             if (sizeErr) throw sizeErr;
-           }
-        }
+          // Sizes and images are independent — run in parallel
+          await Promise.all([
 
-        // 4. Sync Images (Delete old images and insert new ones)
-        if (variant.images) {
-           await supabaseAdmin.from('product_images').delete().eq('product_variant_id', variantId);
-           if (variant.images.length > 0) {
-             const imagesData = variant.images.map((img: { url: string }, idx: number) => ({
-               product_variant_id: variantId,
-               image_url: img.url,
-               sort_order: idx
-             }));
-             const { error: imgErr } = await supabaseAdmin.from('product_images').insert(imagesData);
-             if (imgErr) throw imgErr;
-           }
-        }
-      }
+            // ── SIZES ──────────────────────────────────────────────────────────
+            // Cannot delete+reinsert: order_items.variant_size_id has a hard FK
+            // to variant_sizes.id. Deleting referenced rows causes error 23503.
+            // Solution: UPSERT by (product_variant_id, size) unique key so IDs
+            // are preserved in-place, then handle removed sizes separately.
+            (async () => {
+              if (variant.sizes?.length > 0) {
+                const { error: upsertErr } = await supabaseAdmin
+                  .from('variant_sizes')
+                  .upsert(
+                    variant.sizes.map(s => ({
+                      product_variant_id: variantId,
+                      size: s.size,
+                      original_price: s.original_price,
+                      discount_price: s.discount_price,
+                      stock: s.stock,
+                      deleted_at: null,                       // re-activate if previously soft-deleted
+                      updated_at: new Date().toISOString(),
+                    })),
+                    { onConflict: 'product_variant_id,size' } // unique index in schema
+                  );
+                if (upsertErr) throw upsertErr;
+              }
+
+              // Find active sizes in DB that are no longer in the payload
+              const { data: existingSizes } = await supabaseAdmin
+                .from('variant_sizes')
+                .select('id, size')
+                .eq('product_variant_id', variantId)
+                .is('deleted_at', null);
+
+              const keptSizeNames = new Set((variant.sizes || []).map(s => s.size));
+              const toRemove = (existingSizes || []).filter(r => !keptSizeNames.has(r.size));
+
+              // Try hard-delete; fall back to soft-delete if order_items references it
+              await Promise.all(toRemove.map(async row => {
+                const { error: delErr } = await supabaseAdmin
+                  .from('variant_sizes')
+                  .delete()
+                  .eq('id', row.id);
+
+                if (delErr?.code === '23503') {
+                  // Referenced by an existing order — soft-delete so it's hidden
+                  // from the shop but order history remains intact
+                  await supabaseAdmin
+                    .from('variant_sizes')
+                    .update({ stock: 0, deleted_at: new Date().toISOString() })
+                    .eq('id', row.id);
+                } else if (delErr) {
+                  throw delErr;
+                }
+              }));
+            })(),
+
+            // ── IMAGES ─────────────────────────────────────────────────────────
+            // Safe to delete+reinsert: no FK from order_items → product_images
+            (async () => {
+              const { error: delErr } = await supabaseAdmin
+                .from('product_images')
+                .delete()
+                .eq('product_variant_id', variantId);
+              if (delErr) throw delErr;
+              if (variant.images?.length > 0) {
+                const { error: insErr } = await supabaseAdmin
+                  .from('product_images')
+                  .insert(variant.images.map((img, idx) => ({
+                    product_variant_id: variantId,
+                    image_url: img.url,
+                    sort_order: idx,
+                  })));
+                if (insErr) throw insErr;
+              }
+            })(),
+          ]);
+        })
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('[crudproduct PATCH]', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
+
+
+
 
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
