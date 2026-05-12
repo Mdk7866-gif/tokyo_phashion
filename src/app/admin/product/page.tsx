@@ -62,7 +62,10 @@ function ProductContent() {
 
   useEffect(() => {
     if (sub_id && !product_id) {
-      fetchProducts();
+      // Use microtask to avoid synchronous setState warning in useEffect
+      Promise.resolve().then(() => {
+        fetchProducts();
+      });
     }
   }, [sub_id, product_id, fetchProducts]);
 

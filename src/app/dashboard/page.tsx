@@ -197,7 +197,7 @@ function DashboardContent() {
         const map: Record<string, { rating: number, comment: string }> = {};
         const submittedSet = new Set<string>();
         
-        reviewsJson.data?.forEach((rev: any) => {
+        reviewsJson.data?.forEach((rev: { order_id: string; rating: number; comment: string }) => {
           if (rev.order_id) {
             map[rev.order_id] = { rating: rev.rating, comment: rev.comment };
             submittedSet.add(rev.order_id);
@@ -216,20 +216,26 @@ function DashboardContent() {
 
   // Initial Load: Profile only
   useEffect(() => {
-    fetchUser();
+    // Avoid synchronous state update warning
+    Promise.resolve().then(() => {
+      fetchUser();
+    });
   }, [fetchUser]);
 
   // Tab Switching: Fetch data only if not loaded
   useEffect(() => {
-    if (activeTab === "my cart" && !loadedTabs.has("my cart")) {
-      fetchCart();
-    }
-    if (activeTab === "my whishlist" && !loadedTabs.has("my whishlist")) {
-      fetchWishlist();
-    }
-    if (activeTab === "my orders" && !loadedTabs.has("my orders")) {
-      fetchOrders();
-    }
+    // Avoid synchronous state update warning
+    Promise.resolve().then(() => {
+      if (activeTab === "my cart" && !loadedTabs.has("my cart")) {
+        fetchCart();
+      }
+      if (activeTab === "my whishlist" && !loadedTabs.has("my whishlist")) {
+        fetchWishlist();
+      }
+      if (activeTab === "my orders" && !loadedTabs.has("my orders")) {
+        fetchOrders();
+      }
+    });
   }, [activeTab, loadedTabs, fetchCart, fetchWishlist, fetchOrders]);
 
   useEffect(() => {
@@ -899,7 +905,7 @@ function DashboardContent() {
                                  <span className="text-[8px] font-black uppercase tracking-widest text-green-600">Review Verified</span>
                                </div>
                                {reviewsMap[order.id]?.comment && (
-                                 <p className="text-[10px] font-medium text-zinc-600 italic">"{reviewsMap[order.id].comment}"</p>
+                                 <p className="text-[10px] font-medium text-zinc-600 italic">&quot;{reviewsMap[order.id].comment}&quot;</p>
                                )}
                              </div>
                            ) : (

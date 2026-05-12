@@ -58,6 +58,7 @@ function CheckoutContent() {
   const [user, setUser]               = useState<UserProfile | null>(null);
   const [successMsg, setSuccessMsg]   = useState("");
   const [paymentId, setPaymentId]     = useState("");
+  const [confirmedOrderId, setConfirmedOrderId] = useState("");
   const [alert, setAlert]             = useState<{ isOpen: boolean; title: string; message: string; type: "success"|"error"|"info"|"warning" }>({ isOpen: false, title: "", message: "", type: "info" });
   const [isRetry, setIsRetry]         = useState(false);
 
@@ -87,7 +88,6 @@ function CheckoutContent() {
         if (dataRes.ok) { 
           const dataJson = await dataRes.json(); 
           if (isCartCheckout) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let qtyMap: Record<string, number> = {};
             try { qtyMap = JSON.parse(quantitiesRaw); } catch { qtyMap = {}; }
 
@@ -124,7 +124,7 @@ function CheckoutContent() {
       } catch (e) { console.error(e); showAlert("Error", "Failed to load checkout data.", "error"); }
       finally { setLoadingData(false); }
     })();
-  }, [isCartCheckout, variantSizeId, productId, productVariantId, quantity, router, showAlert]);
+  }, [isCartCheckout, variantSizeId, productId, productVariantId, quantity, quantitiesRaw, router, showAlert]);
 
   const subtotal = checkoutItems.reduce((acc, item) => acc + (item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity, 0);
   const deliveryCharge = paymentMethod === "cod" ? DELIVERY_COD : DELIVERY_ONLINE;
@@ -237,6 +237,7 @@ function CheckoutContent() {
       }
       const rzpData: RzpData = { razorpay_order_id: data.razorpay_order_id, amount: data.amount, currency: data.currency, our_order_id: data.our_order_id };
       rzpDataRef.current = rzpData; // store for retries
+      setConfirmedOrderId(data.our_order_id);
       setIsRetry(true);
       setStep("review");
       await openRazorpayModal(rzpData);
@@ -372,7 +373,7 @@ function CheckoutContent() {
       </html>
     `);
     printWindow.document.close();
-  }, [checkoutItems, user, paymentId, subtotal, total, paymentMethod]);
+  }, [checkoutItems, user, paymentId, subtotal, total, deliveryCharge, paymentMethod]);
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
   
@@ -409,7 +410,7 @@ function CheckoutContent() {
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Order ID</p>
               <p className="text-[10px] font-bold break-all text-black leading-tight">
-                #{rzpDataRef.current?.our_order_id ? rzpDataRef.current.our_order_id.toUpperCase() : 'LOADING...'}
+                #{confirmedOrderId ? confirmedOrderId.toUpperCase() : 'LOADING...'}
               </p>
             </div>
             <div>

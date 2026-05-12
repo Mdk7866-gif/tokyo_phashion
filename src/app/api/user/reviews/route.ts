@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if user already reviewed this order
-  const { data: existingReview } = await (admin as any)
+  const { data: existingReview } = await admin
     .from("reviews")
     .select("id")
     .eq("user_id", user.id)
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Insert new review
-  const { error } = await ((admin as any).from("reviews")).insert({
+  const { error } = await admin.from("reviews").insert({
     user_id: user.id,
     product_id,
     order_id,
@@ -75,8 +75,7 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const admin = supabaseAdmin;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = ((admin as any).from("reviews"))
+  let query = admin.from("reviews")
     .select("id, rating, comment, created_at, order_id, product_id, users(name, profile_image)")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });

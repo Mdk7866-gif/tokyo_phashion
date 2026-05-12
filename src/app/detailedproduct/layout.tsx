@@ -1,4 +1,4 @@
-import { Metadata, ResolvingMetadata } from 'next'
+import { Metadata } from 'next'
 import { headers } from 'next/headers'
 
 type Props = {
@@ -7,8 +7,7 @@ type Props = {
 }
 
 export async function generateMetadata(
-  { searchParams }: Props,
-  _parent: ResolvingMetadata
+  { searchParams }: Props
 ): Promise<Metadata> {
   let sParams;
   try {

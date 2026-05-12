@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Mark order as failed — both payment AND delivery so it doesn't sit in the active queue.
     // cancelled_by is left NULL (DB CHECK only allows 'admin'|'user'); payment_status='failed'
     // is the reliable signal that no payment was ever collected.
-    await (supabaseAdmin.from('orders') as any)
+    await supabaseAdmin.from('orders')
       .update({
         payment_status: 'failed',
         delivery_status: 'cancelled',
