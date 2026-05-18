@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, Send, Star, ChevronDown, ChevronUp, CreditCard, Truck, Package } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Star, ChevronDown, ChevronUp, CreditCard, Truck, Package, ZoomIn } from "lucide-react";
+import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 
 const TABS = [
   { key: "online", label: "Paid Online", icon: CreditCard, color: "bg-blue-600" },
@@ -15,7 +16,7 @@ interface Review { id: string; rating: number; comment: string | null; created_a
 interface OrderItem {
   id: string; quantity: number; price_snapshot: number;
   product_name_snapshot: string; color_snapshot: string; size_snapshot: string;
-  product_id: string;
+  product_id: string; product_variant_id: string;
   product_variants: { product_images: { image_url: string }[] } | null;
 }
 interface Order {
@@ -37,7 +38,24 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function DispatchedCard({ order }: { order: Order }) {
+// Brutalist Reusable Image Loader Component
+function ImageWithLoader({ src, alt, fill, sizes, className }: { src: string; alt: string; fill?: boolean; sizes?: string; className?: string }) {
+  const [loading, setLoading] = useState(true);
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${loading ? "bg-zinc-100 animate-pulse" : "bg-white"}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill={fill}
+        sizes={sizes}
+        onLoad={() => setLoading(false)}
+        className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
+      />
+    </div>
+  );
+}
+
+function DispatchedCard({ order, onZoomParcel }: { order: Order; onZoomParcel: (url: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [review, setReview] = useState<Review | null | undefined>(undefined);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -88,9 +106,16 @@ function DispatchedCard({ order }: { order: Order }) {
       {(order.parcel_image || order.tracking_id) && (
         <div className="p-4 border-b border-zinc-100 flex items-center gap-4">
           {order.parcel_image && (
-            <a href={order.parcel_image} target="_blank" rel="noopener noreferrer" className="relative h-16 w-16 border border-zinc-200 overflow-hidden shrink-0 hover:border-black transition-colors">
-              <Image src={order.parcel_image} alt="Parcel" fill sizes="64px" className="object-cover" />
-            </a>
+            <button
+              onClick={() => onZoomParcel(order.parcel_image!)}
+              className="relative h-16 w-16 border border-zinc-200 overflow-hidden shrink-0 hover:border-black transition-colors group cursor-zoom-in bg-zinc-50"
+              title="Click to zoom"
+            >
+              <ImageWithLoader src={order.parcel_image} alt="Parcel" fill sizes="64px" className="object-cover" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <ZoomIn className="h-3 w-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
           )}
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Tracking ID</p>
@@ -106,11 +131,11 @@ function DispatchedCard({ order }: { order: Order }) {
           {order.order_items.map(item => {
             const imgUrl = item.product_variants?.product_images?.[0]?.image_url;
             return (
-              <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}`} target="_blank"
+              <Link key={item.id} href={`/detailedproduct?product_id=${item.product_id}&variant_id=${item.product_variant_id}&size=${encodeURIComponent(item.size_snapshot)}`} target="_blank"
                 className="flex items-center gap-3 text-[10px] py-1.5 px-2 border border-zinc-100 hover:border-black hover:bg-zinc-50 transition-all group">
                 <div className="relative h-10 w-8 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
                   {imgUrl ? (
-                    <Image src={imgUrl} alt={item.product_name_snapshot} fill sizes="32px" className="object-cover" />
+                    <ImageWithLoader src={imgUrl} alt={item.product_name_snapshot} fill sizes="32px" className="object-cover" />
                   ) : (
                     <Package className="h-4 w-4 text-zinc-300 m-auto mt-3" />
                   )}
@@ -159,6 +184,8 @@ function DispatchedContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [prevTab, setPrevTab] = useState(tab);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
   if (tab !== prevTab) { setPrevTab(tab); setLoading(true); }
 
   const fetchOrders = useCallback(async () => {
@@ -217,10 +244,17 @@ function DispatchedContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {orders.map(o => <DispatchedCard key={o.id} order={o} />)}
+            {orders.map(o => <DispatchedCard key={o.id} order={o} onZoomParcel={setZoomedImage} />)}
           </div>
         )}
       </div>
+
+      <ImageZoomPopUp
+        isOpen={!!zoomedImage}
+        onClose={() => setZoomedImage(null)}
+        imageUrl={zoomedImage ?? ""}
+        alt="Parcel Zoom"
+      />
     </div>
   );
 }

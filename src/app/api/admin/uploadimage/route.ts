@@ -39,8 +39,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      url: uploadRes.secure_url, // raw (stored in DB)
-      optimisedUrl,              // for preview (if needed)
+      url: optimisedUrl,
+      rawUrl: uploadRes.secure_url,
     });
   } catch (error) {
     console.error('[uploadimage]', error);

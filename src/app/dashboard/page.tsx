@@ -10,6 +10,23 @@ import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmati
 import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 import { User, Heart, ShoppingCart, Package, LayoutDashboard, Zap, Clock, CheckCircle, XCircle, AlertTriangle, MessageSquare, Star, Loader2, Truck } from "lucide-react";
 
+// Brutalist Reusable Image Loader Component
+function ImageWithLoader({ src, alt, fill, sizes, className }: { src: string; alt: string; fill?: boolean; sizes?: string; className?: string }) {
+  const [loading, setLoading] = useState(true);
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${loading ? "bg-zinc-100 animate-pulse" : "bg-white"}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill={fill}
+        sizes={sizes}
+        onLoad={() => setLoading(false)}
+        className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
+      />
+    </div>
+  );
+}
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -798,7 +815,7 @@ function DashboardContent() {
                                 className="shrink-0 relative h-14 w-14 border-2 border-green-400 hover:border-green-600 overflow-hidden transition-colors group cursor-zoom-in"
                                 title="Click to zoom"
                               >
-                                <Image src={order.parcel_image} alt="Parcel" fill className="object-cover" />
+                                <ImageWithLoader src={order.parcel_image} alt="Parcel" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                                   <span className="text-white text-[8px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Zoom</span>
                                 </div>
@@ -847,7 +864,7 @@ function DashboardContent() {
                           return (
                             <a
                               key={item.id}
-                              href={`/detailedproduct?product_id=${item.product_id}`}
+                              href={`/detailedproduct?product_id=${item.product_id}&variant_id=${item.product_variant_id}&size=${encodeURIComponent(item.size_snapshot)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-3 border border-zinc-200 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
@@ -855,7 +872,7 @@ function DashboardContent() {
                               {/* Product thumbnail */}
                               <div className="relative h-12 w-10 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
                                 {imgUrl ? (
-                                  <Image src={imgUrl} alt={item.product_name_snapshot} fill className="object-cover" />
+                                  <ImageWithLoader src={imgUrl} alt={item.product_name_snapshot} fill className="object-cover" />
                                 ) : (
                                   <div className="h-full w-full flex items-center justify-center">
                                     <Package className="h-4 w-4 text-zinc-300" />

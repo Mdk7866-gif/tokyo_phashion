@@ -375,7 +375,7 @@ function CheckoutContent() {
         <h1 className="text-3xl font-black uppercase italic tracking-tighter mb-10">Checkout</h1>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
           {/* Left */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
             {/* Product */}
             <div>
               <h2 className="text-[10px] font-black uppercase tracking-widest mb-4 text-zinc-400">Your Order</h2>
@@ -444,7 +444,7 @@ function CheckoutContent() {
           </div>
 
           {/* Right: CTA */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-1 lg:order-2">
             <div className="sticky top-6 border border-black p-6 space-y-4">
               <div className="mb-2">
                 <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Amount to pay now</p>

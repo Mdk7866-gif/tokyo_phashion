@@ -11,10 +11,79 @@ import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 
 const COD_ADVANCE = 100;
 
+// Reusable Brutalist Image Loader Component
+function ImageWithLoader({ src, alt, fill, sizes, className }: { src: string; alt: string; fill?: boolean; sizes?: string; className?: string }) {
+  const [loading, setLoading] = useState(true);
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${loading ? "bg-zinc-100 animate-pulse" : "bg-white"}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill={fill}
+        sizes={sizes}
+        onLoad={() => setLoading(false)}
+        className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
+      />
+    </div>
+  );
+}
+
+// Client-side canvas image compression to optimize parcel photo uploads
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = document.createElement("img");
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 1000;
+        const MAX_HEIGHT = 1000;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          "image/jpeg",
+          0.8
+        );
+      };
+    };
+  });
+};
+
 interface OrderItem {
   id: string; quantity: number; price_snapshot: number;
   product_name_snapshot: string; color_snapshot: string; size_snapshot: string;
-  product_id: string;
+  product_id: string; product_variant_id: string;
   product_variants: {
     product_images: { image_url: string }[];
   };
@@ -84,7 +153,9 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await uploadImage(file);
+      // Fast Client-side Image compression
+      const compressed = await compressImage(file);
+      const url = await uploadImage(compressed);
       setParcelImg(url);
       setDeliverError("");
     } catch {
@@ -106,6 +177,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
   };
 
   const executeDispatch = async () => {
+    setShowConfirmDispatch(false);
     setDelivering(true);
     try {
       const res = await fetch("/api/admin/orders", {
@@ -250,13 +322,13 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
               return (
               <Link
                 key={item.id}
-                href={`/detailedproduct?product_id=${item.product_id}`}
+                href={`/detailedproduct?product_id=${item.product_id}&variant_id=${item.product_variant_id}&size=${encodeURIComponent(item.size_snapshot)}`}
                 target="_blank"
                 className="flex items-center gap-3 text-[10px] border border-zinc-100 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
               >
-                <div className="relative h-10 w-10 shrink-0 border border-zinc-200 bg-white overflow-hidden">
+                <div className="relative h-10 w-10 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
                   {itemImg ? (
-                    <Image src={itemImg} alt="Product" fill sizes="40px" className="object-cover" />
+                    <ImageWithLoader src={itemImg} alt="Product" fill sizes="40px" className="object-cover" />
                   ) : (
                     <div className="h-full w-full bg-zinc-50 flex items-center justify-center text-zinc-300">
                       <Package className="h-4 w-4" />
@@ -316,7 +388,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
                   className="relative h-48 w-full border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white group cursor-zoom-in"
                   title="Click to zoom"
                 >
-                  <Image src={parcelImg} alt="Parcel" fill sizes="(max-width: 768px) 100vw, 500px" className="object-contain" />
+                  <ImageWithLoader src={parcelImg} alt="Parcel" fill sizes="(max-width: 768px) 100vw, 500px" className="object-contain" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                     <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                   </div>

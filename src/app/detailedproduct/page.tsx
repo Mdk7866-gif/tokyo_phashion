@@ -140,8 +140,9 @@ function DetailedProductContent() {
           setProduct(data);
           
           const params = new URLSearchParams(window.location.search);
-          const currentVariantId = params.get("variant_id");
+          const currentVariantId = params.get("variant_id") || params.get("variant");
           const currentSizeId = params.get("size_id");
+          const currentSizeName = params.get("size");
 
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
@@ -162,6 +163,18 @@ function DetailedProductContent() {
                   updateQueryParams(initialVariant.id, availableSize.id, data);
                 }
               }
+            } else if (currentSizeName && initialVariant.variant_sizes) {
+              const foundSize = initialVariant.variant_sizes.find((s: Size) => s.size.toLowerCase() === currentSizeName.toLowerCase());
+              if (foundSize) {
+                setSelectedSize(foundSize);
+                updateQueryParams(initialVariant.id, foundSize.id, data);
+              } else {
+                const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
+                if (availableSize) {
+                  setSelectedSize(availableSize);
+                  updateQueryParams(initialVariant.id, availableSize.id, data);
+                }
+              }
             } else if (initialVariant.variant_sizes) {
               const availableSize = initialVariant.variant_sizes.find((s: Size) => s.stock > 0) || initialVariant.variant_sizes[0];
               if (availableSize) {
@@ -175,7 +188,7 @@ function DetailedProductContent() {
                setMainImage(sortedImages[0].image_url);
             }
 
-            if (!currentVariantId && !currentSizeId) {
+            if (!currentVariantId && !currentSizeId && !currentSizeName) {
               // Only update variant id if size auto-selection above didn't already update everything
               if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
                 updateQueryParams(initialVariant.id);
