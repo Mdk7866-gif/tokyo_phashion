@@ -205,21 +205,37 @@ export async function PATCH(request: Request) {
 
             // ── IMAGES ─────────────────────────────────────────────────────────
             // Safe to delete+reinsert: no FK from order_items → product_images
+            // Optimization: Only delete and re-insert if the image URLs or order have actually changed
             (async () => {
-              const { error: delErr } = await supabaseAdmin
+              const { data: existingImgs } = await supabaseAdmin
                 .from('product_images')
-                .delete()
-                .eq('product_variant_id', variantId);
-              if (delErr) throw delErr;
-              if (variant.images?.length > 0) {
-                const { error: insErr } = await supabaseAdmin
+                .select('image_url')
+                .eq('product_variant_id', variantId)
+                .order('sort_order', { ascending: true });
+
+              const currentUrls = (existingImgs || []).map(img => img.image_url);
+              const newUrls = (variant.images || []).map(img => img.url);
+
+              const isIdentical = currentUrls.length === newUrls.length &&
+                currentUrls.every((url, idx) => url === newUrls[idx]);
+
+              if (!isIdentical) {
+                const { error: delErr } = await supabaseAdmin
                   .from('product_images')
-                  .insert(variant.images.map((img, idx) => ({
-                    product_variant_id: variantId,
-                    image_url: img.url,
-                    sort_order: idx,
-                  })));
-                if (insErr) throw insErr;
+                  .delete()
+                  .eq('product_variant_id', variantId);
+                if (delErr) throw delErr;
+
+                if (variant.images?.length > 0) {
+                  const { error: insErr } = await supabaseAdmin
+                    .from('product_images')
+                    .insert(variant.images.map((img, idx) => ({
+                      product_variant_id: variantId,
+                      image_url: img.url,
+                      sort_order: idx,
+                    })));
+                  if (insErr) throw insErr;
+                }
               }
             })(),
           ]);

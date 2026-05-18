@@ -119,6 +119,7 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
+                          min="0"
                           value={s.stock === undefined || s.stock === null ? "" : s.stock} 
                           onChange={e => onSizeChange(vIndex, sIndex, 'stock', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[60px] border border-zinc-300 p-1.5 text-center focus:border-black focus:outline-none" 
@@ -128,6 +129,7 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
+                          min="0"
                           value={s.original_price === undefined || s.original_price === null ? "" : s.original_price} 
                           onChange={e => onSizeChange(vIndex, sIndex, 'original_price', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[80px] border border-zinc-300 p-1.5 focus:border-black focus:outline-none" 
@@ -137,6 +139,7 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
+                          min="0"
                           value={s.discount_price === undefined || s.discount_price === null ? "" : s.discount_price} 
                           onChange={e => onSizeChange(vIndex, sIndex, 'discount_price', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[80px] border border-zinc-300 p-1.5 focus:border-black focus:outline-none" 
