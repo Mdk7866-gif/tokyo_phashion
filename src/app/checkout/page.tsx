@@ -250,131 +250,13 @@ function CheckoutContent() {
   }, [user, paymentMethod, checkoutItems, openRazorpayModal, showAlert]);
 
   const handleDownloadReceipt = useCallback(() => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const itemsHtml = checkoutItems.map(item => `
-      <tr>
-        <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
-          <div style="font-weight: 800; text-transform: uppercase; font-size: 13px;">${item.variantSize.product_variants.products.name}</div>
-          <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
-            ${item.variantSize.product_variants.color} | Size: ${item.variantSize.size} | Qty: ${item.quantity}
-          </div>
-        </td>
-        <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: 800;">
-          ₹${((item.variantSize.discount_price ?? item.variantSize.original_price) * item.quantity).toFixed(0)}
-        </td>
-      </tr>
-    `).join("");
-
-    const isCod = paymentMethod === "cod";
-    const paidAmount = isCod ? Math.min(total, COD_ADVANCE) : total;
-    const balanceAmount = total - paidAmount;
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Receipt - Tokyo Fashion</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-            body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; line-height: 1.4; max-width: 800px; margin: 0 auto; }
-            .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { margin: 0; font-size: 28px; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -1px; }
-            .details-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 40px; margin-bottom: 40px; font-size: 11px; text-transform: uppercase; }
-            .section-title { font-weight: 900; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 10px; letter-spacing: 1px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            .summary-row { display: flex; justify-content: flex-end; gap: 40px; font-size: 12px; margin-bottom: 8px; }
-            .total-box { background: #000; color: #fff; padding: 15px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
-            .total-box span:first-child { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
-            .total-box span:last-child { font-size: 20px; font-weight: 900; font-style: italic; }
-            .cod-breakdown { background: #f4f4f4; border: 1px dashed #ccc; padding: 15px; margin-top: 20px; font-size: 11px; }
-            .footer { margin-top: 60px; text-align: center; font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 2px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>TOKYO FASHION</h1>
-            <p style="font-size: 10px; font-weight: 700; letter-spacing: 3px; margin-top: 5px;">OFFICIAL PURCHASE RECEIPT</p>
-          </div>
-          
-          <div class="details-grid">
-            <div>
-              <div class="section-title">Order Information</div>
-              <strong>Order ID:</strong> ${(rzpDataRef.current?.our_order_id || 'N/A').toLowerCase()}<br>
-              <strong>Payment ID:</strong> ${(paymentId || 'N/A').toLowerCase()}<br>
-              <strong>Method:</strong> ${paymentMethod.toUpperCase()}<br>
-              <strong>Date:</strong> ${new Date().toLocaleDateString()}
-            </div>
-            <div>
-              <div class="section-title">Customer Details</div>
-              <strong>Name:</strong> ${user?.name || 'N/A'}<br>
-              <strong>Email:</strong> ${(user?.email || 'N/A').toLowerCase()}<br>
-              <strong>Mobile:</strong> ${user?.mobile_number || 'N/A'}<br>
-              <strong>Address:</strong> ${user?.address ? `${user.address.full_address}, ${user.address.city}, ${user.address.state} - ${user.address.pincode}` : 'N/A'}
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr style="border-bottom: 2px solid #000; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">
-                <th style="text-align: left; padding-bottom: 10px;">Item Details</th>
-                <th style="text-align: right; padding-bottom: 10px;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-
-          <div class="summary-row">
-            <span style="color: #666; text-transform: uppercase; font-size: 10px;">Subtotal</span>
-            <span style="font-weight: 700;">₹${subtotal.toFixed(0)}</span>
-          </div>
-          <div class="summary-row">
-            <span style="color: #666; text-transform: uppercase; font-size: 10px;">Delivery</span>
-            <span style="font-weight: 700;">₹${deliveryCharge}</span>
-          </div>
-
-          <div class="total-box">
-            <span>Grand Total Paid</span>
-            <span>₹${paidAmount.toFixed(0)}</span>
-          </div>
-
-          ${isCod ? `
-            <div class="cod-breakdown">
-              <div style="font-weight: 900; margin-bottom: 8px; text-transform: uppercase;">COD Payment Breakdown</div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                <span>Advance Paid Online:</span>
-                <span>₹${paidAmount.toFixed(0)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-weight: 900; color: #e11d48; margin-top: 8px; border-top: 1px solid #ddd; pt: 8px;">
-                <span>Balance to pay at Delivery:</span>
-                <span>₹${balanceAmount.toFixed(0)}</span>
-              </div>
-            </div>
-          ` : `
-            <div style="text-align: right; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 10px; color: #16a34a;">
-              ✓ Full Payment Settled Online
-            </div>
-          `}
-
-          <div class="footer">
-            Thank you for shopping with us. Stay Fashionable.<br>
-            www.tokyfashion.syp3.com · support@tokyfashion.syp3.com
-          </div>
-          <script>
-            window.onload = () => {
-              setTimeout(() => {
-                window.print();
-              }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  }, [checkoutItems, user, paymentId, subtotal, total, deliveryCharge, paymentMethod]);
+    const orderId = rzpDataRef.current?.our_order_id;
+    if (!orderId) {
+      showAlert("Error", "No order ID found to download receipt.", "error");
+      return;
+    }
+    window.open(`/api/user/generate-receipt?order_id=${orderId}`, "_blank");
+  }, [showAlert]);
 
   if (loadingData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-zinc-400" /></div>;
   
