@@ -100,10 +100,10 @@ function DetailedProductContent() {
   const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productData?: Product | null) => {
     const params = new URLSearchParams(window.location.search);
     
-    // Standardize on product_id
-    const currentProductId = params.get("product_id") || params.get("id");
-    if (currentProductId) {
-      params.set("product_id", currentProductId);
+    // Crucial: Use active product ID from productData if provided to avoid stale window.location.search race condition
+    const activeProductId = productData?.id || params.get("product_id") || params.get("id");
+    if (activeProductId) {
+      params.set("product_id", activeProductId);
       params.delete("id");
     }
 
@@ -193,7 +193,7 @@ function DetailedProductContent() {
             if (!currentVariantId && !currentSizeId && !currentSizeName) {
               // Only update variant id if size auto-selection above didn't already update everything
               if (!initialVariant.variant_sizes || !initialVariant.variant_sizes.find((s:Size) => s.stock > 0)) {
-                updateQueryParams(initialVariant.id);
+                updateQueryParams(initialVariant.id, null, data);
               }
             }
           }
@@ -451,7 +451,7 @@ function DetailedProductContent() {
       setQuantity(Math.max(1, s.stock));
     }
     if (selectedVariant) {
-      updateQueryParams(selectedVariant.id, s.id);
+      updateQueryParams(selectedVariant.id, s.id, product);
     }
   };
 
