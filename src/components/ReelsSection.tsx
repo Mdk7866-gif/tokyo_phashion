@@ -432,7 +432,7 @@ const ReelsSection = () => {
           <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 via-red-500 to-pink-500 rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000" />
           <div className="relative bg-black rounded-xl overflow-hidden border border-zinc-800 shadow-2xl">
             <Image
-              src="https://res.cloudinary.com/ddya4o2yl/image/upload/v1778185732/Screenshot_2026-05-08_015823_lliazx.png"
+              src="https://res.cloudinary.com/ddya4o2yl/image/upload/v1779135335/Screenshot_2026-05-19_014404_xibfya.png"
               alt="Follow @tokyo_fashion_hub"
               width={1200} height={400}
               className="w-full h-auto object-contain bg-zinc-900"
