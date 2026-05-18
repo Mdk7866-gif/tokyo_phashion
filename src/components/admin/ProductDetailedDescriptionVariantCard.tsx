@@ -6,9 +6,9 @@ import Image from "next/image";
 
 interface SizeData {
   size: string;
-  stock: number;
-  original_price: number;
-  discount_price: number;
+  stock: number | "";
+  original_price: number | "";
+  discount_price: number | "";
 }
 
 interface VariantData {
@@ -30,6 +30,7 @@ interface ProductDetailedDescriptionVariantCardProps {
   onSizeChange: (vIndex: number, sIndex: number, field: keyof SizeData, value: string | number) => void;
   onImageUpload: (vIndex: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: (vIndex: number, iIndex: number) => void;
+  onMakeOutOfStock: (index: number) => void;
 }
 
 export default function ProductDetailedDescriptionVariantCard({
@@ -43,7 +44,8 @@ export default function ProductDetailedDescriptionVariantCard({
   onRemoveSize,
   onSizeChange,
   onImageUpload,
-  onRemoveImage
+  onRemoveImage,
+  onMakeOutOfStock
 }: ProductDetailedDescriptionVariantCardProps) {
   return (
     <div className="p-4 border border-zinc-200 bg-zinc-50 relative group">
@@ -73,12 +75,22 @@ export default function ProductDetailedDescriptionVariantCard({
           <div className="pt-2 border-t border-zinc-200">
             <div className="flex items-center justify-between mb-2">
               <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400">Sizes & Pricing</label>
-              <button 
-                onClick={() => onAddSize(vIndex)}
-                className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-black hover:bg-zinc-200 px-2 py-1 transition-colors"
-              >
-                <Plus className="h-3 w-3" /> Size
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onMakeOutOfStock(vIndex)}
+                  className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 border border-red-500 px-2 py-1 transition-colors"
+                >
+                  Out of Stock
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => onAddSize(vIndex)}
+                  className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-black hover:bg-zinc-200 px-2 py-1 transition-colors border border-black"
+                >
+                  <Plus className="h-3 w-3" /> Size
+                </button>
+              </div>
             </div>
             
             <div className="overflow-x-auto">
@@ -107,8 +119,8 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
-                          value={s.stock || ""} 
-                          onChange={e => onSizeChange(vIndex, sIndex, 'stock', e.target.value === "" ? 0 : Number(e.target.value))} 
+                          value={s.stock === undefined || s.stock === null ? "" : s.stock} 
+                          onChange={e => onSizeChange(vIndex, sIndex, 'stock', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[60px] border border-zinc-300 p-1.5 text-center focus:border-black focus:outline-none" 
                           placeholder="Stock"
                         />
@@ -116,8 +128,8 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
-                          value={s.original_price || ""} 
-                          onChange={e => onSizeChange(vIndex, sIndex, 'original_price', e.target.value === "" ? 0 : Number(e.target.value))} 
+                          value={s.original_price === undefined || s.original_price === null ? "" : s.original_price} 
+                          onChange={e => onSizeChange(vIndex, sIndex, 'original_price', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[80px] border border-zinc-300 p-1.5 focus:border-black focus:outline-none" 
                           placeholder="Price"
                         />
@@ -125,8 +137,8 @@ export default function ProductDetailedDescriptionVariantCard({
                       <td className="p-1">
                         <input 
                           type="number" 
-                          value={s.discount_price || ""} 
-                          onChange={e => onSizeChange(vIndex, sIndex, 'discount_price', e.target.value === "" ? 0 : Number(e.target.value))} 
+                          value={s.discount_price === undefined || s.discount_price === null ? "" : s.discount_price} 
+                          onChange={e => onSizeChange(vIndex, sIndex, 'discount_price', e.target.value === "" ? "" : Number(e.target.value))} 
                           className="w-full min-w-[80px] border border-zinc-300 p-1.5 focus:border-black focus:outline-none" 
                           placeholder="Discount"
                         />

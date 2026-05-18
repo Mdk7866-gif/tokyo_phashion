@@ -82,12 +82,12 @@ export default function ProductBriefDescriptionCard({
 
   return (
     <>
-      <div className="group border border-black bg-white flex flex-col transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <div className={`group border border-black bg-white flex flex-col transition-all hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${totalStock === 0 ? 'border-zinc-300 bg-zinc-50/50' : ''}`}>
         <div 
           className="flex h-32 border-b border-black cursor-pointer"
           onClick={() => router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}&product_id=${product.id}`)}
         >
-           <div className="w-1/3 border-r border-black relative bg-zinc-50 flex items-center justify-center overflow-hidden">
+           <div className={`w-1/3 border-r border-black relative bg-zinc-50 flex items-center justify-center overflow-hidden ${totalStock === 0 ? 'filter grayscale opacity-55' : ''}`}>
              {thumbnail ? (
                 <Image src={thumbnail} alt={product.name} fill className="object-cover" sizes="33vw" />
              ) : (
@@ -95,8 +95,13 @@ export default function ProductBriefDescriptionCard({
              )}
            </div>
            <div className="w-2/3 p-4 flex flex-col">
-              <h3 className="text-sm font-black uppercase italic tracking-tight truncate" title={product.name}>
-                {product.name}
+              <h3 className="text-sm font-black uppercase italic tracking-tight truncate flex items-center justify-between gap-2" title={product.name}>
+                <span className="truncate">{product.name}</span>
+                {totalStock === 0 && (
+                  <span className="flex-shrink-0 text-[8px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded shadow-[1px_1px_0px_0px_rgba(220,38,38,1)]">
+                    OUT
+                  </span>
+                )}
               </h3>
               <p className="mt-1 text-[10px] text-zinc-500 line-clamp-2">
                 {product.description || "No description provided."}
@@ -107,9 +112,9 @@ export default function ProductBriefDescriptionCard({
                    <Package className="h-3 w-3" />
                    <span>{product.product_variants?.length || 0} Colors</span>
                  </div>
-                 <div className="flex items-center gap-1">
-                   <Box className="h-3 w-3" />
-                   <span>{totalStock} in stock</span>
+                 <div className={`flex items-center gap-1 ${totalStock === 0 ? 'text-red-500 font-extrabold' : ''}`}>
+                    <Box className="h-3 w-3" />
+                    <span>{totalStock === 0 ? 'Out of stock' : `${totalStock} in stock`}</span>
                  </div>
               </div>
            </div>

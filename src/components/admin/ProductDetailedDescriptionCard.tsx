@@ -8,9 +8,9 @@ import imageCompression from 'browser-image-compression';
 
 interface SizeData {
   size: string;
-  stock: number;
-  original_price: number;
-  discount_price: number;
+  stock: number | "";
+  original_price: number | "";
+  discount_price: number | "";
 }
 
 interface VariantData {
@@ -166,6 +166,26 @@ export default function ProductDetailedDescriptionCard({
     setVariants(newVariants);
   };
 
+  const handleMakeAllOutOfStock = () => {
+    const newVariants = variants.map(v => ({
+      ...v,
+      sizes: v.sizes.map(s => ({
+        ...s,
+        stock: 0
+      }))
+    }));
+    setVariants(newVariants);
+  };
+
+  const handleMakeVariantOutOfStock = (vIndex: number) => {
+    const newVariants = [...variants];
+    newVariants[vIndex].sizes = newVariants[vIndex].sizes.map(s => ({
+      ...s,
+      stock: 0
+    }));
+    setVariants(newVariants);
+  };
+
   // Image Handlers
   const handleImageUpload = async (vIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,8 +240,19 @@ export default function ProductDetailedDescriptionCard({
       return;
     }
 
-    for (let i = 0; i < variants.length; i++) {
-      const v = variants[i];
+    // Clean empty values to 0 before validation and API payload
+    const cleanedVariants = variants.map(v => ({
+      ...v,
+      sizes: v.sizes.map(s => ({
+        ...s,
+        stock: s.stock === "" ? 0 : Number(s.stock),
+        original_price: s.original_price === "" ? 0 : Number(s.original_price),
+        discount_price: s.discount_price === "" ? 0 : Number(s.discount_price)
+      }))
+    }));
+
+    for (let i = 0; i < cleanedVariants.length; i++) {
+      const v = cleanedVariants[i];
       const vNum = i + 1;
 
       if (!v.color.trim()) {
@@ -277,7 +308,7 @@ export default function ProductDetailedDescriptionCard({
       subcategory_id: sub_id,
       name,
       description,
-      variants
+      variants: cleanedVariants
     };
     
     try {
@@ -321,20 +352,23 @@ export default function ProductDetailedDescriptionCard({
             {category} / {subcategory}
           </p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 border border-black bg-black px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 disabled:opacity-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
-        >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {saving ? "Saving..." : "Save Product"}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         {/* CARD 1: Basic Info */}
         <div className="border border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] space-y-4">
-          <h2 className="text-sm font-black uppercase italic tracking-tight underline decoration-black underline-offset-4">Product Details</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-black uppercase italic tracking-tight underline decoration-black underline-offset-4">Product Details</h2>
+            {variants.length > 0 && (
+              <button
+                type="button"
+                onClick={handleMakeAllOutOfStock}
+                className="flex items-center gap-1.5 border border-red-500 bg-white hover:bg-red-50 text-red-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-colors shadow-[2px_2px_0px_0px_rgba(239,68,68,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                Set All Out Of Stock
+              </button>
+            )}
+          </div>
           <div>
             <label className="mb-1 block text-[10px] font-black uppercase tracking-widest text-zinc-400">Product Name</label>
             <input
@@ -376,6 +410,7 @@ export default function ProductDetailedDescriptionCard({
                 onSizeChange={handleSizeChange}
                 onImageUpload={handleImageUpload}
                 onRemoveImage={handleRemoveImage}
+                onMakeOutOfStock={handleMakeVariantOutOfStock}
               />
             ))}
           </div>
