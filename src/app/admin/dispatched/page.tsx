@@ -181,25 +181,29 @@ function DispatchedContent() {
   const router = useRouter();
   const tab = searchParams.get("tab") || "online";
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [prevTab, setPrevTab] = useState(tab);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
-  if (tab !== prevTab) { setPrevTab(tab); setLoading(true); }
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/orders?status=dispatched&payment_method=${tab}`);
+      const res = await fetch("/api/admin/orders?status=dispatched");
       const d = await res.json();
-      setOrders(d.data || []);
+      setAllOrders(d.data || []);
     } finally {
       setLoading(false);
     }
-  }, [tab]);
+  }, []);
 
-  useEffect(() => { fetchOrders(); }, [tab, fetchOrders]);
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
+  const onlineOrders = allOrders.filter(o => o.payment_method === "online");
+  const codOrders = allOrders.filter(o => o.payment_method === "cod");
+
+  const totalOnlineEarnings = onlineOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const totalCodEarnings = codOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+
+  const activeOrders = tab === "cod" ? codOrders : onlineOrders;
   const activeMeta = TABS.find(t => t.key === tab) ?? TABS[0];
 
   return (
@@ -214,14 +218,32 @@ function DispatchedContent() {
             <Send className="h-6 w-6 text-green-600" /> Dispatched Orders
           </h1>
           <span className={`ml-auto text-[10px] font-black uppercase tracking-widest ${activeMeta.color} text-white px-3 py-1`}>
-            {orders.length} {activeMeta.label}
+            {activeOrders.length} {activeMeta.label}
           </span>
+        </div>
+
+        {/* Total Money Earned Stats Dashboard Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Earned Online (Dispatched)</p>
+            <p className="text-2xl font-black text-blue-600 mt-1">₹{totalOnlineEarnings.toLocaleString('en-IN')}</p>
+            <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">{onlineOrders.length} total dispatched orders</p>
+          </div>
+          <div className="bg-white border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Earned COD (Dispatched)</p>
+            <p className="text-2xl font-black text-amber-500 mt-1">₹{totalCodEarnings.toLocaleString('en-IN')}</p>
+            <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">{codOrders.length} total dispatched orders</p>
+          </div>
         </div>
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8 border-b border-zinc-200 pb-4">
           {TABS.map(t => {
             const Icon = t.icon;
+            const count = t.key === "cod" ? codOrders.length : onlineOrders.length;
+            const earnings = t.key === "cod" ? totalCodEarnings : totalOnlineEarnings;
             return (
               <button
                 key={t.key}
@@ -229,7 +251,7 @@ function DispatchedContent() {
                 className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === t.key ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
               >
                 <Icon className="h-3 w-3" />
-                {t.label}
+                {t.label} ({count} · ₹{earnings.toLocaleString('en-IN')})
               </button>
             );
           })}
@@ -237,14 +259,14 @@ function DispatchedContent() {
 
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>
-        ) : orders.length === 0 ? (
+        ) : activeOrders.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-zinc-300">
             <Package className="h-8 w-8 mx-auto mb-3 text-zinc-200" />
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No dispatched orders in this category</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {orders.map(o => <DispatchedCard key={o.id} order={o} onZoomParcel={setZoomedImage} />)}
+            {activeOrders.map(o => <DispatchedCard key={o.id} order={o} onZoomParcel={setZoomedImage} />)}
           </div>
         )}
       </div>

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       .select("id")
       .eq("user_id", user.id)
       .eq("variant_size_id", variant_size_id)
-      .single();
+      .maybeSingle();
 
     if (existingItem) {
       return NextResponse.json({ error: "You already added this item in cart" }, { status: 400 });

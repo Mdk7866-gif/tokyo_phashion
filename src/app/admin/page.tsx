@@ -8,6 +8,7 @@ interface Stats {
   customers: number;
   ordersReceived: number;
   dispatched: number;
+  dispatchedEarnings: number;
   criticalStocks: number;
 }
 
@@ -22,10 +23,13 @@ export default function AdminDashboard() {
       fetch("/api/admin/orders?status=dispatched").then(r => r.json()),
       fetch("/api/admin/stokes?tab=all").then(r => r.json()),
     ]).then(([customers, paid, cod, dispatched, critical]) => {
+      const dispatchedOrders = dispatched.data || [];
+      const dispatchedEarnings = dispatchedOrders.reduce((sum: number, o: { total_amount: number }) => sum + (o.total_amount || 0), 0);
       setStats({
         customers: customers.data?.length ?? 0,
         ordersReceived: (paid.data?.length ?? 0) + (cod.data?.length ?? 0),
-        dispatched: dispatched.data?.length ?? 0,
+        dispatched: dispatchedOrders.length,
+        dispatchedEarnings,
         criticalStocks: critical.data?.length ?? 0,
       });
     });
@@ -86,7 +90,14 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{label}</p>
                 {stat !== undefined ? (
-                  <p className="text-3xl font-black tracking-tighter mt-1">{stat}</p>
+                  <>
+                    <p className="text-3xl font-black tracking-tighter mt-1">{stat}</p>
+                    {label === "Orders Dispatched" && stats && (
+                      <p className="text-[10px] font-black uppercase tracking-widest text-green-600 mt-1">
+                        Net: ₹{stats.dispatchedEarnings.toLocaleString('en-IN')}
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <Loader2 className="h-4 w-4 animate-spin text-zinc-300 mt-1" />
                 )}

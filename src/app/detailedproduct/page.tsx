@@ -8,6 +8,7 @@ import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 // ConfirmationMessagePopUp no longer needed — COD flow handled on /checkout
 import PaymentMethodConfirmationPopUp from "@/components/PaymentMethodConfirmationPopUp";
 import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, Ruler, Share2, Check, Minus, Plus, Heart, Zap } from "lucide-react";
+import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 
 interface Size {
   id: string;
@@ -66,6 +67,7 @@ function DetailedProductContent() {
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -213,7 +215,8 @@ function DetailedProductContent() {
     } else {
       setLoading(false);
     }
-  }, [id, fetchProduct]); // fetchProduct is now more stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // Only run when product id changes to avoid loop / reset on variant change
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {
@@ -362,19 +365,14 @@ function DetailedProductContent() {
   const handleAddToCart = async () => {
     if (!selectedSize) return;
 
+    if (!isLoggedIn) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+
     setAddingToCart(true);
     try {
-      // Check auth via API (no client-side Supabase)
-      const meRes = await fetch("/api/user/me");
-      const meJson = await meRes.json();
-
-      if (!meJson.user) {
-        // Redirect to login with current page as redirect target
-        const currentPath = window.location.pathname + window.location.search;
-        router.push(`/login?redirectTo=${encodeURIComponent(currentPath)}`);
-        return;
-      }
-
       const res = await fetch("/api/user/addtocart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -414,10 +412,10 @@ function DetailedProductContent() {
 
     setSelectedVariant(v);
     setMainImage(newImageUrl || "");
-    // Update URL without reloading
+    
+    // Construct new search parameters completely and update once at the end
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set("variant_id", v.id);
-    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     
     // Check if new variant has a size that matches current selection, else select first available
     if (selectedSize) {
@@ -435,15 +433,15 @@ function DetailedProductContent() {
           newParams.delete("size_id");
         }
       }
-      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     } else {
       const firstAvailable = v.variant_sizes?.find((s: Size) => s.stock > 0) || v.variant_sizes?.[0];
       if (firstAvailable) {
         setSelectedSize(firstAvailable);
         newParams.set("size_id", firstAvailable.id);
       }
-      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
     }
+    
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
   const handleSizeChange = (s: Size) => {
@@ -554,7 +552,8 @@ function DetailedProductContent() {
                   priority 
                   onLoad={() => setIsImageLoading(false)}
                   onError={() => setIsImageLoading(false)}
-                  className={`object-cover transition-all duration-700 group-hover:scale-105 ${isImageLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"}`} 
+                  onClick={() => setIsZoomOpen(true)}
+                  className={`object-cover cursor-zoom-in transition-all duration-700 group-hover:scale-105 ${isImageLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"}`} 
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-black uppercase tracking-widest text-zinc-300">No Image</div>
@@ -592,6 +591,29 @@ function DetailedProductContent() {
                 ))}
               </div>
             )}
+
+            {/* Mobile-Only Color Variant Selector (visible in top viewport without scrolling) */}
+            <div className="block lg:hidden pt-2 pb-4 border-b border-black">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-black uppercase tracking-widest">Color: <span className="text-zinc-500">{selectedVariant?.color}</span></h3>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">{product.product_variants?.length} Colors</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {product.product_variants?.map((v: ProductVariant) => (
+                  <button
+                    key={v.id}
+                    onClick={() => handleVariantChange(v)}
+                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${
+                      selectedVariant?.id === v.id 
+                        ? 'bg-black text-white border-black shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,0.2)] translate-x-[2px] translate-y-[2px]' 
+                        : 'bg-white text-black border border-black hover:bg-zinc-100 shadow-[3.5px_3.5px_0px_0px_rgba(0,0,0,1)]'
+                    }`}
+                  >
+                    {v.color}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Right: Product Details */}
@@ -622,8 +644,8 @@ function DetailedProductContent() {
               </div>
             </div>
 
-            {/* Colors */}
-            <div className="mb-8">
+            {/* Colors - Desktop Only */}
+            <div className="mb-8 hidden lg:block">
               <h3 className="text-[10px] font-black uppercase tracking-widest mb-3">Color: <span className="text-zinc-500">{selectedVariant?.color}</span></h3>
               <div className="flex flex-wrap gap-2">
                 {product.product_variants?.map((v: ProductVariant) => (
@@ -770,6 +792,12 @@ function DetailedProductContent() {
           </div>
         </div>
       </div>
+      <ImageZoomPopUp
+        isOpen={isZoomOpen}
+        onClose={() => setIsZoomOpen(false)}
+        imageUrl={mainImage}
+        alt={product.name}
+      />
     </div>
   );
 }
