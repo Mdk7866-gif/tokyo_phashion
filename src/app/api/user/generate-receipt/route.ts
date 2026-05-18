@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
     const htmlContent = `
       <html>
         <head>
+          <meta charset="utf-8">
           <title>Receipt - Tokyo Fashion</title>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
@@ -188,7 +189,7 @@ export async function GET(req: NextRequest) {
     `;
 
     return new NextResponse(htmlContent, {
-      headers: { "Content-Type": "text/html" },
+      headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   } catch (error) {
     console.error("Failed to generate server receipt:", error);
