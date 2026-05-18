@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, CheckCircle, Star, ChevronDown, ChevronUp, CreditCard, Truck, Package } from "lucide-react";
+import { ArrowLeft, Loader2, Send, Star, ChevronDown, ChevronUp, CreditCard, Truck, Package } from "lucide-react";
 
 const TABS = [
   { key: "online", label: "Paid Online", icon: CreditCard, color: "bg-blue-600" },
@@ -37,15 +37,15 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function DeliveredCard({ order }: { order: Order }) {
+function DispatchedCard({ order }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
-  const [review, setReview] = useState<Review | null | undefined>(undefined); // undefined=not loaded
+  const [review, setReview] = useState<Review | null | undefined>(undefined);
   const [loadingReviews, setLoadingReviews] = useState(false);
 
   const loadReviews = async () => {
     if (expanded) { setExpanded(false); return; }
     setExpanded(true);
-    if (review !== undefined) return; // already loaded
+    if (review !== undefined) return;
     setLoadingReviews(true);
     const res = await fetch(`/api/user/reviews?order_id=${order.id}`);
     const data = await res.json();
@@ -76,6 +76,11 @@ function DeliveredCard({ order }: { order: Order }) {
         <div className="mt-2 pt-2 border-t border-zinc-100">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Shipped To</p>
           <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} – {order.snapshot_order_pincode}</p>
+        </div>
+        {/* Dispatched badge */}
+        <div className="mt-2 pt-2 border-t border-zinc-100 flex items-center gap-2">
+          <Send className="h-3 w-3 text-green-600" />
+          <span className="text-[9px] font-black uppercase tracking-widest text-green-700">Dispatched via Courier</span>
         </div>
       </div>
 
@@ -146,7 +151,7 @@ function DeliveredCard({ order }: { order: Order }) {
   );
 }
 
-function DeliveredContent() {
+function DispatchedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tab = searchParams.get("tab") || "online";
@@ -158,7 +163,7 @@ function DeliveredContent() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/orders?status=delivered&payment_method=${tab}`);
+      const res = await fetch(`/api/admin/orders?status=dispatched&payment_method=${tab}`);
       const d = await res.json();
       setOrders(d.data || []);
     } finally {
@@ -179,7 +184,7 @@ function DeliveredContent() {
           </Link>
           <span className="text-zinc-300">/</span>
           <h1 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-2">
-            <CheckCircle className="h-6 w-6 text-green-600" /> Delivered Orders
+            <Send className="h-6 w-6 text-green-600" /> Dispatched Orders
           </h1>
           <span className={`ml-auto text-[10px] font-black uppercase tracking-widest ${activeMeta.color} text-white px-3 py-1`}>
             {orders.length} {activeMeta.label}
@@ -193,7 +198,7 @@ function DeliveredContent() {
             return (
               <button
                 key={t.key}
-                onClick={() => router.push(`/admin/delivered?tab=${t.key}`)}
+                onClick={() => router.push(`/admin/dispatched?tab=${t.key}`)}
                 className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === t.key ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
               >
                 <Icon className="h-3 w-3" />
@@ -208,11 +213,11 @@ function DeliveredContent() {
         ) : orders.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-zinc-300">
             <Package className="h-8 w-8 mx-auto mb-3 text-zinc-200" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No delivered orders in this category</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No dispatched orders in this category</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {orders.map(o => <DeliveredCard key={o.id} order={o} />)}
+            {orders.map(o => <DispatchedCard key={o.id} order={o} />)}
           </div>
         )}
       </div>
@@ -220,10 +225,10 @@ function DeliveredContent() {
   );
 }
 
-export default function DeliveredPage() {
+export default function DispatchedPage() {
   return (
     <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>}>
-      <DeliveredContent />
+      <DispatchedContent />
     </Suspense>
   );
 }

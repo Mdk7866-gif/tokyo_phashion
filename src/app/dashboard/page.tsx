@@ -45,7 +45,7 @@ function DashboardContent() {
   interface Order {
     id: string;
     created_at: string;
-    delivery_status: "pending" | "delivered" | "cancelled";
+    delivery_status: "pending" | "dispatched" | "cancelled" | "failed";
     payment_status: "pending" | "paid" | "failed";
     payment_method: "cod" | "online";
     total_amount: number;
@@ -748,27 +748,30 @@ function DashboardContent() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border ${
-                            order.delivery_status === 'delivered' ? 'border-green-500 text-green-700 bg-green-50' : 
-                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-700 bg-red-50' : 
+                            order.delivery_status === 'dispatched' ? 'border-green-500 text-green-700 bg-green-50' :
+                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-700 bg-red-50' :
+                            order.delivery_status === 'failed'    ? 'border-red-400 text-red-600 bg-red-50' :
                             'border-amber-500 text-amber-700 bg-amber-50'
                           }`}>
-                            {order.delivery_status === 'delivered' ? <CheckCircle className="h-3 w-3" /> : 
-                             order.delivery_status === 'cancelled' ? <XCircle className="h-3 w-3" /> : 
+                            {order.delivery_status === 'dispatched' ? <CheckCircle className="h-3 w-3" /> :
+                             order.delivery_status === 'cancelled' || order.delivery_status === 'failed' ? <XCircle className="h-3 w-3" /> :
                              <Clock className="h-3 w-3" />}
-                            {order.delivery_status}
+                            {order.delivery_status === 'dispatched' ? 'Dispatched' :
+                             order.delivery_status === 'failed' ? 'Order Failed' :
+                             order.delivery_status}
                           </span>
                         </div>
                       </div>
 
-                      {/* ── Tracking / Parcel section ── */}
-                      {order.payment_status === 'paid' && order.delivery_status !== 'delivered' && order.delivery_status !== 'cancelled' && (
+                      {/* ── Preparing shipment banner — paid but not yet dispatched ── */}
+                      {order.payment_status === 'paid' && order.delivery_status === 'pending' && (
                         <div className="mb-4 border border-amber-300 bg-amber-50 p-3">
                           <div className="flex items-start gap-2.5">
                             <Truck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                             <div>
                               <p className="text-[9px] font-black uppercase tracking-widest text-amber-700 mb-0.5">Order Confirmed — Preparing Shipment</p>
                               <p className="text-[10px] font-medium text-amber-700 leading-snug">
-                                Your payment was received! We are packing your order. Your tracking ID and parcel photo will appear here once dispatched.
+                                Your payment was received! We are packing your order. Your tracking ID and parcel photo will appear here once dispatched to the courier.
                               </p>
                             </div>
                           </div>
@@ -776,11 +779,11 @@ function DashboardContent() {
                       )}
 
                       {/* Dispatched banner with tracking + parcel photo */}
-                      {order.delivery_status === 'delivered' && (order.tracking_id || order.parcel_image) && (
+                      {order.delivery_status === 'dispatched' && (order.tracking_id || order.parcel_image) && (
                         <div className="mb-4 border border-green-400 bg-green-50 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
                           <div className="flex items-center gap-2 shrink-0">
                             <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-green-700">Dispatched</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-green-700">Dispatched via Courier</span>
                           </div>
                           <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:items-center">
                             {order.tracking_id && (
@@ -805,20 +808,29 @@ function DashboardContent() {
                         </div>
                       )}
 
-                      {/* Cancellation Info — visible to user */}
-                      {order.delivery_status === "cancelled" && (order.cancelled_by || order.cancellation_note) && (
+                      {/* Cancellation / Failure Info — visible to user */}
+                      {(order.delivery_status === "cancelled" || order.delivery_status === "failed") && (
                         <div className="mb-4 border border-red-200 bg-red-50 p-3">
                           <div className="flex items-center gap-2 mb-1.5">
                             <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-red-700">Cancellation Details</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-red-700">
+                              {order.delivery_status === 'cancelled' ? 'Order Cancelled' : 'Order Failed'}
+                            </span>
                           </div>
                           <div className="space-y-1 pl-5.5">
-                            {order.cancelled_by && (
+                            {order.delivery_status === 'failed' && (
+                              <p className="text-[10px] font-bold text-zinc-700">
+                                {order.payment_status === 'pending'
+                                  ? 'You exited the payment process before completing it. If you wish to order, please place a new order.'
+                                  : 'Your payment could not be processed due to a technical issue. Any amount debited will be refunded automatically.'}
+                              </p>
+                            )}
+                            {order.delivery_status === 'cancelled' && order.cancelled_by && (
                               <p className="text-[10px] font-bold text-zinc-700 uppercase tracking-tight">
                                 <span className="text-zinc-400 font-medium">Cancelled By:</span> {order.cancelled_by === 'admin' ? 'Tokyo Fashion (Admin)' : 'You'}
                               </p>
                             )}
-                            {order.cancellation_note && (
+                            {order.cancellation_note && order.delivery_status === 'cancelled' && (
                               <p className="text-[10px] font-bold text-zinc-700">
                                 <span className="text-zinc-400 font-medium uppercase tracking-tight">Reason:</span> {order.cancellation_note}
                               </p>
@@ -891,8 +903,8 @@ function DashboardContent() {
                         </div>
                       </div>
                       
-                      {/* Rate & Review Order — one button per delivered order */}
-                       {order.delivery_status === "delivered" && (
+                      {/* Rate & Review Order — one button per dispatched order */}
+                       {order.delivery_status === "dispatched" && (
                          <div className="mt-3">
                            {submittedReviews.has(order.id) ? (
                              <div className="flex flex-col gap-2 p-3 bg-zinc-50 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">

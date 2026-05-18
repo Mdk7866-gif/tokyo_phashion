@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Package, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Package, Loader2, Send, BarChart3 } from "lucide-react";
 
 interface Stats {
   customers: number;
   ordersReceived: number;
-  delivered: number;
-  cancelled: number;
+  dispatched: number;
   criticalStocks: number;
 }
 
@@ -20,15 +19,13 @@ export default function AdminDashboard() {
       fetch("/api/admin/customers").then(r => r.json()),
       fetch("/api/admin/orders?status=paid").then(r => r.json()),
       fetch("/api/admin/orders?status=cod").then(r => r.json()),
-      fetch("/api/admin/orders?status=delivered").then(r => r.json()),
-      fetch("/api/admin/orders?status=cancelled").then(r => r.json()),
+      fetch("/api/admin/orders?status=dispatched").then(r => r.json()),
       fetch("/api/admin/stokes?tab=all").then(r => r.json()),
-    ]).then(([customers, paid, cod, delivered, cancelled, critical]) => {
+    ]).then(([customers, paid, cod, dispatched, critical]) => {
       setStats({
         customers: customers.data?.length ?? 0,
         ordersReceived: (paid.data?.length ?? 0) + (cod.data?.length ?? 0),
-        delivered: delivered.data?.length ?? 0,
-        cancelled: cancelled.data?.length ?? 0,
+        dispatched: dispatched.data?.length ?? 0,
         criticalStocks: critical.data?.length ?? 0,
       });
     });
@@ -52,22 +49,21 @@ export default function AdminDashboard() {
       stat: stats?.ordersReceived,
     },
     {
-      label: "Delivered",
-      icon: CheckCircle,
-      href: "/admin/delivered",
+      label: "Orders Dispatched",
+      icon: Send,
+      href: "/admin/dispatched",
       color: "border-green-500",
       iconBg: "bg-green-50 text-green-600",
-      stat: stats?.delivered,
+      stat: stats?.dispatched,
     },
     {
       label: "Stocks",
-      icon: Package, // or another icon
+      icon: BarChart3,
       href: "/admin/stokes?tab=critical stoke",
       color: "border-red-500",
       iconBg: "bg-red-50 text-red-600",
       stat: stats?.criticalStocks,
     },
-
   ];
 
   return (
@@ -98,8 +94,6 @@ export default function AdminDashboard() {
             </Link>
           ))}
         </div>
-
- 
       </div>
     </div>
   );

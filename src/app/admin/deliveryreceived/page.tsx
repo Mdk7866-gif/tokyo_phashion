@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle, ZoomIn } from "lucide-react";
+import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle, ZoomIn, Send } from "lucide-react";
 import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 
 const COD_ADVANCE = 100;
@@ -32,7 +32,7 @@ const TABS = [
   { key: "paid",      label: "Paid Online",    icon: CreditCard,  color: "bg-blue-600" },
   { key: "cod",       label: "Paid COD",        icon: Truck,       color: "bg-amber-500" },
   { key: "cancelled", label: "Cancelled",       icon: XCircle,     color: "bg-zinc-600" },
-  { key: "failed",    label: "Failed / Pending",icon: AlertCircle, color: "bg-red-500" },
+  { key: "failed",    label: "Failed",          icon: AlertCircle, color: "bg-red-500" },
 ];
 
 function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () => void; readOnly?: boolean }) {
@@ -74,17 +74,17 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
     }
   };
 
-  const handleDeliver = async () => {
+  const handleDispatch = async () => {
     setDeliverError("");
     if (!trackingId.trim()) {
-      setDeliverError("Please enter a tracking ID before marking as delivered.");
+      setDeliverError("Please enter a tracking ID before marking as dispatched.");
       return;
     }
     if (!parcelImg) {
-      setDeliverError("Please upload the parcel photo before marking as delivered.");
+      setDeliverError("Please upload the parcel photo before marking as dispatched.");
       return;
     }
-    if (!confirm("Mark this order as DELIVERED?")) return;
+    if (!confirm("Mark this order as DISPATCHED? This means the parcel has been handed to the courier.")) return;
     setDelivering(true);
     await fetch("/api/admin/orders", {
       method: "PATCH",
@@ -93,7 +93,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         order_id: order.id,
         tracking_id: trackingId,
         parcel_image: parcelImg,
-        delivery_status: "delivered",
+        delivery_status: "dispatched",
       }),
     });
     setDelivering(false);
@@ -163,15 +163,17 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
         </div>
       </div>
 
-      {/* Cancellation note (for cancelled/failed tab) */}
-      {order.delivery_status === "cancelled" && order.cancellation_note && (
+      {/* Cancellation / Failure note */}
+      {(order.delivery_status === "cancelled" || order.delivery_status === "failed") && order.cancellation_note && (
         <div className="px-4 py-3 border-b border-zinc-100 bg-red-50">
-          <p className="text-[9px] font-black uppercase tracking-widest text-red-400 mb-1">Cancellation Reason</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-red-400 mb-1">
+            {order.delivery_status === "cancelled" ? "Cancellation Reason" : "Failure Reason"}
+          </p>
           <p className="text-[10px] text-red-600">
             {order.cancellation_note}
             {order.cancelled_by && (
               <span className="ml-1 font-bold">
-                — by {order.cancelled_by === 'system' ? 'System (Payment abandoned)' : order.cancelled_by === 'admin' ? 'Admin' : 'Customer'}
+                — by {order.cancelled_by === "system" ? "System (Payment not completed)" : order.cancelled_by === "admin" ? "Admin" : "Customer"}
               </span>
             )}
           </p>
@@ -260,7 +262,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
                   </div>
                 </button>
                 <p className="text-[9px] text-green-600 font-black uppercase tracking-widest flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" /> Photo uploaded — will be saved when you click Mark Delivered
+                  <CheckCircle className="h-3 w-3" /> Photo uploaded — will be saved when you click Mark Dispatched
                 </p>
               </div>
             )}
@@ -276,11 +278,11 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-1">
             <button
-              onClick={handleDeliver}
+              onClick={handleDispatch}
               disabled={delivering || uploading}
               className="flex items-center justify-center gap-2 bg-green-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-colors disabled:opacity-40"
             >
-              <CheckCircle className="h-3.5 w-3.5" />{delivering ? "Saving..." : "Mark Delivered"}
+              <Send className="h-3.5 w-3.5" />{delivering ? "Saving..." : "Mark Dispatched"}
             </button>
             <button
               onClick={handleCancel}
@@ -347,7 +349,7 @@ function DeliveryReceivedContent() {
           </Link>
           <span className="text-zinc-300">/</span>
           <h1 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-2">
-            <Package className="h-6 w-6" /> Orders
+            <Package className="h-6 w-6" /> Orders Received
           </h1>
           <span className={`ml-auto text-[10px] font-black uppercase tracking-widest ${activeTabMeta.color} text-white px-3 py-1`}>
             {orders.length} {activeTabMeta.label}

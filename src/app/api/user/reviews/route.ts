@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-  if (order.delivery_status !== "delivered") {
-    return NextResponse.json({ error: "You can only review delivered orders" }, { status: 400 });
+  if (order.delivery_status !== "dispatched") {
+    return NextResponse.json({ error: "You can only review dispatched orders" }, { status: 400 });
   }
 
   // If product_id not provided, resolve the first item from the order

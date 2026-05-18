@@ -122,9 +122,16 @@ async function handleEvent(event: {
         .single();
 
       if (paymentRow?.order_id) {
-        await supabaseAdmin
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabaseAdmin as any)
           .from('orders')
-          .update({ payment_status: 'failed', updated_at: new Date().toISOString() })
+          .update({
+            payment_status: 'failed',
+            delivery_status: 'failed',
+            cancellation_note: 'Payment failed due to a gateway or technical error',
+            cancelled_by: 'system',
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', paymentRow.order_id);
       }
       break;

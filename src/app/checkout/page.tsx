@@ -172,11 +172,11 @@ function CheckoutContent() {
           ondismiss: () => {
             openingRef.current = false;
             if (data.our_order_id) {
-              // Fire-and-forget: mark order as failed so it doesn't stay in "pending" limbo
+              // User intentionally closed the modal — mark payment_status=pending, delivery_status=failed
               fetch("/api/razorpay/cancel-order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ our_order_id: data.our_order_id }),
+                body: JSON.stringify({ our_order_id: data.our_order_id, reason: "dismissed" }),
               }).catch(() => {});
             }
             setStep((prev) => (prev === "verifying" || prev === "success" ? prev : "review"));
@@ -187,10 +187,11 @@ function CheckoutContent() {
       rzp.on("payment.failed", () => {
         openingRef.current = false;
         if (data.our_order_id) {
+          // Technical/server-side failure — mark payment_status=failed, delivery_status=failed
           fetch("/api/razorpay/cancel-order", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ our_order_id: data.our_order_id }),
+            body: JSON.stringify({ our_order_id: data.our_order_id, reason: "failed" }),
           }).catch(() => {});
         }
         showAlert("Payment Failed", "Your payment could not be processed. You can retry using the same order.", "error");
@@ -300,15 +301,15 @@ function CheckoutContent() {
           <div class="details-grid">
             <div>
               <div class="section-title">Order Information</div>
-              <strong>Order ID:</strong> #${(rzpDataRef.current?.our_order_id || 'N/A').toUpperCase()}<br>
-              <strong>Payment ID:</strong> #${(paymentId || 'N/A').toUpperCase()}<br>
+              <strong>Order ID:</strong> ${rzpDataRef.current?.our_order_id || 'N/A'}<br>
+              <strong>Payment ID:</strong> ${paymentId || 'N/A'}<br>
               <strong>Method:</strong> ${paymentMethod.toUpperCase()}<br>
               <strong>Date:</strong> ${new Date().toLocaleDateString()}
             </div>
             <div>
               <div class="section-title">Customer Details</div>
               <strong>Name:</strong> ${user?.name || 'N/A'}<br>
-              <strong>Email:</strong> ${(user?.email || 'N/A').toUpperCase()}<br>
+              <strong>Email:</strong> ${user?.email || 'N/A'}<br>
               <strong>Mobile:</strong> ${user?.mobile_number || 'N/A'}<br>
               <strong>Address:</strong> ${user?.address?.city}, ${user?.address?.state}
             </div>
@@ -360,7 +361,7 @@ function CheckoutContent() {
 
           <div class="footer">
             Thank you for shopping with us. Stay Fashionable.<br>
-            www.tokyfashion.syp3.com
+            www.tokyfashion.syp3.com · support@tokyfashion.syp3.com
           </div>
           <script>
             window.onload = () => {
@@ -409,14 +410,14 @@ function CheckoutContent() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Order ID</p>
-              <p className="text-[10px] font-bold break-all text-black leading-tight">
-                #{confirmedOrderId ? confirmedOrderId.toUpperCase() : 'LOADING...'}
+              <p className="text-[10px] font-mono font-bold break-all text-black leading-tight">
+                {confirmedOrderId || 'Loading...'}
               </p>
             </div>
             <div>
               <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1">Payment ID</p>
-              <p className="text-[10px] font-bold break-all text-black leading-tight">
-                #{paymentId ? paymentId.toUpperCase() : 'LOADING...'}
+              <p className="text-[10px] font-mono font-bold break-all text-black leading-tight">
+                {paymentId || 'Loading...'}
               </p>
             </div>
           </div>

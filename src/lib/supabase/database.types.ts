@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -642,7 +642,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      delivery_status_enum: "pending" | "cancelled" | "delivered"
+      delivery_status_enum: "pending" | "dispatched" | "cancelled" | "failed"
       payment_method_enum: "cod" | "online"
       payment_status_enum: "pending" | "paid" | "failed"
     }
@@ -772,7 +772,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      delivery_status_enum: ["pending", "cancelled", "delivered"],
+      delivery_status_enum: ["pending", "dispatched", "cancelled", "failed"] as const,
       payment_method_enum: ["cod", "online"],
       payment_status_enum: ["pending", "paid", "failed"],
     },

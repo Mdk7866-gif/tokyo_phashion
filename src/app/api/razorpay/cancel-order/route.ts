@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
-// Called when user closes the Razorpay modal or payment explicitly fails.
-// Marks the order payment_status as 'failed' so it doesn't stay stuck in 'pending'.
+// Called when user closes the Razorpay modal (reason='dismissed') or payment explicitly fails (reason='failed').
+// 'dismissed' → user knowingly exited → payment_status='pending', delivery_status='failed'
+// 'failed'    → technical/server error  → payment_status='failed',  delivery_status='failed'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { our_order_id } = body;
+    const { our_order_id, reason } = body;
     if (!our_order_id) {
       return NextResponse.json({ error: 'our_order_id required' }, { status: 400 });
     }
@@ -32,18 +33,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Only mark as failed if currently pending — don't overwrite a successful/already-failed payment
+    // Only update if currently pending — don't overwrite a successful/already-resolved payment
     if (order.payment_status !== 'pending') {
       return NextResponse.json({ success: true, message: 'Order already resolved' });
     }
 
-    // Mark order as failed — both payment AND delivery so it doesn't sit in the active queue.
-    // cancelled_by='system' signals an auto-cancel (no human involved).
+    // 'dismissed' = user intentionally closed modal → keep payment as pending, mark delivery failed
+    // 'failed'    = technical/Razorpay error      → mark payment as failed, mark delivery failed
+    const newPaymentStatus = reason === 'dismissed' ? 'pending' : 'failed';
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabaseAdmin.from('orders') as any)
       .update({
-        payment_status: 'failed',
-        delivery_status: 'cancelled',
-        cancellation_note: 'Payment not completed by customer',
+        payment_status: newPaymentStatus,
+        delivery_status: 'failed',
+        cancellation_note: reason === 'dismissed'
+          ? 'Customer exited payment without completing'
+          : 'Payment could not be processed (technical/gateway error)',
         cancelled_by: 'system',
         updated_at: new Date().toISOString(),
       })
@@ -52,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Also update the payments record
     await supabaseAdmin
       .from('payments')
-      .update({ status: 'failed', updated_at: new Date().toISOString() })
+      .update({ status: newPaymentStatus, updated_at: new Date().toISOString() })
       .eq('order_id', our_order_id);
 
     return NextResponse.json({ success: true });

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { verifyAdminSession } from "@/lib/supabase/server";
 
-// GET /api/admin/orders?status=pending|paid|delivered|cancelled
+// GET /api/admin/orders?status=paid|cod|dispatched|cancelled|failed
 export async function GET(req: NextRequest) {
   const isAdmin = await verifyAdminSession();
   if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,20 +34,19 @@ export async function GET(req: NextRequest) {
   } else if (status === "cod") {
     // COD orders where advance has been paid via Razorpay, awaiting dispatch
     query = query.eq("payment_status", "paid").eq("payment_method", "cod").eq("delivery_status", "pending");
-  } else if (status === "failed") {
-    // Failed/abandoned payments: payment_status='failed'
-    // Includes both explicit payment failures and system-auto-cancels (cancelled_by='system').
-    query = query.eq("payment_status", "failed");
-  } else if (status === "delivered") {
-    query = query.eq("delivery_status", "delivered");
+  } else if (status === "dispatched") {
+    // Orders marked as dispatched by admin (courier handed over)
+    query = query.eq("delivery_status", "dispatched");
     const paymentMethod = req.nextUrl.searchParams.get("payment_method");
     if (paymentMethod === "cod" || paymentMethod === "online") {
       query = query.eq("payment_method", paymentMethod);
     }
+  } else if (status === "failed") {
+    // Orders where delivery failed — payment was never completed (dismissed or technical error)
+    query = query.eq("delivery_status", "failed");
   } else if (status === "cancelled") {
-    // Human-initiated cancellations only (admin or user).
-    // Using .in() instead of .neq('system') to avoid the PostgreSQL NULL != 'system' = NULL gotcha.
-    query = query.eq("delivery_status", "cancelled").in("cancelled_by", ["admin", "user"]);
+    // Human-initiated cancellations by admin or user
+    query = query.eq("delivery_status", "cancelled");
   }
 
   const { data, error } = await query;
