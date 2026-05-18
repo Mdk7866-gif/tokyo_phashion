@@ -139,8 +139,9 @@ function DetailedProductContent() {
         if (data) {
           setProduct(data);
           
-          const currentVariantId = searchParams.get("variant_id");
-          const currentSizeId = searchParams.get("size_id");
+          const params = new URLSearchParams(window.location.search);
+          const currentVariantId = params.get("variant_id");
+          const currentSizeId = params.get("size_id");
 
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
@@ -189,7 +190,7 @@ function DetailedProductContent() {
     } finally {
       setLoading(false);
     }
-  }, [id, updateQueryParams, showAlert, searchParams]);
+  }, [id, updateQueryParams, showAlert]);
 
   useEffect(() => {
     if (id) {
