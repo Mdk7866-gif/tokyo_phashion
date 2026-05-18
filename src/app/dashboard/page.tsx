@@ -816,29 +816,44 @@ function DashboardContent() {
 
                       {/* Dispatched banner with tracking + parcel photo */}
                       {order.delivery_status === 'dispatched' && (order.tracking_id || order.parcel_image) && (
-                        <div className="mb-4 border border-green-400 bg-green-50 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="mb-4 border border-green-400 bg-green-50 p-3 flex flex-col gap-2.5">
                           <div className="flex items-center gap-2 shrink-0">
                             <CheckCircle className="h-4 w-4 text-green-600" />
                             <span className="text-[9px] font-black uppercase tracking-widest text-green-700">Dispatched via Courier</span>
                           </div>
-                          <div className="flex-1 flex flex-col sm:flex-row gap-3 sm:items-center">
+                          <div className="flex flex-row items-center justify-between gap-3 w-full border-t border-green-200/50 pt-2.5">
                             {order.tracking_id && (
                               <div>
                                 <p className="text-[8px] font-black uppercase tracking-widest text-green-600 mb-0.5">Tracking ID</p>
-                                <p className="text-[11px] font-black text-black tracking-tight">{order.tracking_id}</p>
+                                <a
+                                  href={`https://www.delhivery.com/track/awb/${order.tracking_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex flex-col group"
+                                >
+                                  <span className="text-[11px] font-black text-blue-600 underline group-hover:text-blue-800 transition-colors break-all leading-tight">
+                                    {order.tracking_id}
+                                  </span>
+                                  <span className="text-[7.5px] font-bold uppercase tracking-wider text-green-600 mt-0.5 bg-green-100 px-1.5 py-0.5 border border-green-200 w-max group-hover:bg-green-200 transition-all">
+                                    ⚡ Click to Track Order
+                                  </span>
+                                </a>
                               </div>
                             )}
                             {order.parcel_image && (
-                              <button
-                                onClick={() => setZoomedImage(order.parcel_image!)}
-                                className="shrink-0 relative h-14 w-14 border-2 border-green-400 hover:border-green-600 overflow-hidden transition-colors group cursor-zoom-in"
-                                title="Click to zoom"
-                              >
-                                <ImageWithLoader src={order.parcel_image} alt="Parcel" fill className="object-cover" />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                  <span className="text-white text-[8px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Zoom</span>
-                                </div>
-                              </button>
+                              <div className="flex flex-col items-end shrink-0">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-green-600 mb-0.5">Parcel Photo</span>
+                                <button
+                                  onClick={() => setZoomedImage(order.parcel_image!)}
+                                  className="relative h-12 w-12 border border-green-400 hover:border-green-600 overflow-hidden transition-colors group cursor-zoom-in bg-white"
+                                  title="Click to zoom"
+                                >
+                                  <ImageWithLoader src={order.parcel_image} alt="Parcel" fill className="object-cover" />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                    <span className="text-white text-[7px] font-black uppercase opacity-0 group-hover:opacity-100 transition-opacity">Zoom</span>
+                                  </div>
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>

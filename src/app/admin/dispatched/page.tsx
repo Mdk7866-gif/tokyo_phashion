@@ -119,7 +119,23 @@ function DispatchedCard({ order, onZoomParcel }: { order: Order; onZoomParcel: (
           )}
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Tracking ID</p>
-            <p className="text-xs font-bold text-black">{order.tracking_id ?? "—"}</p>
+            {order.tracking_id ? (
+              <a
+                href={`https://www.delhivery.com/track/awb/${order.tracking_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-col group"
+              >
+                <span className="text-xs font-black text-blue-600 underline group-hover:text-blue-800 transition-colors break-all leading-tight">
+                  {order.tracking_id}
+                </span>
+                <span className="text-[8px] font-bold uppercase tracking-wider text-green-600 mt-0.5 bg-green-50 px-1 border border-green-200 w-max group-hover:bg-green-100 transition-all">
+                  ⚡ Click to Track Delhivery
+                </span>
+              </a>
+            ) : (
+              <p className="text-xs font-bold text-black">—</p>
+            )}
           </div>
         </div>
       )}
@@ -223,35 +239,34 @@ function DispatchedContent() {
         </div>
 
         {/* Total Money Earned Stats Dashboard Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-white border border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col justify-center">
             <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Earned Online (Dispatched)</p>
-            <p className="text-2xl font-black text-blue-600 mt-1">₹{totalOnlineEarnings.toLocaleString('en-IN')}</p>
-            <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">{onlineOrders.length} total dispatched orders</p>
+            <p className="text-[8px] font-black uppercase tracking-wider text-zinc-400 leading-tight">Paid Online</p>
+            <p className="text-base sm:text-lg font-black text-blue-600 mt-0.5">₹{totalOnlineEarnings.toLocaleString('en-IN')}</p>
+            <p className="text-[7.5px] font-bold text-zinc-400 uppercase mt-0.5">{onlineOrders.length} orders</p>
           </div>
-          <div className="bg-white border-2 border-black p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+          <div className="bg-white border border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col justify-center">
             <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Earned COD (Dispatched)</p>
-            <p className="text-2xl font-black text-amber-500 mt-1">₹{totalCodEarnings.toLocaleString('en-IN')}</p>
-            <p className="text-[9px] font-bold text-zinc-500 uppercase mt-1">{codOrders.length} total dispatched orders</p>
+            <p className="text-[8px] font-black uppercase tracking-wider text-zinc-400 leading-tight">Paid COD</p>
+            <p className="text-base sm:text-lg font-black text-amber-500 mt-0.5">₹{totalCodEarnings.toLocaleString('en-IN')}</p>
+            <p className="text-[7.5px] font-bold text-zinc-400 uppercase mt-0.5">{codOrders.length} orders</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b border-zinc-200 pb-4">
+        <div className="grid grid-cols-2 gap-2 mb-6 border-b border-zinc-200 pb-4">
           {TABS.map(t => {
             const Icon = t.icon;
             const count = t.key === "cod" ? codOrders.length : onlineOrders.length;
-            const earnings = t.key === "cod" ? totalCodEarnings : totalOnlineEarnings;
             return (
               <button
                 key={t.key}
                 onClick={() => router.push(`/admin/dispatched?tab=${t.key}`)}
-                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === t.key ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
+                className={`flex items-center justify-center gap-1.5 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.12em] transition-all border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${tab === t.key ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-50'}`}
               >
-                <Icon className="h-3 w-3" />
-                {t.label} ({count} · ₹{earnings.toLocaleString('en-IN')})
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{t.label} ({count})</span>
               </button>
             );
           })}
