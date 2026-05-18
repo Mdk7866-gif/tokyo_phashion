@@ -121,7 +121,7 @@ function DispatchedCard({ order, onZoomParcel }: { order: Order; onZoomParcel: (
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Tracking ID</p>
             {order.tracking_id ? (
               <a
-                href={`https://www.delhivery.com/track/awb/${order.tracking_id}`}
+                href={`https://www.delhivery.com/track/package/${order.tracking_id.trim()}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex flex-col group"

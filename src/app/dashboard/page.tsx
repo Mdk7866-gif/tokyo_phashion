@@ -826,7 +826,7 @@ function DashboardContent() {
                               <div>
                                 <p className="text-[8px] font-black uppercase tracking-widest text-green-600 mb-0.5">Tracking ID</p>
                                 <a
-                                  href={`https://www.delhivery.com/track/awb/${order.tracking_id}`}
+                                  href={`https://www.delhivery.com/track/package/${order.tracking_id.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex flex-col group"
