@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2, Package, MapPin, Upload, CheckCircle, XCircle, ChevronDown, ChevronUp, CreditCard, Truck, AlertCircle, ZoomIn, Send } from "lucide-react";
 import ImageZoomPopUp from "@/components/ImageZoomPopUp";
+import ConfirmationMessagePopUp from "@/components/ConfirmationMessagePopUp";
+import AlertMessagePopUp from "@/components/AlertMessagePopUp";
 
 const COD_ADVANCE = 100;
 
@@ -45,6 +47,22 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
   const [deliverError, setDeliverError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Custom Modal States
+  const [showConfirmDispatch, setShowConfirmDispatch] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReasonInput, setCancelReasonInput] = useState("");
+  const [alertInfo, setAlertInfo] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "warning",
+  });
+
   const isCOD = order.payment_method === "cod";
   const remainingAtDelivery = isCOD ? Math.max(0, order.total_amount - COD_ADVANCE) : 0;
 
@@ -74,7 +92,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
     }
   };
 
-  const handleDispatch = async () => {
+  const handleDispatch = () => {
     setDeliverError("");
     if (!trackingId.trim()) {
       setDeliverError("Please enter a tracking ID before marking as dispatched.");
@@ -84,33 +102,75 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
       setDeliverError("Please upload the parcel photo before marking as dispatched.");
       return;
     }
-    if (!confirm("Mark this order as DISPATCHED? This means the parcel has been handed to the courier.")) return;
-    setDelivering(true);
-    await fetch("/api/admin/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        order_id: order.id,
-        tracking_id: trackingId,
-        parcel_image: parcelImg,
-        delivery_status: "dispatched",
-      }),
-    });
-    setDelivering(false);
-    onUpdate();
+    setShowConfirmDispatch(true);
   };
 
-  const handleCancel = async () => {
-    const note = prompt("Reason for cancellation (shown to customer):");
-    if (note === null) return;
+  const executeDispatch = async () => {
+    setDelivering(true);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: order.id,
+          tracking_id: trackingId,
+          parcel_image: parcelImg,
+          delivery_status: "dispatched",
+        }),
+      });
+      if (!res.ok) throw new Error();
+      onUpdate();
+    } catch {
+      setAlertInfo({
+        isOpen: true,
+        title: "Dispatch Failed",
+        message: "Failed to mark the order as dispatched. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setDelivering(false);
+    }
+  };
+
+  const handleCancelClick = () => {
+    setCancelReasonInput("");
+    setShowCancelModal(true);
+  };
+
+  const executeCancel = async () => {
+    if (!cancelReasonInput.trim()) {
+      setAlertInfo({
+        isOpen: true,
+        title: "Reason Required",
+        message: "Please enter a cancellation reason.",
+        type: "warning",
+      });
+      return;
+    }
+    setShowCancelModal(false);
     setCancelling(true);
-    await fetch("/api/admin/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_id: order.id, delivery_status: "cancelled", cancellation_note: note }),
-    });
-    setCancelling(false);
-    onUpdate();
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: order.id,
+          delivery_status: "cancelled",
+          cancellation_note: cancelReasonInput,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      onUpdate();
+    } catch {
+      setAlertInfo({
+        isOpen: true,
+        title: "Cancellation Failed",
+        message: "Failed to cancel the order. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setCancelling(false);
+    }
   };
 
   return (
@@ -285,7 +345,7 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
               <Send className="h-3.5 w-3.5" />{delivering ? "Saving..." : "Mark Dispatched"}
             </button>
             <button
-              onClick={handleCancel}
+              onClick={handleCancelClick}
               disabled={cancelling}
               className="flex items-center justify-center gap-2 bg-red-600 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors disabled:opacity-40"
             >
@@ -294,6 +354,70 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
           </div>
         </div>
       )}
+
+      {/* Confirmation Message Popup for Dispatch */}
+      <ConfirmationMessagePopUp
+        isOpen={showConfirmDispatch}
+        onClose={() => setShowConfirmDispatch(false)}
+        onConfirm={executeDispatch}
+        title="Confirm Dispatch"
+        message="Mark this order as DISPATCHED? This means the parcel has been handed to the courier."
+        type="warning"
+        confirmText="Yes, Dispatch"
+        cancelText="Cancel"
+      />
+
+      {/* Custom Brutalist Cancellation Note Modal */}
+      {showCancelModal && (
+        <div
+          className="fixed inset-0 z-[110] flex items-end justify-center bg-black/20 transition-all duration-300 lg:items-center lg:p-4"
+          onClick={() => setShowCancelModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full border-t-2 border-black bg-white p-6 shadow-[0px_-4px_10px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out fixed bottom-0 left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:max-w-md lg:border-2 lg:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+          >
+            <div className="flex flex-col">
+              <h3 className="mb-2 text-base font-black uppercase italic tracking-tight lg:text-lg text-red-600">
+                Cancel Order
+              </h3>
+              <p className="mb-4 text-xs font-bold text-zinc-500">
+                Please enter the reason for cancellation. This note will be visible to the customer on their dashboard.
+              </p>
+              <textarea
+                value={cancelReasonInput}
+                onChange={(e) => setCancelReasonInput(e.target.value)}
+                placeholder="e.g. Item out of stock / Invalid delivery address"
+                rows={3}
+                className="w-full border border-black p-3 text-xs font-bold focus:outline-none mb-6"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="flex-1 border border-black bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-zinc-100 active:translate-y-1 lg:py-3 lg:text-xs"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={executeCancel}
+                  className="flex-1 border border-black bg-red-600 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-red-700 active:translate-y-1 lg:py-3 lg:text-xs"
+                >
+                  Cancel Order
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Popups */}
+      <AlertMessagePopUp
+        isOpen={alertInfo.isOpen}
+        onClose={() => setAlertInfo({ ...alertInfo, isOpen: false })}
+        title={alertInfo.title}
+        message={alertInfo.message}
+        type={alertInfo.type}
+      />
     </div>
   );
 }
