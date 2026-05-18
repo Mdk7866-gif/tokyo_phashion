@@ -111,6 +111,11 @@ function DashboardContent() {
   const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
   const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({});
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  
+  // User Cancellation Modal States
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [cancelReasonInput, setCancelReasonInput] = useState("");
 
   const [alert, setAlert] = useState<{
     isOpen: boolean;
@@ -281,13 +286,24 @@ function DashboardContent() {
     return true;
   };
 
-  const handleCancelOrder = async (orderId: string) => {
-    if (!confirm("Are you sure you want to cancel this order? No refund will be issued if payment was made.")) return;
+  const handleCancelClick = (orderId: string) => {
+    setCancelOrderId(orderId);
+    setCancelReasonInput("");
+    setShowCancelModal(true);
+  };
+
+  const executeCancel = async () => {
+    if (!cancelOrderId) return;
+    if (!cancelReasonInput.trim()) {
+      showAlert("Reason Required", "Please enter a cancellation reason.", "warning");
+      return;
+    }
+    setShowCancelModal(false);
     try {
       const res = await fetch("/api/user/orders", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: orderId })
+        body: JSON.stringify({ order_id: cancelOrderId, cancellation_note: cancelReasonInput })
       });
       if (res.ok) {
         showAlert("Order Cancelled", "Your order has been cancelled.", "success");
@@ -299,6 +315,9 @@ function DashboardContent() {
     } catch (e) {
       console.error(e);
       showAlert("Error", "An unexpected error occurred", "error");
+    } finally {
+      setCancelOrderId(null);
+      setCancelReasonInput("");
     }
   };
 
@@ -953,7 +972,7 @@ function DashboardContent() {
                         <div className="mt-4 pt-4 border-t border-zinc-300 text-center">
                           <p className="text-[8px] font-bold text-zinc-600 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
                           <button 
-                            onClick={() => handleCancelOrder(order.id)}
+                            onClick={() => handleCancelClick(order.id)}
                             className="w-full bg-white border border-red-300 text-red-700 hover:bg-red-50 py-2 text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
                           >
                             <AlertTriangle className="h-3 w-3" /> Cancel Order
@@ -1025,6 +1044,55 @@ function DashboardContent() {
           subtotalAmount={paymentSubtotal}
           hideCOD={(paymentSubtotal + 150) <= 100}
         />
+
+        {/* Custom Brutalist Cancellation Note Modal for User */}
+        {showCancelModal && (
+          <div
+            className="fixed inset-0 z-[110] flex items-end justify-center bg-black/20 transition-all duration-300 lg:items-center lg:p-4"
+            onClick={() => {
+              setShowCancelModal(false);
+              setCancelOrderId(null);
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full border-t-2 border-black bg-white p-6 shadow-[0px_-4px_10px_rgba(0,0,0,0.1)] transition-all duration-500 ease-out fixed bottom-0 left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:max-w-md lg:border-2 lg:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <div className="flex flex-col">
+                <h3 className="mb-2 text-base font-black uppercase italic tracking-tight lg:text-lg text-red-600">
+                  Cancel Order
+                </h3>
+                <p className="mb-4 text-xs font-bold text-zinc-500">
+                  Please enter your reason for cancelling this order. No refund will be issued if payment was made.
+                </p>
+                <textarea
+                  value={cancelReasonInput}
+                  onChange={(e) => setCancelReasonInput(e.target.value)}
+                  placeholder="e.g. Ordered incorrect size / Decided to purchase a different variant"
+                  rows={3}
+                  className="w-full border border-black p-3 text-xs font-bold focus:outline-none mb-6 bg-white text-black"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowCancelModal(false);
+                      setCancelOrderId(null);
+                    }}
+                    className="flex-1 border border-black bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-zinc-100 active:translate-y-1 lg:py-3 lg:text-xs"
+                  >
+                    Go Back
+                  </button>
+                  <button
+                    onClick={executeCancel}
+                    className="flex-1 border border-black bg-red-600 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-red-700 active:translate-y-1 lg:py-3 lg:text-xs"
+                  >
+                    Cancel Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ImageZoomPopUp
           isOpen={!!zoomedImage}

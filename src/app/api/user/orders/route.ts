@@ -39,7 +39,7 @@ export async function DELETE(req: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { order_id } = await req.json();
+  const { order_id, cancellation_note } = await req.json();
   if (!order_id) return NextResponse.json({ error: "order_id required" }, { status: 400 });
 
   const admin = supabaseAdmin;
@@ -61,7 +61,12 @@ export async function DELETE(req: NextRequest) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await ((admin as any).from("orders"))
-    .update({ delivery_status: "cancelled", cancelled_by: "user", updated_at: new Date().toISOString() })
+    .update({ 
+      delivery_status: "cancelled", 
+      cancelled_by: "user", 
+      cancellation_note: cancellation_note || null,
+      updated_at: new Date().toISOString() 
+    })
     .eq("id", order_id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
