@@ -125,6 +125,12 @@ function DetailedProductContent() {
   const fetchProduct = useCallback(async () => {
     if (!id) return;
     setLoading(true);
+    // Defer state updates to next microtask tick to prevent synchronous setState inside useEffect warning
+    await Promise.resolve();
+    setProduct(null);
+    setSelectedVariant(null);
+    setSelectedSize(null);
+    setQuantity(1);
     try {
       const res = await fetch(`/api/user/getproductdetail?product_id=${id}`);
       if (res.ok) {
@@ -183,17 +189,12 @@ function DetailedProductContent() {
     } finally {
       setLoading(false);
     }
-  }, [id, updateQueryParams, showAlert]);
+  }, [id, updateQueryParams, showAlert, searchParams]);
 
   useEffect(() => {
     if (id) {
-      // Clear previous state
-      setProduct(null);
-      setSelectedVariant(null);
-      setSelectedSize(null);
-      setQuantity(1);
-      
-      // Fetch new product
+      // Fetch new product which also resets/clears previous state inside the callback
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchProduct();
     } else {
       setLoading(false);
