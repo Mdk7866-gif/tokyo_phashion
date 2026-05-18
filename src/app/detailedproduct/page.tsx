@@ -548,6 +548,7 @@ function DetailedProductContent() {
                   src={mainImage} 
                   alt={product.name} 
                   fill 
+                  unoptimized
                   sizes="(max-width: 1024px) 100vw, 50vw" 
                   priority 
                   onLoad={() => setIsImageLoading(false)}
@@ -586,7 +587,7 @@ function DetailedProductContent() {
                     }}
                     className={`aspect-[3/4] relative border cursor-pointer transition-all ${mainImage === img.image_url ? 'border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'border-transparent hover:border-black/30'}`}
                   >
-                    <Image src={img.image_url} alt="Thumbnail" fill sizes="15vw" className="object-cover" />
+                    <Image src={img.image_url} alt="Thumbnail" fill unoptimized sizes="15vw" className="object-cover" />
                   </button>
                 ))}
               </div>

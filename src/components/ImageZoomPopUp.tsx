@@ -27,6 +27,7 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
 
   // Mouse drag
   const isDragging = useRef(false);
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 });
 
   // Touch pinch
@@ -75,7 +76,9 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
   // ── Reset whenever popup opens / image changes ──
   useEffect(() => {
     if (isOpen) {
-      setLoading(true);
+      Promise.resolve().then(() => {
+        setLoading(true);
+      });
       resetView(false);
     }
   }, [isOpen, imageUrl, resetView]);
@@ -109,6 +112,7 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
     if (scale.current <= 1) return;
     e.preventDefault();
     isDragging.current = true;
+    setIsDraggingState(true);
     dragOrigin.current = { mx: e.clientX, my: e.clientY, px: pos.current.x, py: pos.current.y };
   }, []);
 
@@ -122,7 +126,10 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
     applyTransform();
   }, [applyTransform, clampPos]);
 
-  const onMouseUp = useCallback(() => { isDragging.current = false; }, []);
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false;
+    setIsDraggingState(false);
+  }, []);
 
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -328,7 +335,7 @@ export default function ImageZoomPopUp({ isOpen, onClose, imageUrl, alt = "Image
           // Only close if clicked directly on the dark backdrop (not the image wrapper)
           if (e.target === e.currentTarget && !isZoomed) onClose();
         }}
-        style={{ cursor: isZoomed ? (isDragging.current ? "grabbing" : "grab") : "zoom-in" }}
+        style={{ cursor: isZoomed ? (isDraggingState ? "grabbing" : "grab") : "zoom-in" }}
       >
         {/* ── Image Wrapper — transformed via ref ── */}
         <div

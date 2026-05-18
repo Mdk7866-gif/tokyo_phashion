@@ -84,12 +84,19 @@ export async function generateMetadata(
     const sortedImages = [...(selectedVariant.product_images || [])].sort((a: ProductImage, b: ProductImage) => a.sort_order - b.sort_order);
     let mainImage = sortedImages[0]?.image_url;
 
-    // Ensure absolute URL for social crawlers
-    if (mainImage && !mainImage.startsWith('http')) {
-      const headerList = await headers();
-      const host = headerList.get('host') || process.env.DOMAIN_NAME || 'tokyofashion.syp3.com';
-      const protocol = host.includes('localhost') ? 'http' : 'https';
-      mainImage = `${protocol}://${host}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`;
+    // Ensure absolute URL for social crawlers and optimize for OpenGraph (1200x630)
+    if (mainImage) {
+      if (!mainImage.startsWith('http')) {
+        const headerList = await headers();
+        const host = headerList.get('host') || process.env.DOMAIN_NAME || 'tokyofashion.syp3.com';
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        mainImage = `${protocol}://${host}${mainImage.startsWith('/') ? '' : '/'}${mainImage}`;
+      } else if (mainImage.includes('res.cloudinary.com')) {
+        // Optimize Cloudinary image for Social Previews (OpenGraph standard size 1200x630, fast WebP delivery)
+        if (!mainImage.includes('w_1200,h_630')) {
+          mainImage = mainImage.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_auto/');
+        }
+      }
     }
 
     const price = selectedSize ? (selectedSize.discount_price || selectedSize.original_price) : 0;

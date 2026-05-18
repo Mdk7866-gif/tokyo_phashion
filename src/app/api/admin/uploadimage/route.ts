@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { uploadToCloudinary } from '@/lib/cloudinary';
+import { uploadBufferToCloudinary } from '@/lib/cloudinary';
 
 // Allow larger payloads for image uploads
 export const maxDuration = 30;
@@ -26,9 +26,8 @@ export async function POST(request: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const fileBase64 = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-    const uploadRes = await uploadToCloudinary(fileBase64, `prod_${Date.now()}`);
+    const uploadRes = await uploadBufferToCloudinary(buffer, `prod_${Date.now()}`);
 
     // Return the secure URL + a Cloudinary auto-format/quality delivery URL
     // This URL will automatically serve WebP/AVIF to supporting browsers

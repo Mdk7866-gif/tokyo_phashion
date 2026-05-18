@@ -21,6 +21,7 @@ function ImageWithLoader({ src, alt, fill, sizes, className }: { src: string; al
         alt={alt}
         fill={fill}
         sizes={sizes}
+        unoptimized
         onLoad={() => setLoading(false)}
         className={`${className} transition-opacity duration-300 ${loading ? "opacity-0" : "opacity-100"}`}
       />
@@ -38,8 +39,8 @@ const compressImage = (file: File): Promise<File> => {
       img.src = event.target?.result as string;
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 1000;
-        const MAX_HEIGHT = 1000;
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
         let width = img.width;
         let height = img.height;
 
@@ -63,8 +64,8 @@ const compressImage = (file: File): Promise<File> => {
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                type: "image/jpeg",
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                type: "image/webp",
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -72,8 +73,8 @@ const compressImage = (file: File): Promise<File> => {
               resolve(file);
             }
           },
-          "image/jpeg",
-          0.8
+          "image/webp",
+          0.7
         );
       };
     };

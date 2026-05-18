@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -9,6 +9,7 @@ cloudinary.config({
 
 export default cloudinary;
 
+// Legacy support if used anywhere else
 export const uploadToCloudinary = async (fileUri: string, fileName: string) => {
   try {
     const res = await cloudinary.uploader.upload(fileUri, {
@@ -31,4 +32,31 @@ export const uploadToCloudinary = async (fileUri: string, fileName: string) => {
   } catch (error) {
     throw error;
   }
+};
+
+// Extremely fast streaming upload using Buffer (bypasses base64 memory overhead)
+export const uploadBufferToCloudinary = async (buffer: Buffer, fileName: string): Promise<UploadApiResponse> => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        invalidate: true,
+        resource_type: "image",
+        public_id: fileName,
+        folder: "tokyofashion",
+        quality: "auto:good",
+        fetch_format: "auto",
+        eager: [
+          { width: 900, crop: "limit", quality: "auto:good", fetch_format: "webp" },
+        ],
+        eager_async: true,
+        flags: "strip_profile",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        if (result) return resolve(result);
+        reject(new Error("Upload failed"));
+      }
+    );
+    stream.end(buffer);
+  });
 };
