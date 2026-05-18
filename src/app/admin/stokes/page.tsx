@@ -56,8 +56,8 @@ function StokesContent() {
         // Remove item from the current view if it's no longer "critical" or "out of stock"
         // Tab "critical stoke": threshold is <= 5
         // Tab "out of stoke": threshold is <= 0
-        const isStillValid = (tab === 'critical stoke' && json.newStock > 0 && json.newStock <= 5) || 
-                             (tab === 'out of stoke' && json.newStock <= 0);
+        const isStillValid = (tab === 'critical stoke' && json.newStock > 0 && json.newStock <= 5) ||
+          (tab === 'out of stoke' && json.newStock <= 0);
 
         if (!isStillValid) {
           setItems(prev => prev.filter(item => item.id !== variant_size_id));
@@ -139,90 +139,90 @@ function StokesContent() {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-zinc-300" /></div>
         ) : items.length === 0 ? (
-            <div className="border-2 border-dashed border-zinc-300 bg-white py-20 text-center">
-              <Search className="h-8 w-8 text-zinc-200 mx-auto mb-3" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">All Good Here</p>
-              <p className="text-[9px] font-bold text-zinc-300 mt-1">No items found in this category.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {items.map((item) => {
-                const variantImages = item.product_variants?.product_images || [];
-                const thumbnail = variantImages.sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url;
-                const productName = item.product_variants?.products?.name || "Unknown Product";
-                const color = item.product_variants?.color || "Unknown Color";
+          <div className="border-2 border-dashed border-zinc-300 bg-white py-20 text-center">
+            <Search className="h-8 w-8 text-zinc-200 mx-auto mb-3" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">All Good Here</p>
+            <p className="text-[9px] font-bold text-zinc-300 mt-1">No items found in this category.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {items.map((item) => {
+              const variantImages = item.product_variants?.product_images || [];
+              const thumbnail = variantImages.sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url;
+              const productName = item.product_variants?.products?.name || "Unknown Product";
+              const color = item.product_variants?.color || "Unknown Color";
 
-                return (
-                  <div key={item.id} className="group relative border-2 border-black bg-white flex flex-col transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] h-full">
-                    <div className="aspect-[3/4] relative bg-zinc-100 border-b-2 border-black overflow-hidden">
-                      {thumbnail ? (
-                        <Image 
-                          src={thumbnail} 
-                          alt={productName} 
-                          fill 
-                          className="object-cover" 
-                          sizes="(max-width: 640px) 50vw, 20vw" 
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black uppercase text-zinc-300">No Image</div>
-                      )}
-                      
-                      <div className="absolute top-2 left-2 bg-black text-white px-2 py-1 border border-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]">
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${item.stock <= 0 ? 'text-red-400' : 'text-white'}`}>
-                           {item.stock} in Stock
-                        </span>
-                      </div>
+              return (
+                <div key={item.id} className="group relative border-2 border-black bg-white flex flex-col transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] h-full">
+                  <div className="aspect-[3/4] relative bg-zinc-100 border-b-2 border-black overflow-hidden">
+                    {thumbnail ? (
+                      <Image
+                        src={thumbnail}
+                        alt={productName}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 50vw, 20vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-[8px] font-black uppercase text-zinc-300">No Image</div>
+                    )}
+
+                    <div className="absolute top-2 left-2 bg-black text-white px-2 py-1 border border-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)]">
+                      <span className={`text-[9px] font-black uppercase tracking-widest ${item.stock <= 0 ? 'text-red-400' : 'text-white'}`}>
+                        {item.stock} in Stock
+                      </span>
                     </div>
+                  </div>
 
-                    <div className="p-3 flex flex-col flex-1">
-                      <h3 className="text-[10px] font-black uppercase italic tracking-tight leading-snug line-clamp-2 mb-1" title={productName}>
-                        {productName}
-                      </h3>
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
-                        {color} / Size {item.size}
-                      </p>
-                      
-                      <div className="mt-auto pt-3 flex flex-col gap-2 border-t border-zinc-100">
-                        <div className="flex justify-between items-center">
-                          {item.stock <= 0 ? (
-                            <span className="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-1"><XCircle className="w-3 h-3"/> Out</span>
-                          ) : (
-                            <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest flex items-center gap-1"><AlertTriangle className="w-3 h-3"/> Low</span>
-                          )}
-                          <a 
-                            href={`/admin/products/variants/${item.product_variants?.id}`}
-                            className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors"
-                          >
-                            Manage
-                          </a>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 mt-1">
-                          <input 
-                            type="number"
-                            min="1"
-                            placeholder="+ Qty"
-                            value={addingStock[item.id] || ""}
-                            onChange={(e) => setAddingStock(prev => ({ ...prev, [item.id]: parseInt(e.target.value) || 0 }))}
-                            className="w-full text-[10px] font-bold border border-zinc-300 px-2 py-1.5 focus:border-black outline-none"
-                          />
-                          <button 
-                            onClick={() => handleStockUpdate(item.id)}
-                            disabled={submitting[item.id] || !addingStock[item.id]}
-                            className="bg-black text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 hover:bg-zinc-800 disabled:bg-zinc-300 disabled:cursor-not-allowed transition-colors"
-                          >
-                            {submitting[item.id] ? "..." : "Add"}
-                          </button>
-                        </div>
+                  <div className="p-3 flex flex-col flex-1">
+                    <h3 className="text-[10px] font-black uppercase italic tracking-tight leading-snug line-clamp-2 mb-1" title={productName}>
+                      {productName}
+                    </h3>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                      {color} / Size {item.size}
+                    </p>
+
+                    <div className="mt-auto pt-3 flex flex-col gap-2 border-t border-zinc-100">
+                      <div className="flex justify-between items-center">
+                        {item.stock <= 0 ? (
+                          <span className="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-1"><XCircle className="w-3 h-3" /> Out</span>
+                        ) : (
+                          <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Low</span>
+                        )}
+                        <a
+                          href={`/admin/products/variants/${item.product_variants?.id}`}
+                          className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors"
+                        >
+                          Manage
+                        </a>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="+ Qty"
+                          value={addingStock[item.id] || ""}
+                          onChange={(e) => setAddingStock(prev => ({ ...prev, [item.id]: parseInt(e.target.value) || 0 }))}
+                          className="w-full text-[10px] font-bold border border-zinc-300 px-2 py-1.5 focus:border-black outline-none"
+                        />
+                        <button
+                          onClick={() => handleStockUpdate(item.id)}
+                          disabled={submitting[item.id] || !addingStock[item.id]}
+                          className="bg-black text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 hover:bg-zinc-800 disabled:bg-zinc-300 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {submitting[item.id] ? "..." : "Add"}
+                        </button>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
+    </div>
   );
 }
 

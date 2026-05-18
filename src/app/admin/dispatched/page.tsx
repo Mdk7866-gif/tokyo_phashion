@@ -9,7 +9,7 @@ import ImageZoomPopUp from "@/components/ImageZoomPopUp";
 
 const TABS = [
   { key: "online", label: "Paid Online", icon: CreditCard, color: "bg-blue-600" },
-  { key: "cod",    label: "Paid COD",    icon: Truck,       color: "bg-amber-500" },
+  { key: "cod", label: "Paid COD", icon: Truck, color: "bg-amber-500" },
 ];
 
 interface Review { id: string; rating: number; comment: string | null; created_at: string; users: { name: string | null } }

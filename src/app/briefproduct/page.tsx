@@ -56,9 +56,8 @@ function FilterPanel({
               <button
                 key={option.id}
                 onClick={() => handleSortChange(option.id)}
-                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all group rounded-sm ${
-                  isActive ? "bg-black text-white" : "hover:bg-zinc-100 text-black"
-                }`}
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all group rounded-sm ${isActive ? "bg-black text-white" : "hover:bg-zinc-100 text-black"
+                  }`}
               >
                 <span className="text-[10px] font-bold uppercase tracking-widest">
                   {option.label}
@@ -83,11 +82,10 @@ function FilterPanel({
                 <button
                   key={sub.id}
                   onClick={() => toggleSubcategory(sub.id)}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all border ${
-                    isActive
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left transition-all border ${isActive
                       ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
                       : "border-transparent hover:border-black hover:bg-zinc-50 text-black"
-                  }`}
+                    }`}
                 >
                   <span className="text-[10px] font-bold uppercase tracking-widest">
                     {sub.name}
@@ -337,7 +335,7 @@ function BriefProductContent() {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* ── Desktop Sidebar ── */}
           <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-24 self-start">
-            <FilterPanel 
+            <FilterPanel
               sort={sort}
               handleSortChange={handleSortChange}
               availableSubs={availableSubs}
@@ -366,7 +364,7 @@ function BriefProductContent() {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <FilterPanel 
+                <FilterPanel
                   sort={sort}
                   handleSortChange={handleSortChange}
                   availableSubs={availableSubs}
@@ -449,11 +447,10 @@ function BriefProductContent() {
                           <button
                             onClick={(e) => handleToggleWishlist(e, product)}
                             disabled={isToggling}
-                            className={`absolute top-2 right-2 z-10 p-1.5 border transition-all ${
-                              isWishlisted
+                            className={`absolute top-2 right-2 z-10 p-1.5 border transition-all ${isWishlisted
                                 ? "bg-red-500 border-red-500 text-white"
                                 : "bg-white border-black text-black hover:bg-red-50 hover:border-red-400 hover:text-red-500"
-                            } shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] ${isToggling ? "opacity-60" : ""}`}
+                              } shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] ${isToggling ? "opacity-60" : ""}`}
                             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                           >
                             <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-white" : ""}`} />

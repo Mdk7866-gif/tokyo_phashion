@@ -30,7 +30,7 @@ function ImageWithLoader({ src, alt, fill, sizes, className }: { src: string; al
 function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   interface UserProfile {
     id: string;
     email: string;
@@ -102,16 +102,16 @@ function DashboardContent() {
   });
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
-  
+
   // Tab Load Tracking
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
-  
+
   const [isPaymentPopUpOpen, setIsPaymentPopUpOpen] = useState(false);
   const [paymentSubtotal, setPaymentSubtotal] = useState(0);
-  const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{item: CartItem, quantity: number} | 'all' | null>(null);
+  const [selectedItemForPurchase, setSelectedItemForPurchase] = useState<{ item: CartItem, quantity: number } | 'all' | null>(null);
   const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({});
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-  
+
   // User Cancellation Modal States
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
@@ -163,7 +163,7 @@ function DashboardContent() {
         const json = await res.json();
         const items = json.data || [];
         setCartItems(items);
-        
+
         // Initialize quantities
         const q: Record<string, number> = {};
         items.forEach((item: CartItem) => {
@@ -218,7 +218,7 @@ function DashboardContent() {
         const reviewsJson = await reviewsRes.json();
         const map: Record<string, { rating: number, comment: string }> = {};
         const submittedSet = new Set<string>();
-        
+
         reviewsJson.data?.forEach((rev: { order_id: string; rating: number; comment: string }) => {
           if (rev.order_id) {
             map[rev.order_id] = { rating: rev.rating, comment: rev.comment };
@@ -392,13 +392,13 @@ function DashboardContent() {
       showAlert("Out of Stock", `One or more items in your cart (like "${outOfStockItem.variant_sizes.product_variants.products.name}") are out of stock. Please remove them to continue.`, "warning");
       return;
     }
-    
+
     const subtotal = cartItems.reduce((acc, item) => {
       const price = item.variant_sizes?.discount_price || item.variant_sizes?.original_price || 0;
       const qty = cartQuantities[item.id] || 1;
-      return acc + (price * qty); 
+      return acc + (price * qty);
     }, 0);
-    
+
     setPaymentSubtotal(subtotal);
     setSelectedItemForPurchase('all');
     setIsPaymentPopUpOpen(true);
@@ -486,7 +486,7 @@ function DashboardContent() {
   return (
     <div className="max-w-screen-xl mx-auto px-4 py-4 sm:px-6">
       <div className="flex flex-col gap-6">
-        
+
         <AlertMessagePopUp
           isOpen={alert.isOpen}
           onClose={() => setAlert({ ...alert, isOpen: false })}
@@ -502,7 +502,7 @@ function DashboardContent() {
               <LayoutDashboard className="h-4 w-4" />
               <h1 className="text-[11px] font-black uppercase tracking-[0.3em] whitespace-nowrap">Dashboard</h1>
             </div>
-            
+
             <div className="flex-1 grid grid-cols-2 sm:flex">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -511,9 +511,8 @@ function DashboardContent() {
                   <button
                     key={tab.id}
                     onClick={() => router.push(`/dashboard?tab=${tab.id}`)}
-                    className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-4 text-[9px] font-black uppercase tracking-widest border-b border-black last:border-b-0 sm:border-b-0 sm:border-r sm:border-black last:sm:border-r-0 transition-all ${
-                      isActive ? 'bg-zinc-100 text-black shadow-[inset_0px_-2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-zinc-400 hover:bg-zinc-50 hover:text-black'
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-4 text-[9px] font-black uppercase tracking-widest border-b border-black last:border-b-0 sm:border-b-0 sm:border-r sm:border-black last:sm:border-r-0 transition-all ${isActive ? 'bg-zinc-100 text-black shadow-[inset_0px_-2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white text-zinc-400 hover:bg-zinc-50 hover:text-black'
+                      }`}
                   >
                     <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-black' : 'text-zinc-300'}`} />
                     <span className="truncate">{tab.label}</span>
@@ -532,67 +531,67 @@ function DashboardContent() {
                 <p className="text-[9px] font-black uppercase tracking-widest text-zinc-300 animate-pulse">Synchronising Profile...</p>
               </div>
             ) : (
-            <div className="border border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-               <div className="bg-zinc-50 border-b border-black px-5 py-3 flex items-center justify-between">
-                 <div className="flex items-center gap-2">
-                   <User className="h-3.5 w-3.5" />
-                   <h2 className="text-[10px] font-black uppercase tracking-widest">Account Settings</h2>
-                 </div>
-                 <p className="text-[9px] font-bold text-zinc-400">ID: {user?.id?.slice(0,8)}...</p>
-               </div>
-               
-               <form onSubmit={handleUpdateProfile} className="p-6 space-y-6">
-                 {/* Basic Info */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="space-y-1.5">
-                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Email Address (Read Only)</label>
-                     <input 
-                       type="text" 
-                       value={user?.email || ""} 
-                       disabled 
-                       className="w-full bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-[10px] font-bold text-zinc-400 cursor-not-allowed"
-                     />
-                   </div>
-                   <div className="space-y-1.5">
-                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Full Name</label>
-                     <input 
-                       type="text" 
-                       value={profileForm.name} 
-                       onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
-                       placeholder="Enter your name"
-                       className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
-                       required
-                     />
-                   </div>
-                   <div className="space-y-1.5">
-                     <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Mobile Number</label>
-                     <input 
-                       type="tel" 
-                       value={profileForm.mobile_number} 
-                       onChange={(e) => {
-                         const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                         setProfileForm({...profileForm, mobile_number: val});
-                       }}
-                       placeholder="8511274216"
-                       maxLength={10}
-                       className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
-                       required
-                     />
-                   </div>
-                 </div>
+              <div className="border border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <div className="bg-zinc-50 border-b border-black px-5 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-3.5 w-3.5" />
+                    <h2 className="text-[10px] font-black uppercase tracking-widest">Account Settings</h2>
+                  </div>
+                  <p className="text-[9px] font-bold text-zinc-400">ID: {user?.id?.slice(0, 8)}...</p>
+                </div>
 
-                 {/* Address Info */}
-                 <div className="pt-6 border-t border-zinc-100">
+                <form onSubmit={handleUpdateProfile} className="p-6 space-y-6">
+                  {/* Basic Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Email Address (Read Only)</label>
+                      <input
+                        type="text"
+                        value={user?.email || ""}
+                        disabled
+                        className="w-full bg-zinc-50 border border-zinc-200 px-4 py-2.5 text-[10px] font-bold text-zinc-400 cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Full Name</label>
+                      <input
+                        type="text"
+                        value={profileForm.name}
+                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                        placeholder="Enter your name"
+                        className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Mobile Number</label>
+                      <input
+                        type="tel"
+                        value={profileForm.mobile_number}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setProfileForm({ ...profileForm, mobile_number: val });
+                        }}
+                        placeholder="8511274216"
+                        maxLength={10}
+                        className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address Info */}
+                  <div className="pt-6 border-t border-zinc-100">
                     <h3 className="text-[9px] font-black uppercase tracking-widest mb-4 flex items-center gap-2">
                       <Package className="h-3 w-3 text-zinc-300" /> Shipping Address
                     </h3>
                     <div className="space-y-4">
                       <div className="space-y-1.5">
                         <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Full Address (Street, House No, Locality)</label>
-                        <textarea 
+                        <textarea
                           rows={2}
-                          value={profileForm.full_address} 
-                          onChange={(e) => setProfileForm({...profileForm, full_address: e.target.value})}
+                          value={profileForm.full_address}
+                          onChange={(e) => setProfileForm({ ...profileForm, full_address: e.target.value })}
                           placeholder="e.g. 123 Shibuya Crossing, Tokyo"
                           className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white resize-none"
                           required
@@ -601,9 +600,9 @@ function DashboardContent() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">Pincode {pincodeLoading && <span className="text-blue-400">↻ Looking up...</span>}</label>
-                          <input 
-                            type="text" 
-                            value={profileForm.pincode} 
+                          <input
+                            type="text"
+                            value={profileForm.pincode}
                             onChange={async (e) => {
                               const val = e.target.value.replace(/\D/g, '').slice(0, 6);
                               setProfileForm(prev => ({ ...prev, pincode: val }));
@@ -618,7 +617,7 @@ function DashboardContent() {
                                     showAlert("Invalid Pincode", data.error || "Please enter a correct 6-digit pincode.", "warning");
                                     setProfileForm(prev => ({ ...prev, city: "", state: "" }));
                                   }
-                                } catch { 
+                                } catch {
                                   showAlert("Lookup Failed", "Could not verify pincode. Please enter city/state manually.", "info");
                                 } finally {
                                   setPincodeLoading(false);
@@ -633,10 +632,10 @@ function DashboardContent() {
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">City {pincodeLoading && <span className="text-blue-400 animate-pulse">auto-filling...</span>}</label>
-                          <input 
-                            type="text" 
-                            value={profileForm.city} 
-                            onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
+                          <input
+                            type="text"
+                            value={profileForm.city}
+                            onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
                             placeholder="City"
                             className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
                             required
@@ -644,10 +643,10 @@ function DashboardContent() {
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block ml-1">State {pincodeLoading && <span className="text-blue-400 animate-pulse">auto-filling...</span>}</label>
-                          <input 
-                            type="text" 
-                            value={profileForm.state} 
-                            onChange={(e) => setProfileForm({...profileForm, state: e.target.value})}
+                          <input
+                            type="text"
+                            value={profileForm.state}
+                            onChange={(e) => setProfileForm({ ...profileForm, state: e.target.value })}
                             placeholder="State"
                             className="w-full border border-black px-4 py-2.5 text-[10px] font-bold text-black focus:outline-none focus:ring-0 focus:border-zinc-400 bg-white"
                             required
@@ -655,19 +654,19 @@ function DashboardContent() {
                         </div>
                       </div>
                     </div>
-                 </div>
+                  </div>
 
-                 <div className="pt-4">
-                   <button 
-                     type="submit" 
-                     disabled={updatingProfile}
-                     className="bg-black text-white px-10 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all disabled:bg-zinc-400 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-0.5 active:translate-y-0.5"
-                   >
-                     {updatingProfile ? "Synchronising..." : "Save Changes"}
-                   </button>
-                 </div>
-               </form>
-            </div>
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={updatingProfile}
+                      className="bg-black text-white px-10 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all disabled:bg-zinc-400 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-0.5 active:translate-y-0.5"
+                    >
+                      {updatingProfile ? "Synchronising..." : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             )
           )}
 
@@ -681,7 +680,7 @@ function DashboardContent() {
                   <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-100 px-2 py-0.5 border border-zinc-200">{cartItems.length}</span>
                 </div>
                 {cartItems.length > 0 && (
-                  <button 
+                  <button
                     onClick={handleBuyAll}
                     className="flex items-center gap-1.5 border border-black bg-black text-white px-3 py-1.5 text-[8px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
                   >
@@ -699,7 +698,7 @@ function DashboardContent() {
               ) : cartItems.length === 0 ? (
                 <div className="border border-dashed border-zinc-300 bg-white py-12 text-center">
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">Your bag is currently empty</p>
-                  <button 
+                  <button
                     onClick={() => router.push("/")}
                     className="mt-4 border border-black bg-black text-white px-5 py-2 text-[8px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all"
                   >
@@ -710,9 +709,9 @@ function DashboardContent() {
                 /* Compact 2-per-row grid */
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                   {cartItems.map((item) => (
-                    <UserCartItemCard 
-                      key={item.id} 
-                      item={item} 
+                    <UserCartItemCard
+                      key={item.id}
+                      item={item}
                       onRemove={handleRemoveItem}
                       onBuy={handleBuyItem}
                       onQuantityChange={handleQuantityChange}
@@ -783,18 +782,17 @@ function DashboardContent() {
                           <p className="text-[10px] text-zinc-800 font-bold">{new Date(order.created_at).toLocaleDateString("en-IN", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border ${
-                            order.delivery_status === 'dispatched' ? 'border-green-500 text-green-700 bg-green-50' :
-                            order.delivery_status === 'cancelled' ? 'border-red-500 text-red-700 bg-red-50' :
-                            order.delivery_status === 'failed'    ? 'border-red-400 text-red-600 bg-red-50' :
-                            'border-amber-500 text-amber-700 bg-amber-50'
-                          }`}>
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest border ${order.delivery_status === 'dispatched' ? 'border-green-500 text-green-700 bg-green-50' :
+                              order.delivery_status === 'cancelled' ? 'border-red-500 text-red-700 bg-red-50' :
+                                order.delivery_status === 'failed' ? 'border-red-400 text-red-600 bg-red-50' :
+                                  'border-amber-500 text-amber-700 bg-amber-50'
+                            }`}>
                             {order.delivery_status === 'dispatched' ? <CheckCircle className="h-3 w-3" /> :
-                             order.delivery_status === 'cancelled' || order.delivery_status === 'failed' ? <XCircle className="h-3 w-3" /> :
-                             <Clock className="h-3 w-3" />}
+                              order.delivery_status === 'cancelled' || order.delivery_status === 'failed' ? <XCircle className="h-3 w-3" /> :
+                                <Clock className="h-3 w-3" />}
                             {order.delivery_status === 'dispatched' ? 'Dispatched' :
-                             order.delivery_status === 'failed' ? 'Order Failed' :
-                             order.delivery_status}
+                              order.delivery_status === 'failed' ? 'Order Failed' :
+                                order.delivery_status}
                           </span>
                         </div>
                       </div>
@@ -925,68 +923,67 @@ function DashboardContent() {
                         })}
                       </div>
 
-                       {/* Tracking / Address info (bottom) */}
-                       <div className="bg-zinc-50 border border-zinc-200 p-3 mt-auto">
-                         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Shipping To</p>
-                         <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
-                       </div>
+                      {/* Tracking / Address info (bottom) */}
+                      <div className="bg-zinc-50 border border-zinc-200 p-3 mt-auto">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-1">Shipping To</p>
+                        <p className="text-[10px] text-zinc-700 font-medium leading-snug">{order.snapshot_order_full_address}, {order.snapshot_order_city}, {order.snapshot_order_state} {order.snapshot_order_pincode}</p>
+                      </div>
                     </div>
-                    
+
                     {/* Action Panel */}
                     <div className="bg-zinc-100 border-t sm:border-t-0 sm:border-l border-zinc-200 w-full sm:w-48 p-4 flex flex-col justify-between">
                       <div>
                         <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-2">Payment</p>
                         <div className="flex justify-between items-center mb-1">
-                           <span className="text-[10px] text-zinc-600 font-bold">Method</span>
-                           <span className="text-[10px] font-black uppercase text-black">{order.payment_method}</span>
+                          <span className="text-[10px] text-zinc-600 font-bold">Method</span>
+                          <span className="text-[10px] font-black uppercase text-black">{order.payment_method}</span>
                         </div>
                         <div className="flex justify-between items-center mb-3">
-                            <span className="text-[10px] text-zinc-600 font-bold">Status</span>
-                            <span className={`text-[10px] font-black uppercase ${
-                              order.payment_status === 'paid' ? 'text-green-700' :
+                          <span className="text-[10px] text-zinc-600 font-bold">Status</span>
+                          <span className={`text-[10px] font-black uppercase ${order.payment_status === 'paid' ? 'text-green-700' :
                               order.payment_status === 'failed' ? 'text-red-700' :
-                              'text-amber-700'
+                                'text-amber-700'
                             }`}>{order.payment_status === 'paid' ? 'Paid' : order.payment_status === 'failed' ? 'Failed' : 'Pending'}</span>
-                         </div>
+                        </div>
                         <div className="flex justify-between items-end border-t border-zinc-300 pt-2 mt-2">
                           <span className="text-[10px] font-black uppercase tracking-widest text-black">Total</span>
                           <span className="text-lg font-black tracking-tighter leading-none text-black">₹{order.total_amount}</span>
                         </div>
                       </div>
-                      
+
                       {/* Rate & Review Order — one button per dispatched order */}
-                       {order.delivery_status === "dispatched" && (
-                         <div className="mt-3">
-                           {submittedReviews.has(order.id) ? (
-                             <div className="flex flex-col gap-2 p-3 bg-zinc-50 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                               <div className="flex items-center justify-between">
-                                 <div className="flex gap-1">
-                                   {[1,2,3,4,5].map(star => (
-                                     <Star key={star} className={`h-3 w-3 ${reviewsMap[order.id]?.rating >= star ? 'fill-amber-400 text-amber-400' : 'text-zinc-200'}`} />
-                                   ))}
-                                 </div>
-                                 <span className="text-[8px] font-black uppercase tracking-widest text-green-600">Review Verified</span>
-                               </div>
-                               {reviewsMap[order.id]?.comment && (
-                                 <p className="text-[10px] font-medium text-zinc-600 italic">&quot;{reviewsMap[order.id].comment}&quot;</p>
-                               )}
-                             </div>
-                           ) : (
-                             <button
-                               onClick={() => setReviewingItem({ orderId: order.id })}
-                               className="w-full flex items-center justify-center gap-2 border border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 py-2 text-[9px] font-black uppercase tracking-widest transition-colors"
-                             >
-                               <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> Rate & Review This Order
-                             </button>
-                           )}
-                         </div>
-                       )}
+                      {order.delivery_status === "dispatched" && (
+                        <div className="mt-3">
+                          {submittedReviews.has(order.id) ? (
+                            <div className="flex flex-col gap-2 p-3 bg-zinc-50 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                              <div className="flex items-center justify-between">
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4, 5].map(star => (
+                                    <Star key={star} className={`h-3 w-3 ${reviewsMap[order.id]?.rating >= star ? 'fill-amber-400 text-amber-400' : 'text-zinc-200'}`} />
+                                  ))}
+                                </div>
+                                <span className="text-[8px] font-black uppercase tracking-widest text-green-600">Review Verified</span>
+                              </div>
+                              {reviewsMap[order.id]?.comment && (
+                                <p className="text-[10px] font-medium text-zinc-600 italic">&quot;{reviewsMap[order.id].comment}&quot;</p>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setReviewingItem({ orderId: order.id })}
+                              className="w-full flex items-center justify-center gap-2 border border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 py-2 text-[9px] font-black uppercase tracking-widest transition-colors"
+                            >
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> Rate & Review This Order
+                            </button>
+                          )}
+                        </div>
+                      )}
 
                       {/* Cancel button — only for pending delivery AND paid payments */}
                       {order.delivery_status === "pending" && order.payment_status === "paid" && (
                         <div className="mt-4 pt-4 border-t border-zinc-300 text-center">
                           <p className="text-[8px] font-bold text-zinc-600 mb-2 leading-tight">Note: Cancelling a paid order will not result in a refund automatically.</p>
-                          <button 
+                          <button
                             onClick={() => handleCancelClick(order.id)}
                             className="w-full bg-white border border-red-300 text-red-700 hover:bg-red-50 py-2 text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
                           >
@@ -1005,7 +1002,7 @@ function DashboardContent() {
           {reviewingItem && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
               <div className="bg-white border-2 border-black p-6 w-full max-w-md shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative">
-                <button 
+                <button
                   onClick={() => setReviewingItem(null)}
                   className="absolute top-4 right-4 text-zinc-400 hover:text-black"
                 >
@@ -1013,11 +1010,11 @@ function DashboardContent() {
                 </button>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter mb-1 text-black">Rate This Order</h3>
                 <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6">Order #{reviewingItem.orderId.slice(0, 12)}...</p>
-                
+
                 <div className="mb-6 flex justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button 
-                      key={star} 
+                    <button
+                      key={star}
                       onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
                       className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
                     >
@@ -1025,18 +1022,18 @@ function DashboardContent() {
                     </button>
                   ))}
                 </div>
-                
+
                 <div className="mb-6">
                   <label className="block text-[10px] font-black uppercase tracking-widest text-black mb-2">Write a Review (Optional)</label>
-                  <textarea 
+                  <textarea
                     value={reviewForm.comment}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
                     placeholder="Share your experience with this order..."
                     className="w-full border border-black p-3 text-sm text-black placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black h-24 resize-none bg-white"
                   />
                 </div>
-                
-                <button 
+
+                <button
                   onClick={handleSubmitReview}
                   disabled={submittingReview}
                   className="w-full border border-black bg-black text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none"

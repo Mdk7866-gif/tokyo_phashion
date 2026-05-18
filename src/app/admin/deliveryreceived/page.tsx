@@ -100,10 +100,10 @@ interface Order {
 }
 
 const TABS = [
-  { key: "paid",      label: "Paid Online",    icon: CreditCard,  color: "bg-blue-600" },
-  { key: "cod",       label: "Paid COD",        icon: Truck,       color: "bg-amber-500" },
-  { key: "cancelled", label: "Cancelled",       icon: XCircle,     color: "bg-zinc-600" },
-  { key: "failed",    label: "Failed",          icon: AlertCircle, color: "bg-red-500" },
+  { key: "paid", label: "Paid Online", icon: CreditCard, color: "bg-blue-600" },
+  { key: "cod", label: "Paid COD", icon: Truck, color: "bg-amber-500" },
+  { key: "cancelled", label: "Cancelled", icon: XCircle, color: "bg-zinc-600" },
+  { key: "failed", label: "Failed", icon: AlertCircle, color: "bg-red-500" },
 ];
 
 function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () => void; readOnly?: boolean }) {
@@ -320,29 +320,29 @@ function OrderCard({ order, onUpdate, readOnly }: { order: Order; onUpdate: () =
             {order.order_items.map(item => {
               const itemImg = item.product_variants?.product_images?.[0]?.image_url;
               return (
-              <Link
-                key={item.id}
-                href={`/detailedproduct?product_id=${item.product_id}&variant_id=${item.product_variant_id}&size=${encodeURIComponent(item.size_snapshot)}`}
-                target="_blank"
-                className="flex items-center gap-3 text-[10px] border border-zinc-100 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
-              >
-                <div className="relative h-10 w-10 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
-                  {itemImg ? (
-                    <ImageWithLoader src={itemImg} alt="Product" fill sizes="40px" className="object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-zinc-50 flex items-center justify-center text-zinc-300">
-                      <Package className="h-4 w-4" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold group-hover:underline">{item.product_name_snapshot}</p>
-                  <p className="text-zinc-400">{item.color_snapshot} · {item.size_snapshot} · Qty {item.quantity}</p>
-                </div>
-                <p className="font-black">₹{item.price_snapshot * item.quantity}</p>
-              </Link>
-            );
-          })}
+                <Link
+                  key={item.id}
+                  href={`/detailedproduct?product_id=${item.product_id}&variant_id=${item.product_variant_id}&size=${encodeURIComponent(item.size_snapshot)}`}
+                  target="_blank"
+                  className="flex items-center gap-3 text-[10px] border border-zinc-100 p-2 hover:border-black hover:bg-zinc-50 transition-all group"
+                >
+                  <div className="relative h-10 w-10 shrink-0 border border-zinc-200 bg-zinc-50 overflow-hidden">
+                    {itemImg ? (
+                      <ImageWithLoader src={itemImg} alt="Product" fill sizes="40px" className="object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-zinc-50 flex items-center justify-center text-zinc-300">
+                        <Package className="h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold group-hover:underline">{item.product_name_snapshot}</p>
+                    <p className="text-zinc-400">{item.color_snapshot} · {item.size_snapshot} · Qty {item.quantity}</p>
+                  </div>
+                  <p className="font-black">₹{item.price_snapshot * item.quantity}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

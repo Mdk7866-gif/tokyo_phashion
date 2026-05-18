@@ -10,7 +10,7 @@ import { Plus, Package } from "lucide-react";
 function ProductContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const category = searchParams.get("category");
   const subcategory = searchParams.get("subcategory");
   const cat_id = searchParams.get("cat_id");
@@ -113,12 +113,12 @@ function ProductContent() {
               }}
             />
           ) : (
-            <ProductDetailedDescriptionCard 
-              category={category} 
-              subcategory={subcategory} 
+            <ProductDetailedDescriptionCard
+              category={category}
+              subcategory={subcategory}
               cat_id={cat_id}
               sub_id={sub_id}
-              product_id={null} 
+              product_id={null}
               color={color === "NEW" ? null : color}
               onBack={() => {
                 router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}`);
@@ -131,12 +131,12 @@ function ProductContent() {
 
     // Editing existing product
     return (
-      <ProductDetailedDescriptionCard 
-        category={category} 
-        subcategory={subcategory} 
+      <ProductDetailedDescriptionCard
+        category={category}
+        subcategory={subcategory}
         cat_id={cat_id}
         sub_id={sub_id}
-        product_id={product_id} 
+        product_id={product_id}
         color={color}
         onBack={() => {
           router.push(`/admin/product?category=${category}&subcategory=${subcategory}&cat_id=${cat_id}&sub_id=${sub_id}`);
@@ -174,21 +174,21 @@ function ProductContent() {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 mt-8">
           {products.map(p => (
-             <ProductBriefDescriptionCard 
-               key={p.id} 
-               product={p} 
-               category={category}
-               subcategory={subcategory}
-               cat_id={cat_id}
-               sub_id={sub_id}
-               onRefresh={fetchProducts}
-             />
+            <ProductBriefDescriptionCard
+              key={p.id}
+              product={p}
+              category={category}
+              subcategory={subcategory}
+              cat_id={cat_id}
+              sub_id={sub_id}
+              onRefresh={fetchProducts}
+            />
           ))}
           {products.length === 0 && (
-             <div className="col-span-full py-12 text-center text-zinc-400 border border-dashed border-zinc-200">
-               <p className="text-xs font-black uppercase tracking-widest">No Products</p>
-               <p className="mt-1 text-[10px] font-bold">Click &quot;Add Product&quot; to create one.</p>
-             </div>
+            <div className="col-span-full py-12 text-center text-zinc-400 border border-dashed border-zinc-200">
+              <p className="text-xs font-black uppercase tracking-widest">No Products</p>
+              <p className="mt-1 text-[10px] font-bold">Click &quot;Add Product&quot; to create one.</p>
+            </div>
           )}
         </div>
       )}
