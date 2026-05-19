@@ -76,12 +76,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     isOpen: boolean;
     title: string;
     message: string;
-    onConfirm: () => void;
+    type?: "success" | "error" | "warning" | "info";
+    cancelText?: string;
+    onConfirm?: () => void;
   }>({
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: () => {},
+    type: "warning",
+    cancelText: "Cancel",
+    onConfirm: undefined,
   });
 
   const handleAddCategory = async (e: React.FormEvent) => {
@@ -134,7 +138,39 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id })
           });
-          if (res.ok) await fetchCategories();
+          if (res.ok) {
+            await fetchCategories();
+          } else {
+            const data = await res.json();
+            let userFriendlyMsg = "Failed to delete category.";
+            if (data.error && data.error.includes("violates foreign key constraint")) {
+              userFriendlyMsg = "Cannot delete this category because it contains products that are referenced in active customer orders. To preserve financial and order history, these items cannot be deleted.";
+            } else if (data.error) {
+              userFriendlyMsg = data.error;
+            }
+            setTimeout(() => {
+              setConfirmModal({
+                isOpen: true,
+                title: "Cannot Delete Category",
+                message: userFriendlyMsg,
+                type: "error",
+                cancelText: "Close",
+                onConfirm: undefined
+              });
+            }, 100);
+          }
+        } catch (err) {
+          console.error(err);
+          setTimeout(() => {
+            setConfirmModal({
+              isOpen: true,
+              title: "Error",
+              message: "An unexpected network error occurred.",
+              type: "error",
+              cancelText: "Close",
+              onConfirm: undefined
+            });
+          }, 100);
         } finally {
           setLoading(false);
         }
@@ -192,7 +228,39 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id })
           });
-          if (res.ok) await fetchCategories();
+          if (res.ok) {
+            await fetchCategories();
+          } else {
+            const data = await res.json();
+            let userFriendlyMsg = "Failed to delete subcategory.";
+            if (data.error && data.error.includes("violates foreign key constraint")) {
+              userFriendlyMsg = "Cannot delete this subcategory because it contains products that are referenced in active customer orders. To preserve financial and order history, these items cannot be deleted.";
+            } else if (data.error) {
+              userFriendlyMsg = data.error;
+            }
+            setTimeout(() => {
+              setConfirmModal({
+                isOpen: true,
+                title: "Cannot Delete Subcategory",
+                message: userFriendlyMsg,
+                type: "error",
+                cancelText: "Close",
+                onConfirm: undefined
+              });
+            }, 100);
+          }
+        } catch (err) {
+          console.error(err);
+          setTimeout(() => {
+            setConfirmModal({
+              isOpen: true,
+              title: "Error",
+              message: "An unexpected network error occurred.",
+              type: "error",
+              cancelText: "Close",
+              onConfirm: undefined
+            });
+          }, 100);
         } finally {
           setLoading(false);
         }
@@ -421,9 +489,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         onConfirm={confirmModal.onConfirm}
         title={confirmModal.title}
         message={confirmModal.message}
-        type="warning"
+        type={confirmModal.type || "warning"}
         confirmText="Confirm Delete"
-        cancelText="Keep it"
+        cancelText={confirmModal.cancelText || "Keep it"}
       />
     </>
   );

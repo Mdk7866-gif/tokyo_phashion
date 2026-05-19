@@ -29,6 +29,28 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
+
+    // Fail-fast optimization: check if any products in this subcategory are in order_items
+    const { data: products } = await supabaseAdmin
+      .from('products')
+      .select('id')
+      .eq('subcategory_id', id);
+
+    if (products && products.length > 0) {
+      const productIds = products.map(p => p.id);
+      const { count } = await supabaseAdmin
+        .from('order_items')
+        .select('*', { count: 'exact', head: true })
+        .in('product_id', productIds);
+
+      if (count && count > 0) {
+        return NextResponse.json(
+          { error: "violates foreign key constraint: order_items reference these products" },
+          { status: 400 }
+        );
+      }
+    }
+
     const { error } = await supabaseAdmin.from('subcategories').delete().eq('id', id);
     if (error) throw error;
     return NextResponse.json({ success: true });
