@@ -18,6 +18,7 @@ interface UserType {
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     const [user, setUser] = useState<UserType | null>(null);
     const [mounted, setMounted] = useState(false);
+    const [loadingUser, setLoadingUser] = useState(true);
     const [cartCount, setCartCount] = useState(0);
     const [wishlistCount, setWishlistCount] = useState(0);
 
@@ -43,6 +44,8 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                 await fetchCounts();
             } catch (error) {
                 console.error("Error initialising navbar:", error);
+            } finally {
+                setLoadingUser(false);
             }
         };
         init();
@@ -124,7 +127,9 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
                         <div className="h-6 w-px bg-zinc-200 hidden sm:block mx-1" />
 
-                        {user ? (
+                        {loadingUser ? (
+                            <div className="hidden sm:block h-10 w-24 bg-zinc-100 animate-pulse rounded-none border border-black/10"></div>
+                        ) : user ? (
                             <div className="flex items-center gap-4">
                                 <Link
                                     href="/dashboard"

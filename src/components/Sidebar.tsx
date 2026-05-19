@@ -37,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   }
 
   const [user, setUser] = useState<UserType | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   // Removed unused loading state
 
@@ -47,6 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       setUser(data.user);
     } catch (error) {
       console.error("Error fetching user session:", error);
+    } finally {
+      setLoadingUser(false);
     }
   }, []);
 
@@ -108,8 +111,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
           
           {/* SECTION 1: USER ACCOUNT */}
-          <div className="p-6 border-b border-zinc-100">
-            {user ? (
+          <div className="p-6 border-b border-zinc-100 min-h-[120px] flex flex-col justify-center">
+            {loadingUser ? (
+              <div className="flex flex-col items-stretch justify-center py-2 space-y-3">
+                <div className="h-3 w-16 bg-zinc-100 animate-pulse rounded-none"></div>
+                <div className="h-12 w-full bg-zinc-100 animate-pulse rounded-none border border-black/10"></div>
+              </div>
+            ) : user ? (
               <div className="space-y-4">
                 <div className="px-2">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account</p>
