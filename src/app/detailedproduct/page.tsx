@@ -54,8 +54,30 @@ function DetailedProductContent() {
   const router = useRouter();
   const pathname = usePathname();
   
-  const id = searchParams.get("id") || searchParams.get("product_id");
-  // urlVariantId and urlSizeId are read inside fetchProduct on mount only — not reactive
+  // Use React state to track the verified active product ID.
+  // Initially read from window.location.search (client-side) to bypass Next.js stale router-cache params,
+  // falling back to searchParams (for SSR/hydration).
+  const [activeProductId, setActiveProductId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("product_id") || params.get("id");
+    }
+    return null;
+  });
+
+  // Sync activeProductId reactively whenever searchParams updates
+  useEffect(() => {
+    const idFromWindow = typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("product_id") || new URLSearchParams(window.location.search).get("id")
+      : null;
+    const idFromParams = searchParams.get("product_id") || searchParams.get("id");
+    const targetId = idFromWindow || idFromParams;
+    if (targetId && targetId !== activeProductId) {
+      Promise.resolve().then(() => {
+        setActiveProductId(targetId);
+      });
+    }
+  }, [searchParams, activeProductId]);
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,18 +116,19 @@ function DetailedProductContent() {
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   // codConfirmation removed — flow now redirects to /checkout
 
-  const latestIdRef = useRef(id);
+  const latestIdRef = useRef(activeProductId);
   useEffect(() => {
-    latestIdRef.current = id;
-  }, [id]);
+    latestIdRef.current = activeProductId;
+  }, [activeProductId]);
 
   const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productData?: Product | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
     
     // Crucial: Use active product ID from productData if provided to avoid stale searchParams race condition
-    const activeProductId = productData?.id || params.get("product_id") || params.get("id");
-    if (activeProductId) {
-      params.set("product_id", activeProductId);
+    const activeId = productData?.id || params.get("product_id") || params.get("id");
+    if (activeId) {
+      params.set("product_id", activeId);
       params.delete("id");
     }
 
@@ -123,12 +146,14 @@ function DetailedProductContent() {
       params.delete("size_id");
     }
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams]);
+    // Use window.history.replaceState to update URL silently without triggering Next.js router transitions or back-button loops
+    const newUrl = `${pathname}?${params.toString()}`;
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+  }, [pathname]);
 
-  const fetchProduct = useCallback(async () => {
-    if (!id) return;
-    const currentFetchId = id;
+  const fetchProduct = useCallback(async (productIdToFetch: string) => {
+    if (!productIdToFetch) return;
+    const currentFetchId = productIdToFetch;
     setLoading(true);
     // Defer state updates to next microtask tick to prevent synchronous setState inside useEffect warning
     await Promise.resolve();
@@ -146,9 +171,10 @@ function DetailedProductContent() {
         if (data) {
           setProduct(data);
           
-          const currentVariantId = searchParams.get("variant_id") || searchParams.get("variant");
-          const currentSizeId = searchParams.get("size_id");
-          const currentSizeName = searchParams.get("size");
+          const params = new URLSearchParams(window.location.search);
+          const currentVariantId = params.get("variant_id") || params.get("variant");
+          const currentSizeId = params.get("size_id");
+          const currentSizeName = params.get("size");
 
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
@@ -211,18 +237,19 @@ function DetailedProductContent() {
         setLoading(false);
       }
     }
-  }, [id, updateQueryParams, showAlert, searchParams]);
+  }, [updateQueryParams, showAlert]);
 
   useEffect(() => {
-    if (id) {
-      // Fetch new product which also resets/clears previous state inside the callback
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchProduct();
+    if (activeProductId) {
+      Promise.resolve().then(() => {
+        fetchProduct(activeProductId);
+      });
     } else {
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setLoading(false);
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]); // Only run when product id changes to avoid loop / reset on variant change
+  }, [activeProductId, fetchProduct]); // Only run when product id changes to avoid loop / reset on variant change
 
   // Preload images for all variants to ensure fast switching
   useEffect(() => {
@@ -420,7 +447,7 @@ function DetailedProductContent() {
     setMainImage(newImageUrl || "");
     
     // Construct new search parameters completely and update once at the end
-    const newParams = new URLSearchParams(searchParams.toString());
+    const newParams = new URLSearchParams(window.location.search);
     newParams.set("variant_id", v.id);
     
     // Check if new variant has a size that matches current selection, else select first available
@@ -447,7 +474,8 @@ function DetailedProductContent() {
       }
     }
     
-    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    const newUrl = `${pathname}?${newParams.toString()}`;
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
   };
 
   const handleSizeChange = (s: Size) => {
