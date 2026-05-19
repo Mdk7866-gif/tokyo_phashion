@@ -1,82 +1,72 @@
-# Next.js Route Caching & Redirection Bug (Vercel Production)
+# Next.js Caching, Mount Race Conditions, & Redirection Loop Bugs
 
-If you are seeing a bug where visiting a new product (e.g., Product B) from a catalog page automatically redirects/changes the URL and page state back to a previously visited product (e.g., Product A), you are facing a **Next.js static API caching issue**. 
+If you are seeing a bug where visiting a new product (e.g., Product B) from a catalog page automatically redirects/changes the URL and page state back to a previously visited product (e.g., Product A), you are facing a combination of **Next.js static API caching** and a **client-side router mount race condition**. 
 
-This document explains why this happens and how to prevent it in the future.
-
----
-
-## 1. The Symptom
-1. You visit **Product A** `/detailedproduct?product_id=A_ID` and refresh the page.
-2. You navigate back to a catalog page (e.g., `/briefproduct`).
-3. You click on **Product B**.
-4. The URL briefly changes to `/detailedproduct?product_id=B_ID`.
-5. Within milliseconds, the URL and product details automatically revert back to `/detailedproduct?product_id=A_ID&variant_id=A_VARIANT_ID...` (Product A's details).
+This document explains why these happen and how they were solved.
 
 ---
 
-## 2. The Root Cause
-The root cause is **aggressive caching of API GET Route Handlers** by Next.js in production (especially on hosting platforms like Vercel).
+## 1. Bug 1: Aggressive Static Caching (Global Redirection)
+### The Symptom
+Every user visiting any product is automatically redirected back to the first product that was loaded after the website was deployed.
 
-### How Next.js Evaluates Caching
-By default, Next.js statically evaluates and caches all `GET` Route Handlers (API files in `app/api/.../route.ts`) during the build process, **unless** they explicitly use:
-* Dynamic helpers like `cookies()` or `headers()`.
-* The standard Request object with methods other than `GET`.
-* An explicit dynamic configuration export.
+### The Root Cause
+By default, Next.js statically evaluates and caches all `GET` Route Handlers (API files in `app/api/.../route.ts`) during the build process, unless they explicitly utilize dynamic hooks like `cookies()` or `headers()`. 
 
-### The Supabase Admin Loophole
-If you use a client like `supabaseAdmin` directly in your route handlers:
+Since the product details API (`/api/user/getproductdetail`) queries Supabase via `supabaseAdmin` directly, it did not trigger any dynamic markers. Next.js Edge cache on Vercel cached the JSON response of the **first product fetched** in production and returned that exact JSON response for all subsequent `GET` requests, ignoring the `product_id` query parameter entirely. The component received this wrong data, set the state, and triggered the URL updater to rewrite the URL back to Product A.
+
+### The Solution
+We added `export const dynamic = 'force-dynamic';` to the top of all user-facing GET Route Handlers that load dynamic records based on request parameters:
+* `src/app/api/user/getproductdetail/route.ts`
+* `src/app/api/user/getbriefproducts/route.ts`
+* `src/app/api/user/getvariantsize/route.ts`
+* `src/app/api/user/gethomepagethumbnail/route.ts`
+* `src/app/api/user/getsidebarcategoryandsubcategory/route.ts`
+
+---
+
+## 2. Bug 2: Mount Race Condition after Page Refresh (Local Redirection)
+### The Symptom
+You visit Product A, refresh the page, navigate back to the catalog, and click Product B. The URL briefly changes to Product B but instantly reverts back to Product A.
+
+### The Root Cause
+1. Refreshing on Product A resets the client-side Next.js memory.
+2. Clicking Product B mounts the detailed product component.
+3. During client-side navigation transitions, Next.js's `useSearchParams()` hook initially returns the **stale cached parameters of the previous render** (Product A) before committing the new URL state.
+4. The component evaluates `id` as Product A's ID and immediately fires an API request (`fetchProduct`).
+5. Because the API request is fast, it returns Product A's data **before** Next.js officially updates the `useSearchParams()` hook.
+6. The component accepts the response, sets Product A's state, and calls `updateQueryParams` to sync the URL.
+7. This calls `router.replace` with Product A's URL, which **aborts** the pending navigation to Product B.
+
+### The Solution
+We bypassed the stale Next.js router cache on mount by checking the browser address bar directly:
 ```typescript
-// src/app/api/user/getproductdetail/route.ts
-import { supabaseAdmin } from '@/lib/supabase/admin';
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get('product_id');
-  const { data } = await supabaseAdmin.from('products').select(...).eq('id', id);
-  return NextResponse.json({ data });
-}
+const [activeProductId, setActiveProductId] = useState<string | null>(() => {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("product_id") || params.get("id");
+  }
+  return null;
+});
 ```
-Because `supabaseAdmin` doesn't inspect cookies or session headers, Next.js does not recognize this route as dynamic. Even though the API accesses `request.url`, Next.js Edge Router cache on Vercel caches the API response of the **first product fetched** in production.
-
-### The Redirection Cascade
-1. When you request Product B, your React code fetches `/api/user/getproductdetail?product_id=B`.
-2. Vercel's CDN cache intercepts this request and returns the **cached response for Product A**.
-3. Your client-side code receives Product A's data structure inside the Product B page context.
-4. Your component updates state using Product A's variant and size details.
-5. An internal helper like `updateQueryParams()` is triggered to synchronize the browser URL with active React state.
-6. The URL gets rewritten using Product A's IDs, causing the apparent "automatic redirection" bug.
+We then sync `activeProductId` whenever `searchParams` changes. This guarantees the component immediately targets the correct ID (`B`) on mount, preventing the stale `A` request from ever being sent.
 
 ---
 
-## 3. The Solution
-To fix this, you must explicitly opt the API routes out of static caching by exporting `force-dynamic` at the top of each GET Route Handler file.
+## 3. Bug 3: Browser Back-Button Loop (History Trap)
+### The Symptom
+When the user clicks the browser Back button on the product details page, they are trapped in a loop and cannot leave the website.
 
+### The Root Cause
+Every time the user changed variants, selected a size, or when the page did auto-selection, the component called Next.js's `router.replace(...)`. 
+* Next.js handles `router.replace` via asynchronous routing transitions.
+* If these transitions are triggered back-to-back (especially during page load or size switches), they conflict with the browser's navigation history.
+* When the user clicks "Back", they land on the catalog URL for a split second, but the pending/stale Next.js router queue redirects them right back to `/detailedproduct`, trapping them on the page.
+
+### The Solution
+We replaced `router.replace` with the native browser history API:
 ```typescript
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/admin';
-
-// CRITICAL: Tells Next.js to disable caching and evaluate this route dynamically on every request
-export const dynamic = 'force-dynamic';
-
-export async function GET(request: Request) {
-  // ... your fetching logic
-}
+const newUrl = `${pathname}?${params.toString()}`;
+window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
 ```
-
-### Applied Fixes
-This configuration has been added to all data-fetching endpoints that retrieve dynamic records based on request parameters:
-* `src/app/api/user/getproductdetail/route.ts` (Product Detailed view)
-* `src/app/api/user/getbriefproducts/route.ts` (Product catalog page filter/sort lists)
-* `src/app/api/user/getvariantsize/route.ts` (Variant/Size pricing details)
-* `src/app/api/user/gethomepagethumbnail/route.ts` (Homepage categories)
-* `src/app/api/user/getsidebarcategoryandsubcategory/route.ts` (Sidebar navigation list)
-
----
-
-## 4. Best Practices for Next.js Route Handlers
-To prevent this issue in future projects, follow these rules:
-
-1. **If a GET Route Handler reads query parameters**, always add `export const dynamic = 'force-dynamic';` at the top of the file unless you specifically want a static response.
-2. **If a GET Route Handler queries database tables** that can be updated by administrators or users (e.g., inventory counts, categories, comments), always mark it as `force-dynamic`.
-3. **If a GET Route Handler uses authentication** (via cookie-based session tokens), Next.js will automatically treat it as dynamic, but it's still a good habit to explicitly configure it to prevent accidental build-time caching warnings.
+Using `window.history.replaceState` updates the URL in the browser address bar silently. It does **not** trigger Next.js router re-renders or push entries into the browser history stack. The user can click "Back" and instantly exit the page to the catalog with zero latency or loops.
