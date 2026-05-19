@@ -42,3 +42,8 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Hide content layout during splash screen loading to prevent FOUC */
+html.splash-loading #main-content-layout {
+  display: none !important;
+}

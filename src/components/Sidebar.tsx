@@ -91,12 +91,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar Panel */}
       <aside
-        className={`fixed inset-y-0 left-0 z-[70] w-72 transform border-r border-black bg-white text-black transition-transform duration-500 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-[70] w-72 transform border-r border-black bg-white text-black transition-transform duration-500 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between px-6 border-b border-black">
+        <div className="flex h-16 items-center justify-between px-6 border-b border-black flex-shrink-0">
           <Link href="/" className="flex items-center">
             <Logo className="h-10 w-auto" />
           </Link>
@@ -108,10 +108,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="flex flex-col h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
           
           {/* SECTION 1: USER ACCOUNT */}
-          <div className="p-6 border-b border-zinc-100 min-h-[120px] flex flex-col justify-center">
+          <div className="p-6 border-b border-zinc-100">
             {loadingUser ? (
               <div className="flex flex-col items-stretch justify-center py-2 space-y-3">
                 <div className="h-3 w-16 bg-zinc-100 animate-pulse rounded-none"></div>

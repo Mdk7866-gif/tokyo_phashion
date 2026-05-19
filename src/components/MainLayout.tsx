@@ -18,7 +18,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     return (
       <>
         <SplashScreen />
-        <div>
+        <div id="main-content-layout">
           {children}
         </div>
       </>
@@ -28,7 +28,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <SplashScreen />
-      <div className="min-h-screen flex flex-col bg-black text-white">
+      <div id="main-content-layout" className="min-h-screen flex flex-col bg-black text-white">
         <div className="flex flex-1">
           {/* Sidebar */}
           <React.Suspense fallback={<div className="w-72 bg-white hidden lg:block border-r border-black" />}>

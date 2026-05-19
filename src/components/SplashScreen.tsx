@@ -23,6 +23,9 @@ const SplashScreen = ({ onComplete }: { onComplete?: () => void }) => {
 
         setTimeout(() => {
           setShouldRender(false);
+          if (typeof window !== "undefined") {
+            document.documentElement.classList.remove("splash-loading");
+          }
 
           if (onComplete) {
             onComplete();
@@ -37,6 +40,9 @@ const SplashScreen = ({ onComplete }: { onComplete?: () => void }) => {
         clearTimeout(hideTimer);
       };
     } else {
+      if (typeof window !== "undefined") {
+        document.documentElement.classList.remove("splash-loading");
+      }
       if (onComplete) {
         onComplete();
       }

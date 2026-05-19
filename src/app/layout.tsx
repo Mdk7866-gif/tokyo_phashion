@@ -35,6 +35,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined' && !sessionStorage.getItem("hasSeenSplash")) {
+                document.documentElement.classList.add("splash-loading");
+              }
+            `
+          }}
+        />
         <MainLayout>{children}</MainLayout>
       </body>
     </html>
