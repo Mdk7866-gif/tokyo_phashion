@@ -31,7 +31,7 @@ export default function HomePageThumbnailCard({ id, name, imageUrl }: HomePageTh
           fill
           className={`object-cover transition-all duration-[1s] group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           sizes="(max-width: 768px) 50vw, 33vw"
-          onLoadingComplete={() => setImageLoaded(true)}
+          onLoad={() => setImageLoaded(true)}
         />
         <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
       </div>

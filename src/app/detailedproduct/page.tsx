@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, Suspense } from "react";
+import React, { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -94,13 +94,15 @@ function DetailedProductContent() {
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   // codConfirmation removed — flow now redirects to /checkout
 
-  // IMPORTANT: Uses window.location.search instead of reactive searchParams so that
-  // calling this function does NOT trigger a re-creation of fetchProduct (avoids the
-  // URL-change → searchParams update → fetchProduct re-create → useEffect re-fire loop).
+  const latestIdRef = useRef(id);
+  useEffect(() => {
+    latestIdRef.current = id;
+  }, [id]);
+
   const updateQueryParams = useCallback((variantId?: string, sizeId?: string | null, productData?: Product | null) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     
-    // Crucial: Use active product ID from productData if provided to avoid stale window.location.search race condition
+    // Crucial: Use active product ID from productData if provided to avoid stale searchParams race condition
     const activeProductId = productData?.id || params.get("product_id") || params.get("id");
     if (activeProductId) {
       params.set("product_id", activeProductId);
@@ -122,29 +124,31 @@ function DetailedProductContent() {
     }
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router]); // Stable — does NOT depend on searchParams
+  }, [pathname, router, searchParams]);
 
   const fetchProduct = useCallback(async () => {
     if (!id) return;
+    const currentFetchId = id;
     setLoading(true);
     // Defer state updates to next microtask tick to prevent synchronous setState inside useEffect warning
     await Promise.resolve();
+    if (currentFetchId !== latestIdRef.current) return;
     setProduct(null);
     setSelectedVariant(null);
     setSelectedSize(null);
     setQuantity(1);
     try {
-      const res = await fetch(`/api/user/getproductdetail?product_id=${id}`);
+      const res = await fetch(`/api/user/getproductdetail?product_id=${currentFetchId}`);
       if (res.ok) {
         const json = await res.json();
         const data = json.data;
+        if (currentFetchId !== latestIdRef.current) return;
         if (data) {
           setProduct(data);
           
-          const params = new URLSearchParams(window.location.search);
-          const currentVariantId = params.get("variant_id") || params.get("variant");
-          const currentSizeId = params.get("size_id");
-          const currentSizeName = params.get("size");
+          const currentVariantId = searchParams.get("variant_id") || searchParams.get("variant");
+          const currentSizeId = searchParams.get("size_id");
+          const currentSizeName = searchParams.get("size");
 
           if (data.product_variants && data.product_variants.length > 0) {
             let initialVariant = data.product_variants[0];
@@ -203,9 +207,11 @@ function DetailedProductContent() {
       console.error(err);
       showAlert("Error", "Failed to fetch product details", "error");
     } finally {
-      setLoading(false);
+      if (currentFetchId === latestIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [id, updateQueryParams, showAlert]);
+  }, [id, updateQueryParams, showAlert, searchParams]);
 
   useEffect(() => {
     if (id) {

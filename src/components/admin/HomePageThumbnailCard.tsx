@@ -120,7 +120,7 @@ export default function HomePageThumbnailCard({ category, onUpdate }: HomePageTh
               unoptimized
               className={`object-cover transition-all duration-500 ${imageLoading ? 'scale-110 blur-sm grayscale' : 'scale-100 blur-0 grayscale-0'}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onLoadingComplete={() => setImageLoading(false)}
+              onLoad={() => setImageLoading(false)}
               onError={() => {
                 setImageError(true);
                 setImageLoading(false);
