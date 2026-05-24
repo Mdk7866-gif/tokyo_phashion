@@ -59,15 +59,19 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
   const [isPlaying,    setIsPlaying]    = useState(false);
   const [isMuted,      setIsMuted]      = useState(true);
   const [isBuffering,  setIsBuffering]  = useState(false);
-  const [needsTap,     setNeedsTap]     = useState(false);
   const [srcReady,     setSrcReady]     = useState(false);
 
   const videoUrl  = getStreamUrl(reel.videoUrl, "card");
   const posterUrl = getPosterUrl(reel.videoUrl);
 
   const safePlay = useCallback(async (el: HTMLVideoElement) => {
-    try { await el.play(); setNeedsTap(false); }
-    catch { setNeedsTap(true); }
+    try { 
+      setIsBuffering(true);
+      await el.play(); 
+      setIsBuffering(false);
+      setIsPlaying(true);
+    }
+    catch { setIsBuffering(false); }
   }, []);
 
   useEffect(() => {
@@ -84,7 +88,7 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
     const playObs = new IntersectionObserver(([e]) => {
       if (!isDesktop) {
         if (e.isIntersecting && e.intersectionRatio >= 0.6) safePlay(el);
-        else if (!e.isIntersecting) el.pause();
+        else el.pause();
       }
     }, { threshold: [0, 0.6] });
 
@@ -122,12 +126,13 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
         ref={videoRef}
         src={srcReady ? videoUrl : undefined}
         poster={posterUrl}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover pointer-events-none"
         loop muted={isMuted} playsInline preload="none"
+        disablePictureInPicture disableRemotePlayback
         onLoadStart={() => setIsBuffering(true)}
         onCanPlay={()  => setIsBuffering(false)}
         onWaiting={()  => setIsBuffering(true)}
-        onPlaying={()  => { setIsBuffering(false); setIsPlaying(true); setNeedsTap(false); }}
+        onPlaying={()  => { setIsBuffering(false); setIsPlaying(true); }}
         onPause={()    => setIsPlaying(false)}
       />
 
@@ -138,12 +143,11 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
         </div>
       )}
 
-      {needsTap && !isPlaying && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20 gap-3">
-          <div className="bg-white/90 rounded-full p-4 shadow-2xl scale-110">
-            <Play className="w-8 h-8 text-black fill-black" />
+      {!isPlaying && !isBuffering && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <div className="bg-white/90 rounded-full p-4 shadow-2xl scale-110 transition-transform active:scale-95">
+            <Play className="w-8 h-8 text-black fill-black ml-1" />
           </div>
-          <span className="text-white text-xs font-black uppercase tracking-widest drop-shadow-md">Tap to play</span>
         </div>
       )}
 
@@ -204,11 +208,6 @@ const ReelCard = ({ reel, onView }: { reel: Reel; onView: (r: Reel) => void }) =
               <span className="text-[8px] font-bold text-white/40">Watch on Instagram</span>
             </div>
           </a>
-          {!isPlaying && !needsTap && (
-            <div className="bg-white p-2 rounded-full pointer-events-none">
-              <Play className="w-4 h-4 text-black fill-black" />
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -225,16 +224,14 @@ const ReelModal = ({ reel, onClose }: { reel: Reel; onClose: () => void }) => {
   const [isPlaying,   setIsPlaying]   = useState(false);
   const [isMuted,     setIsMuted]     = useState(false);
   const [isBuffering, setIsBuffering] = useState(true);
-  const [needsTap,    setNeedsTap]    = useState(false);
   const [progress,    setProgress]    = useState(0);
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
     const tryPlay = async () => {
-      try { el.muted = false; await el.play(); setIsMuted(false); return; } catch {}
-      try { el.muted = true;  await el.play(); setIsMuted(true);  return; } catch {}
-      setNeedsTap(true);
+      try { el.muted = false; setIsBuffering(true); await el.play(); setIsMuted(false); setIsBuffering(false); setIsPlaying(true); return; } catch {}
+      try { el.muted = true;  setIsBuffering(true); await el.play(); setIsMuted(true); setIsBuffering(false); setIsPlaying(true);  return; } catch { setIsBuffering(false); }
     };
     const t = setTimeout(tryPlay, 80);
     return () => clearTimeout(t);
@@ -260,7 +257,8 @@ const ReelModal = ({ reel, onClose }: { reel: Reel; onClose: () => void }) => {
     const el = videoRef.current;
     if (!el) return;
     if (el.paused) {
-      el.play().catch(() => {});
+      setIsBuffering(true);
+      el.play().then(() => { setIsBuffering(false); setIsPlaying(true); }).catch(() => { setIsBuffering(false); });
     } else {
       el.pause();
     }
@@ -294,10 +292,11 @@ const ReelModal = ({ reel, onClose }: { reel: Reel; onClose: () => void }) => {
           src={getStreamUrl(reel.videoUrl, "modal")}
           loop playsInline muted={isMuted}
           className="w-full h-full object-cover"
+          disablePictureInPicture disableRemotePlayback
           onLoadStart={() => setIsBuffering(true)}
           onCanPlay={()  => setIsBuffering(false)}
           onWaiting={()  => setIsBuffering(true)}
-          onPlaying={()  => { setIsBuffering(false); setIsPlaying(true); setNeedsTap(false); }}
+          onPlaying={()  => { setIsBuffering(false); setIsPlaying(true); }}
           onPause={()    => setIsPlaying(false)}
           onClick={togglePlay}
         />
@@ -309,16 +308,12 @@ const ReelModal = ({ reel, onClose }: { reel: Reel; onClose: () => void }) => {
           </div>
         )}
 
-        {needsTap && (
-          <button
-            className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-20 gap-4"
-            onClick={() => { videoRef.current?.play().catch(() => {}); setNeedsTap(false); }}
-          >
-            <div className="bg-white rounded-full p-5 shadow-xl">
-              <Play className="w-10 h-10 text-black fill-black" />
+        {!isPlaying && !isBuffering && (
+          <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+            <div className="bg-white rounded-full p-5 shadow-xl transition-transform active:scale-95">
+              <Play className="w-10 h-10 text-black fill-black ml-1" />
             </div>
-            <span className="text-white text-xs font-bold uppercase tracking-widest">Tap to play</span>
-          </button>
+          </div>
         )}
 
         {/* Top label */}
@@ -464,6 +459,8 @@ const ReelsSection = () => {
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        video::-webkit-media-controls { display: none !important; }
+        video::-webkit-media-controls-enclosure { display: none !important; }
       `}</style>
     </section>
   );
